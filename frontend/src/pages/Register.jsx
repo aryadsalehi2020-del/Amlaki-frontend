@@ -16,7 +16,7 @@ function Register() {
     if (formData.password !== formData.confirmPassword) { setError('Passwoerter stimmen nicht ueberein'); return; }
     if (formData.password.length < 6) { setError('Mind. 6 Zeichen'); return; }
     setLoading(true);
-    try { await register(formData.email, formData.username, formData.password, formData.fullName); navigate('/dashboard'); }
+    try { await register(formData.email, formData.username, formData.password, formData.fullName); navigate('/chat'); }
     catch (err) { setError(err.message || 'Fehler'); }
     finally { setLoading(false); }
   };

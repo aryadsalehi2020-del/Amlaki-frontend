@@ -14,7 +14,7 @@ function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    try { await login(email, password); navigate('/dashboard'); }
+    try { await login(email, password); navigate('/chat'); }
     catch (err) { setError(err.message || 'Login fehlgeschlagen'); }
     finally { setLoading(false); }
   };

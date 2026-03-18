@@ -1,7 +1,41 @@
 """
 AmlakI Backend
-KI-gestützter Immobilienanalyse-Service mit User-Management
+KI-gestuetzter Immobilienanalyse-Service mit User-Management
 """
+import sys
+import os
+import io
+import logging
+
+# Force UTF-8 everywhere - MUST be before any other imports
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+os.environ['LC_ALL'] = 'C.UTF-8'
+os.environ['LANG'] = 'C.UTF-8'
+
+# Suppress Anthropic SDK rich/unicode logging
+os.environ['ANTHROPIC_LOG'] = 'off'
+os.environ['TERM'] = 'dumb'
+os.environ['NO_COLOR'] = '1'
+os.environ['COLUMNS'] = '80'
+logging.getLogger('anthropic').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
+
+try:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+except Exception:
+    pass
+
+# Monkey-patch print to handle unicode errors
+_original_print = print
+def safe_print(*args, **kwargs):
+    try:
+        _original_print(*args, **kwargs)
+    except UnicodeEncodeError:
+        safe_args = [str(a).encode('ascii', 'replace').decode('ascii') for a in args]
+        _original_print(*safe_args, **kwargs)
+import builtins
+builtins.print = safe_print
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, status, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -283,7 +317,7 @@ def check_no_gos(data: 'PropertyData') -> Dict[str, Any]:
         # Effektive Sanierungskosten nach Förderung
         effektive_kosten = geschaetzte_sanierungskosten - kfw_zuschuss
 
-        # Energiekostenersparnis pro Jahr (ca. 10-15€/m² bei G/H → A/B)
+        # Energiekostenersparnis pro Jahr (ca. 10-15€/m² bei G/H -> A/B)
         jaehrliche_ersparnis = wohnflaeche * 12  # ~12€/m² Ersparnis
 
         # Amortisationszeit in Jahren
@@ -293,7 +327,7 @@ def check_no_gos(data: 'PropertyData') -> Dict[str, Any]:
         wertsteigerung_geschaetzt = (data.kaufpreis or 0) * 0.15 if data.kaufpreis else 0
 
         # ENTSCHEIDUNG: Lohnt sich KfW?
-        # Wenn Amortisation < 15 Jahre ODER Wertsteigerung > Kosten → KEIN No-Go!
+        # Wenn Amortisation < 15 Jahre ODER Wertsteigerung > Kosten -> KEIN No-Go!
         lohnt_sich_kfw = amortisation_jahre < 15 or wertsteigerung_geschaetzt > effektive_kosten
 
         energie_analyse = {
@@ -582,11 +616,47 @@ class AnalysisResult(BaseModel):
 
 
 def get_anthropic_client():
-    """Erstellt Anthropic Client"""
+    """Erstellt Anthropic Client mit deaktiviertem Logging"""
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY nicht konfiguriert")
-    return anthropic.Anthropic(api_key=api_key)
+    import httpx as _httpx
+    return anthropic.Anthropic(
+        api_key=api_key,
+        http_client=_httpx.Client(
+            timeout=120.0,
+            follow_redirects=True,
+        )
+    )
+
+
+def call_claude_direct(system_prompt: str, messages: list, max_tokens: int = 4096, model: str = "claude-sonnet-4-20250514"):
+    """Call Claude API directly via httpx to avoid Anthropic SDK unicode issues on Render."""
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY nicht konfiguriert")
+
+    response = httpx.post(
+        "https://api.anthropic.com/v1/messages",
+        headers={
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        },
+        json={
+            "model": model,
+            "max_tokens": max_tokens,
+            "system": system_prompt,
+            "messages": messages,
+        },
+        timeout=120.0,
+    )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail=f"Claude API Fehler: {response.status_code} - {response.text[:200]}")
+
+    data = response.json()
+    return data
 
 
 @app.get("/")
@@ -1764,11 +1834,11 @@ async def analyze_property(
             )
             # Prüfe ob Live-Daten erfolgreich
             if marktdaten and marktdaten.get("recherche_methode") == "live_web_search_v3":
-                print(f"✅ Live-Marktdaten für {data.stadt} erfolgreich recherchiert")
+                print(f"[OK] Live-Marktdaten fuer {data.stadt} erfolgreich recherchiert")
             else:
-                print(f"⚠️ Fallback-Marktdaten für {data.stadt} verwendet")
+                print(f"[WARN] Fallback-Marktdaten fuer {data.stadt} verwendet")
         except Exception as e:
-            print(f"❌ Marktdaten-Recherche fehlgeschlagen: {str(e)}")
+            print(f"[ERROR] Marktdaten-Recherche fehlgeschlagen: {str(e)}")
             # Fallback-Daten mit Warnung
             marktdaten = {
                 "standort": f"{data.stadtteil}, {data.stadt}" if data.stadtteil else data.stadt,
@@ -1804,7 +1874,7 @@ async def analyze_property(
                 "hinweis": f"Die Immobilie ist frei/nicht vermietet. Die Miete wurde auf Basis aktueller Marktdaten für {data.stadt} geschätzt: {round(geschaetzte_miete_qm, 2)} €/m² × {data.wohnflaeche} m² = {round(miete, 2)} €/Monat",
                 "empfehlung": "Prüfen Sie die ortsübliche Vergleichsmiete und passen Sie ggf. die Schätzung an."
             }
-            print(f"💡 Miete geschätzt für freie Immobilie: {round(miete, 2)} €/Monat ({round(geschaetzte_miete_qm, 2)} €/m²)")
+            print(f"[INFO] Miete geschaetzt fuer freie Immobilie: {round(miete, 2)} EUR/Monat ({round(geschaetzte_miete_qm, 2)} EUR/m2)")
 
         # Kaufpreisfaktor & Bruttorendite
         if miete > 0:
@@ -2039,13 +2109,13 @@ async def analyze_property(
     marktdaten_hinweis = ""
     if marktdaten:
         if marktdaten.get("recherche_methode") == "live_web_search_v3":
-            marktdaten_hinweis = "✅ LIVE-MARKTDATEN ERFOLGREICH RECHERCHIERT"
+            marktdaten_hinweis = "[OK] LIVE-MARKTDATEN ERFOLGREICH RECHERCHIERT"
         else:
-            marktdaten_hinweis = "⚠️ FALLBACK-DATEN - Bewertung mit Vorsicht!"
+            marktdaten_hinweis = "[WARN] FALLBACK-DATEN - Bewertung mit Vorsicht!"
 
     analyse_prompt = f"""Analysiere diese Immobilie professionell und bewerte jedes Kriterium mit einem Score von 0-100.
 
-🔴 V3.0 WICHTIG: Du MUSST die LIVE-RECHERCHIERTEN MARKTDATEN unten verwenden!
+[WICHTIG] V3.0 WICHTIG: Du MUSST die LIVE-RECHERCHIERTEN MARKTDATEN unten verwenden!
 Vergleiche den Kaufpreis IMMER mit den aktuellen €/m²-Preisen für diesen KONKRETEN Standort!
 
 === IMMOBILIENDATEN ===
@@ -2054,17 +2124,17 @@ Vergleiche den Kaufpreis IMMER mit den aktuellen €/m²-Preisen für diesen KON
 === VERWENDUNGSZWECK ===
 {zweck}
 
-=== 🔴 LIVE-MARKTDATEN FÜR DIESEN STANDORT ({marktdaten_hinweis}) ===
+=== [WICHTIG] LIVE-MARKTDATEN FÜR DIESEN STANDORT ({marktdaten_hinweis}) ===
 {json.dumps(marktdaten, indent=2, ensure_ascii=False) if marktdaten else "FEHLER: Keine Marktdaten!"}
 
 PFLICHT-VERGLEICH:
 - Objektpreis/m²: {round(data.kaufpreis / data.wohnflaeche, 2) if data.kaufpreis and data.wohnflaeche else "Unbekannt"} €/m²
 - Markt-Durchschnitt: {marktdaten.get('kaufpreis_qm_durchschnitt', 'Unbekannt') if marktdaten else 'Unbekannt'} €/m²
-- Bewertung: {"UNTER Markt ✅" if marktdaten and data.kaufpreis and data.wohnflaeche and (data.kaufpreis/data.wohnflaeche) < marktdaten.get('kaufpreis_qm_durchschnitt', 999999) else "ÜBER Markt ⚠️" if marktdaten else "Keine Daten"}
+- Bewertung: {"UNTER Markt [OK]" if marktdaten and data.kaufpreis and data.wohnflaeche and (data.kaufpreis/data.wohnflaeche) < marktdaten.get('kaufpreis_qm_durchschnitt', 999999) else "ÜBER Markt [WARN]" if marktdaten else "Keine Daten"}
 
 === NO-GO-PRÜFUNG ===
 {json.dumps(no_go_check, indent=2, ensure_ascii=False)}
-⚠️ WICHTIG: Bei No-Gos Alternativen und Verbesserungsvorschläge geben!
+[WARN] WICHTIG: Bei No-Gos Alternativen und Verbesserungsvorschläge geben!
 
 === WARNSIGNALE ===
 {json.dumps(warnsignale, indent=2, ensure_ascii=False)}
@@ -2086,7 +2156,7 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 === BEWERTUNGSKRITERIEN für {zweck.upper()} ===
 {json.dumps(weights, indent=2, ensure_ascii=False)}
 
-🔴 V3.0 - BEWERTUNGSREGELN MIT LIVE-DATEN:
+[WICHTIG] V3.0 - BEWERTUNGSREGELN MIT LIVE-DATEN:
 
 1. **cashflow_rendite** (Gewichtung: {weights['cashflow_rendite']}%)
    - Kaufpreisfaktor: <20 sehr gut, 20-25 gut, >25 kritisch
@@ -2097,7 +2167,7 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
    - Stadtteil-Bewertung aus LIVE-Marktdaten
    - Standort-Faktoren berücksichtigen (Uni, Wirtschaft, ÖPNV)
 
-3. **kaufpreis_qm** (Gewichtung: {weights['kaufpreis_qm']}%) 🔴 LIVE-DATEN PFLICHT!
+3. **kaufpreis_qm** (Gewichtung: {weights['kaufpreis_qm']}%) [WICHTIG] LIVE-DATEN PFLICHT!
    - MUSS gegen LIVE-Marktdurchschnitt verglichen werden!
    - Unter Markt = hoher Score, über Markt = niedriger Score
    - Formel: Score = 100 - ((Objekt€/m² - Markt€/m²) / Markt€/m² * 100)
@@ -2198,14 +2268,14 @@ Antworte NUR mit dem JSON."""
         # EMPFEHLUNG basierend auf No-Gos, Score und Warnsignalen (positivere Schwellen)
         if no_go_check["no_go"]:
             empfehlung = "ABLEHNEN"
-            empfehlung_text = f"❌ NICHT INVESTIEREN - No-Go-Kriterien: {', '.join(no_go_check['gründe'])}"
+            empfehlung_text = f"[ERROR] NICHT INVESTIEREN - No-Go-Kriterien: {', '.join(no_go_check['gründe'])}"
         elif gesamtscore >= 65:  # war 75
             if warnsignale["kritisch"]:
                 empfehlung = "PRÜFEN"
-                empfehlung_text = f"⚠️ GENAU PRÜFEN - Guter Score ({gesamtscore}), aber kritische Warnsignale vorhanden"
+                empfehlung_text = f"[WARN] GENAU PRÜFEN - Guter Score ({gesamtscore}), aber kritische Warnsignale vorhanden"
             else:
                 empfehlung = "INVESTIEREN"
-                empfehlung_text = f"✅ EMPFEHLENSWERT - Score: {gesamtscore}/100"
+                empfehlung_text = f"[OK] EMPFEHLENSWERT - Score: {gesamtscore}/100"
         elif gesamtscore >= 50:  # war 60
             empfehlung = "PRÜFEN"
             empfehlung_text = f"🔍 PRÜFENSWERT - Solider Score ({gesamtscore}/100)"
@@ -2213,10 +2283,10 @@ Antworte NUR mit dem JSON."""
                 empfehlung_text += f", {warnsignale['anzahl']} Warnsignal(e)"
         elif gesamtscore >= 35:  # NEU: Zwischenstufe
             empfehlung = "VORSICHT"
-            empfehlung_text = f"⚠️ MIT VORSICHT - Unterdurchschnittlicher Score ({gesamtscore}/100)"
+            empfehlung_text = f"[WARN] MIT VORSICHT - Unterdurchschnittlicher Score ({gesamtscore}/100)"
         else:
             empfehlung = "ABLEHNEN"
-            empfehlung_text = f"❌ NICHT EMPFOHLEN - Schwacher Score ({gesamtscore}/100)"
+            empfehlung_text = f"[ERROR] NICHT EMPFOHLEN - Schwacher Score ({gesamtscore}/100)"
 
         # Erweitere Zusammenfassung mit Empfehlung
         zusammenfassung_erweitert = f"{empfehlung_text}\n\n{ai_analysis['zusammenfassung']}"
@@ -2482,24 +2552,24 @@ ANALYSE-KONTEXT DES NUTZERS:
 
 Antworte auf Deutsch, präzise und hilfreich.
 Nutze Markdown für Formatierung (fett, Listen, etc.).
-Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
+Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!
+
+WICHTIG: Verwende KEINE Emojis in deinen Antworten. Keine Symbole wie Pfeile oder Sonderzeichen. Nur reinen Text mit Markdown-Formatierung (fett, Listen, Ueberschriften). Halte den Ton professionell und sachlich."""
 
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            system=chat_system,
-            messages=messages_for_claude
-        )
+        # Use direct HTTP call to avoid Anthropic SDK unicode issues
+        data = call_claude_direct(chat_system, messages_for_claude, max_tokens=4096)
 
-        assistant_text = response.content[0].text
+        assistant_text = data["content"][0]["text"]
+        input_tokens = data.get("usage", {}).get("input_tokens", 0)
+        output_tokens = data.get("usage", {}).get("output_tokens", 0)
 
         # Save assistant message to DB
         assistant_msg = ChatMessage(
             conversation_id=conversation.id,
             role="assistant",
             content=assistant_text,
-            tokens_used=response.usage.input_tokens + response.usage.output_tokens
+            tokens_used=input_tokens + output_tokens
         )
         db.add(assistant_msg)
 
@@ -2512,8 +2582,8 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
             db=db,
             user_id=current_user.id,
             action_type="chat",
-            input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens
+            input_tokens=input_tokens,
+            output_tokens=output_tokens
         )
 
         return ChatResponse(
@@ -2526,7 +2596,11 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chat-Fehler: {str(e)}")
+        try:
+            error_detail = f"Chat-Fehler: {str(e)}"
+        except UnicodeEncodeError:
+            error_detail = "Chat-Fehler: interner Fehler"
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 # ============ CONVERSATION ENDPOINTS ============
@@ -2731,7 +2805,9 @@ ANALYSE-KONTEXT DES NUTZERS:
 
 Antworte auf Deutsch, präzise und hilfreich.
 Nutze Markdown für Formatierung (fett, Listen, etc.).
-Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
+Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!
+
+WICHTIG: Verwende KEINE Emojis in deinen Antworten. Keine Symbole wie Pfeile oder Sonderzeichen. Nur reinen Text mit Markdown-Formatierung (fett, Listen, Ueberschriften). Halte den Ton professionell und sachlich."""
 
     async def generate():
         try:

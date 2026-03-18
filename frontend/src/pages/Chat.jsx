@@ -64,21 +64,24 @@ function inlineFormat(text) {
 // ── Typing indicator ───────────────────────────────────────────────
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-1 px-4 py-3">
+    <div className="flex items-center gap-2 px-4 py-3">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-2 h-2 rounded-full bg-[#B5A68C]"
           style={{
-            animation: 'chatBounce 1.2s ease-in-out infinite',
-            animationDelay: `${i * 0.15}s`,
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#7C8B6F',
+            animation: 'smoothPulse 1.4s ease-in-out infinite',
+            animationDelay: `${i * 0.3}s`,
           }}
         />
       ))}
       <style>{`
-        @keyframes chatBounce {
-          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-          30% { transform: translateY(-6px); opacity: 1; }
+        @keyframes smoothPulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
         }
       `}</style>
     </div>

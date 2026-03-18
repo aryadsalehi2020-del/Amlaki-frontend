@@ -11,7 +11,8 @@ export function useStreamingChat() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/chat/stream`, {
+      // Use /chat directly (non-streaming) - more reliable
+      const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,18 +22,25 @@ export function useStreamingChat() {
         signal: abortControllerRef.current.signal
       });
 
-      if (!response.ok) {
-        // Fallback to non-streaming
-        const fallbackResponse = await fetch(`${API_BASE}/chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ message, conversation_id: conversationId })
-        });
-        const data = await fallbackResponse.json();
-        onChunk(data.response || data.message);
+      // Always use non-streaming fallback first (more reliable)
+      const useStreaming = response.ok && response.headers.get('content-type')?.includes('text/event-stream');
+
+      if (!useStreaming) {
+        // Non-streaming: use /chat endpoint
+        let chatResponse = response;
+        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+          chatResponse = await fetch(`${API_BASE}/chat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ message, conversation_id: conversationId })
+          });
+        }
+        const data = await chatResponse.json();
+        const text = data.response || data.message || data.text || JSON.stringify(data);
+        onChunk(text);
         onDone(data);
         return;
       }
@@ -52,9 +60,9 @@ export function useStreamingChat() {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
-              const data = JSON.parse(line.slice(6));
-              if (data.text) onChunk(data.text);
-              if (data.done) onDone(data);
+              const parsed = JSON.parse(line.slice(6));
+              if (parsed.text) onChunk(parsed.text);
+              if (parsed.done) onDone(parsed);
             } catch (e) {
               // Skip malformed JSON
             }

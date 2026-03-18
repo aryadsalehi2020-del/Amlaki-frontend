@@ -157,7 +157,7 @@ LANDESFOERDERUNGEN = {
         "darlehen_max": 200000,
         "zins_sollzins": 0.60,
         "zinsbindung_jahre": 20,
-        "vorteil": "Nachrangige Grundbucheintragung → bessere Konditionen bei Hausbank"
+        "vorteil": "Nachrangige Grundbucheintragung -> bessere Konditionen bei Hausbank"
     },
     "Bayern": {
         "name": "BayernLabo Förderung",
@@ -204,11 +204,11 @@ AFA_REGELN = {
     "denkmal_afa": {
         "vermietung": {
             "gesamt": 100,
-            "verteilung": "8×9% + 4×7% = 100% in 12 Jahren"
+            "verteilung": "8x9% + 4x7% = 100% in 12 Jahren"
         },
         "selbstnutzung": {
             "gesamt": 90,
-            "verteilung": "10×9% = 90% in 10 Jahren"
+            "verteilung": "10x9% = 90% in 10 Jahren"
         },
         "wichtig": "Abstimmung mit Denkmalschutzbehörde VOR Baubeginn!"
     },
@@ -461,7 +461,7 @@ def berechne_fairen_preis(kaufpreis: float, jahresmiete: float, wohnflaeche: flo
     nach_faktor = jahresmiete * 22
 
     # Methode 3: Nach Cashflow (vereinfacht)
-    # Verfügbar für Rate ≈ 65% der Miete (35% NK)
+    # Verfügbar für Rate ca. 65% der Miete (35% NK)
     verfuegbar = jahresmiete * 0.65
     max_kredit = verfuegbar / 0.053  # 3.8% Zins + 1.5% Tilgung
     nach_cashflow = max_kredit * 0.9  # 10% Puffer
@@ -515,7 +515,7 @@ def empfehle_foerderungen(
             "name": "BEG Wohngebäude",
             "kredit": 150000,
             "zuschuss": "Bis 67.500€ Tilgungszuschuss",
-            "grund": f"Energieklasse {energieklasse} → Sanierung förderfähig",
+            "grund": f"Energieklasse {energieklasse} -> Sanierung förderfähig",
             "wichtig": "Antrag VOR Baubeginn, Energieberater erforderlich!",
             "prioritaet": "hoch"
         })
@@ -602,7 +602,7 @@ def generiere_verbesserungsvorschlaege(
         neue_rendite = 100 / ziel_faktor
         tipps.append({
             "typ": "Preisverhandlung",
-            "icon": "💰",
+            "icon": "",
             "tipp": f"Verhandle den Preis auf {ziel_preis:,.0f}€ (-{differenz/1000:.0f}k)",
             "effekt": f"Kaufpreisfaktor sinkt auf {ziel_faktor}, Rendite steigt auf {neue_rendite:.1f}%",
             "argument": f"Vergleichbare Objekte in der Region haben Faktor {ziel_faktor}",
@@ -615,7 +615,7 @@ def generiere_verbesserungsvorschlaege(
         neue_rendite = ((markt_miete * 12) / kaufpreis) * 100
         tipps.append({
             "typ": "Mieterhöhung",
-            "icon": "📈",
+            "icon": "",
             "tipp": f"Mieterhöhung nach §558 BGB möglich: +{potenzial:.0f}€/Monat",
             "effekt": f"Bruttorendite steigt von {bruttorendite:.1f}% auf {neue_rendite:.1f}%",
             "zeitrahmen": "Nach Kauf gemäß Kappungsgrenze (15-20% in 3 Jahren)",
@@ -627,18 +627,18 @@ def generiere_verbesserungsvorschlaege(
     if energieklasse and energieklasse.upper() in ['E', 'F', 'G', 'H']:
         tipps.append({
             "typ": "Energetische Sanierung",
-            "icon": "🌱",
-            "tipp": f"Mit KfW 261/262 sanieren → bis zu 67.500€ Tilgungszuschuss!",
+            "icon": "",
+            "tipp": f"Mit KfW 261/262 sanieren -> bis zu 67.500€ Tilgungszuschuss!",
             "effekt": "Wertsteigerung 10-20%, Modernisierungsumlage möglich (8%/Jahr)",
             "foerderung": "KfW 261: 150.000€ Kredit zu ca. 1% Zins",
-            "rechenbeispiel": "Bei 80.000€ Sanierung: 20.000€ Zuschuss + 8%×80.000€ = 6.400€/Jahr Mieterhöhung möglich",
+            "rechenbeispiel": "Bei 80.000€ Sanierung: 20.000€ Zuschuss + 8%x80.000€ = 6.400€/Jahr Mieterhöhung möglich",
             "prioritaet": "mittel"
         })
 
     # 4. Finanzierungsoptimierung
     tipps.append({
         "typ": "Finanzierung optimieren",
-        "icon": "🏦",
+        "icon": "",
         "tipp": "Mehrere Banken vergleichen + KfW kombinieren",
         "optionen": [
             "KfW 124: 100.000€ zu ca. 3.4% für Eigennutzer-Anteil",
@@ -653,11 +653,11 @@ def generiere_verbesserungsvorschlaege(
     if score < 40:
         tipps.append({
             "typ": "Alternative Strategie",
-            "icon": "🔄",
+            "icon": "",
             "tipp": "Objekt als Verhandlungsbasis nutzen",
             "optionen": [
                 "Als Referenz für Preisverhandlung bei ähnlichen Objekten",
-                "Verkäufer auf Mängel hinweisen → Preisnachlass fordern",
+                "Verkäufer auf Mängel hinweisen -> Preisnachlass fordern",
                 f"Nur kaufen wenn Preis auf {kaufpreis * 0.8:,.0f}€ sinkt"
             ],
             "prioritaet": "hoch"
@@ -667,7 +667,7 @@ def generiere_verbesserungsvorschlaege(
     fairer = berechne_fairen_preis(kaufpreis, jahresmiete)
     tipps.append({
         "typ": "Fairer Preis",
-        "icon": "⚖️",
+        "icon": "",
         "tipp": f"Fairer Kaufpreis wäre: {fairer['fairer_preis']:,.0f}€",
         "berechnung": {
             "nach_ertragswert": fairer["nach_rendite"],
@@ -734,10 +734,10 @@ def berechne_afa(
     # Denkmal-AfA
     if ist_denkmal and sanierungskosten_denkmal > 0:
         if ist_vermietung:
-            # 8×9% + 4×7% = 100% in 12 Jahren
+            # 8x9% + 4x7% = 100% in 12 Jahren
             afa_12_jahre = sanierungskosten_denkmal
         else:
-            # 10×9% = 90% in 10 Jahren
+            # 10x9% = 90% in 10 Jahren
             afa_12_jahre = sanierungskosten_denkmal * 0.9
 
         ergebnis["denkmal"] = {
@@ -774,7 +774,7 @@ def berechne_heizungsfoerderung(
 
     if einkommen and einkommen <= 40000:
         foerderung += 30
-        details.append("+30% Einkommensbonus (≤40.000€)")
+        details.append("+30% Einkommensbonus (<=40.000€)")
 
     foerderung = min(foerderung, 70)
     zuschuss = kosten * (foerderung / 100)
@@ -831,7 +831,7 @@ def berechne_leverage_effekt(
 ) -> Dict[str, Any]:
     """
     Berechnet den Leverage-Effekt.
-    EK-Rendite = Objektrendite + (Objektrendite - FK-Zins) × (FK/EK)
+    EK-Rendite = Objektrendite + (Objektrendite - FK-Zins) x (FK/EK)
     """
     if eigenkapital <= 0:
         return {"fehler": "Eigenkapital muss größer 0 sein"}
@@ -871,13 +871,13 @@ def quick_check(immobilie: Dict[str, Any]) -> Dict[str, Any]:
     total = len(checks)
 
     if passed == total:
-        empfehlung = "✅ KAUFEN - Alle Kriterien erfüllt"
+        empfehlung = "[OK] KAUFEN - Alle Kriterien erfüllt"
         ampel = "gruen"
     elif passed >= 4:
-        empfehlung = "🟡 PRÜFEN - Einige Schwächen"
+        empfehlung = "[GELB] PRÜFEN - Einige Schwächen"
         ampel = "gelb"
     else:
-        empfehlung = "🔴 VORSICHT - Mehrere Red Flags"
+        empfehlung = "[ROT] VORSICHT - Mehrere Red Flags"
         ampel = "rot"
 
     return {
@@ -907,9 +907,9 @@ Auch bei schlechter Bewertung IMMER konstruktive Tipps geben:
 
 ### 2. ALLE OPTIONEN ZEIGEN!
 Der User entscheidet selbst. Wir zeigen:
-- ✅ Optimale Szenarien
-- ⚠️ Grenzwertige Szenarien
-- ❌ Riskante Szenarien (mit Warnung, aber trotzdem berechnet!)
+- [OK] Optimale Szenarien
+- [WARNUNG] Grenzwertige Szenarien
+- [NEIN] Riskante Szenarien (mit Warnung, aber trotzdem berechnet!)
 
 ### 3. MIT ZAHLEN ARGUMENTIEREN!
 - Kaufpreisfaktor: <20 sehr gut, 20-25 okay, >25 kritisch
@@ -933,28 +933,28 @@ Der User entscheidet selbst. Wir zeigen:
 ### 6. OUTPUT-FORMAT:
 Bei schlechtem Score nicht einfach "Finger weg" sagen, sondern:
 ```
-⚠️ Score: X/100 – Aktuell nicht empfehlenswert
+[WARNUNG] Score: X/100 – Aktuell nicht empfehlenswert
 
 ABER: So könnte es funktionieren:
 
-💰 PREISVERHANDLUNG
-├─ Aktueller Preis: X€
-├─ Fairer Preis: Y€
-└─ Verhandlungsziel: -Z%
+ PREISVERHANDLUNG
+|- Aktueller Preis: X€
+|- Fairer Preis: Y€
+|- Verhandlungsziel: -Z%
 
-📈 MIETERHÖHUNGSPOTENZIAL
-├─ Aktuelle Miete: X€
-├─ Marktmiete: Y€
-└─ Potenzial: +Z€/Monat
+ MIETERHÖHUNGSPOTENZIAL
+|- Aktuelle Miete: X€
+|- Marktmiete: Y€
+|- Potenzial: +Z€/Monat
 
-🌱 FÖRDERUNGEN
-├─ KfW 261: Bis X€ Zuschuss
-└─ BAFA: X% für Dämmung/Fenster
+ FÖRDERUNGEN
+|- KfW 261: Bis X€ Zuschuss
+|- BAFA: X% für Dämmung/Fenster
 
-⚖️ ZUSAMMENFASSUNG
-├─ Mit Preisverhandlung: Score X
-├─ Mit Förderung: Score Y
-└─ EMPFEHLUNG: Angebot bei Z€ machen!
+ ZUSAMMENFASSUNG
+|- Mit Preisverhandlung: Score X
+|- Mit Förderung: Score Y
+|- EMPFEHLUNG: Angebot bei Z€ machen!
 ```
 
 ### 7. DEAL-BREAKER (echte No-Gos):
