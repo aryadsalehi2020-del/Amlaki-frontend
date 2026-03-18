@@ -30,7 +30,7 @@ function BreakEvenCalculator({ breakeven, aktuellesEigenkapital, kaufpreis }) {
   return (
     <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
       <h4 className="text-lg font-bold text-primary mb-6 flex items-center gap-2">
-        <span className="text-2xl">🎯</span>
+        <span className="text-2xl"></span>
         Break-Even Eigenkapital
       </h4>
 
@@ -38,7 +38,7 @@ function BreakEvenCalculator({ breakeven, aktuellesEigenkapital, kaufpreis }) {
         <div className="p-6 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl border-2 border-green-300 mb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-7 h-7 text-[#2C2418]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -78,7 +78,7 @@ function BreakEvenCalculator({ breakeven, aktuellesEigenkapital, kaufpreis }) {
 
               {/* Current value label inside */}
               <div className="absolute inset-0 flex items-center px-3">
-                <span className={`text-xs font-bold ${prozentErreicht > 50 ? 'text-white' : 'text-slate/70'}`}>
+                <span className={`text-xs font-bold ${prozentErreicht > 50 ? 'text-[#2C2418]' : 'text-slate/70'}`}>
                   {formatCurrency(aktuellesEigenkapital)}
                 </span>
               </div>
@@ -103,7 +103,7 @@ function BreakEvenCalculator({ breakeven, aktuellesEigenkapital, kaufpreis }) {
             </div>
             <div className="p-4 bg-white rounded-xl border border-slate/20 shadow-sm">
               <p className="text-xs text-slate/60 mb-1">Benötigtes Eigenkapital</p>
-              <p className="text-xl font-bold text-accent">{formatCurrency(benoetigtesEK)}</p>
+              <p className="text-xl font-bold text-[#B5A68C]">{formatCurrency(benoetigtesEK)}</p>
               <p className="text-xs text-slate/50 mt-1">
                 {breakeven.eigenkapital_quote_prozent.toFixed(1)}% vom Kaufpreis
               </p>

@@ -22,9 +22,8 @@ function Profile() {
     verwendungszweck: 'kapitalanlage'
   });
 
-  const [activeSection, setActiveSection] = useState('investor'); // investor, profil, test, tipps
+  const [activeSection, setActiveSection] = useState('investor');
 
-  // Speichere Profil bei Änderung
   useEffect(() => {
     localStorage.setItem('userProfile', JSON.stringify(profile));
   }, [profile]);
@@ -33,7 +32,6 @@ function Profile() {
     setProfile(newProfile);
   };
 
-  // Berechne Gesamtvermögen
   const gesamtEK = () => {
     let summe = parseFloat(profile.eigenkapital) || 0;
     if (profile.hatDepot) summe += (parseFloat(profile.depotWert) || 0) * 0.7;
@@ -43,7 +41,6 @@ function Profile() {
     return summe;
   };
 
-  // Profilstärke berechnen
   const getProfileStrength = () => {
     let filled = 0;
     const fields = ['eigenkapital', 'jahreseinkommen', 'beruf', 'kinder', 'bundesland', 'schufa'];
@@ -55,49 +52,42 @@ function Profile() {
   const profileStrength = getProfileStrength();
 
   return (
-    <div className="p-4 md:p-8 bg-mesh-animated min-h-screen relative">
-      {/* Background Glow Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="glow-orb w-96 h-96 bg-neon-blue/10 -top-48 -right-48" />
-        <div className="glow-orb w-80 h-80 bg-neon-purple/10 bottom-0 left-1/4" style={{ animationDelay: '5s' }} />
-        <div className="glow-orb w-64 h-64 bg-neon-green/5 top-1/3 right-1/3" style={{ animationDelay: '10s' }} />
-      </div>
-
-      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
+      <div className="max-w-[900px] space-y-8">
         {/* Header */}
         <div className="fade-in">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                <span className="text-gradient-neon">Mein Finanzprofil</span>
+              <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">
+                Mein Finanzprofil
               </h1>
-              <p className="text-text-secondary text-lg">
-                Ihr persönliches Profil für optimale Finanzierungs- und Fördertipps
+              <p className="text-[#8C7E6A] text-[14px] mt-2">
+                Ihr personliches Profil fur optimale Finanzierungs- und Fordertipps
               </p>
             </div>
 
             {/* Profile Strength Indicator */}
-            <div className="glass-card rounded-xl p-4 border border-white/10 flex items-center gap-4">
+            <div className="bg-white border border-[#E8E0D4] rounded-[12px] p-4 flex items-center gap-4">
               <div className="relative w-14 h-14">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+                  <circle cx="18" cy="18" r="15" fill="none" stroke="#E8E0D4" strokeWidth="3" />
                   <circle
                     cx="18" cy="18" r="15"
                     fill="none"
-                    stroke={profileStrength >= 70 ? '#22c55e' : profileStrength >= 40 ? '#fbbf24' : '#ef4444'}
+                    stroke="#7C8B6F"
                     strokeWidth="3"
                     strokeLinecap="round"
                     strokeDasharray={`${profileStrength * 0.94} 94`}
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white">
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-[#2C2418]">
                   {profileStrength}%
                 </span>
               </div>
               <div>
-                <p className="text-white font-semibold">Profil-Vollständigkeit</p>
-                <p className="text-text-muted text-sm">
-                  {profileStrength >= 70 ? 'Sehr gut ausgefüllt' : profileStrength >= 40 ? 'Mehr Details = bessere Tipps' : 'Bitte ausfüllen'}
+                <p className="text-[#2C2418] font-medium text-[14px]">Profil-Vollstandigkeit</p>
+                <p className="text-[#8C7E6A] text-[12px]">
+                  {profileStrength >= 70 ? 'Sehr gut ausgefullt' : profileStrength >= 40 ? 'Mehr Details = bessere Tipps' : 'Bitte ausfullen'}
                 </p>
               </div>
             </div>
@@ -105,27 +95,26 @@ function Profile() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="glass-card rounded-2xl p-2 border border-white/10 fade-in fade-in-delay-2">
-          <div className="flex gap-2 overflow-x-auto">
+        <div className="bg-white rounded-[16px] p-1.5 border border-[#E8E0D4] fade-in fade-in-delay-2">
+          <div className="flex gap-1.5 overflow-x-auto">
             {[
-              { id: 'investor', label: 'Investoren-Profil', icon: '🎯', highlight: !isInvestorProfileComplete },
-              { id: 'profil', label: 'Finanz-Profil', icon: '👤' },
-              { id: 'test', label: 'Kredit-Chance', icon: '🧪' },
-              { id: 'tipps', label: 'Spar-Tipps', icon: '💡' }
+              { id: 'investor', label: 'Investoren-Profil', highlight: !isInvestorProfileComplete },
+              { id: 'profil', label: 'Finanz-Profil' },
+              { id: 'test', label: 'Kredit-Chance' },
+              { id: 'tipps', label: 'Spar-Tipps' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveSection(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all whitespace-nowrap ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-[12px] font-medium transition-all whitespace-nowrap text-[14px] ${
                   activeSection === tab.id
-                    ? 'bg-gradient-to-r from-neon-blue to-neon-purple text-white shadow-neon-blue'
+                    ? 'bg-[#7C8B6F] text-white'
                     : tab.highlight
-                      ? 'text-accent border border-accent/30 animate-pulse hover:bg-accent/10'
-                      : 'text-text-secondary hover:bg-white/5 hover:text-white'
+                      ? 'text-[#7C8B6F] border border-[#7C8B6F]/30 hover:bg-[#7C8B6F]/5'
+                      : 'text-[#8C7E6A] hover:bg-[#F5F0E8] hover:text-[#5C4F3D]'
                 }`}
               >
-                <span className="text-lg">{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span>{tab.label}</span>
                 {tab.highlight && <span className="text-xs">!</span>}
               </button>
             ))}
@@ -137,22 +126,19 @@ function Profile() {
           <div className="fade-in space-y-6">
             {/* Current Profile Summary */}
             {isInvestorProfileComplete && (
-              <div className="glass-card rounded-2xl p-6 border border-neon-green/30">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-neon-green/10 rounded-xl border border-neon-green/30">
-                    <span className="text-xl">{INVESTMENT_GOALS[investorProfile.goal]?.icon}</span>
-                    <span className="text-neon-green font-semibold">{INVESTMENT_GOALS[investorProfile.goal]?.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-neon-blue/10 rounded-xl border border-neon-blue/30">
-                    <span className="text-xl">{RISK_PROFILES[investorProfile.riskProfile]?.icon}</span>
-                    <span className="text-neon-blue font-semibold">{RISK_PROFILES[investorProfile.riskProfile]?.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-neon-purple/10 rounded-xl border border-neon-purple/30">
-                    <span className="text-xl">{EXPERIENCE_LEVELS[investorProfile.experience]?.icon}</span>
-                    <span className="text-neon-purple font-semibold">{EXPERIENCE_LEVELS[investorProfile.experience]?.label}</span>
-                  </div>
-                  <div className="ml-auto text-neon-green font-medium flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4]">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[13px] text-[#5C4F3D] bg-[#F5F0E8] border border-[#E8E0D4] px-3 py-1.5 rounded-full font-medium">
+                    {INVESTMENT_GOALS[investorProfile.goal]?.label}
+                  </span>
+                  <span className="text-[13px] text-[#5C4F3D] bg-[#F5F0E8] border border-[#E8E0D4] px-3 py-1.5 rounded-full font-medium">
+                    {RISK_PROFILES[investorProfile.riskProfile]?.label}
+                  </span>
+                  <span className="text-[13px] text-[#5C4F3D] bg-[#F5F0E8] border border-[#E8E0D4] px-3 py-1.5 rounded-full font-medium">
+                    {EXPERIENCE_LEVELS[investorProfile.experience]?.label}
+                  </span>
+                  <div className="ml-auto text-[#7C8B6F] font-medium flex items-center gap-2 text-[13px]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Profil aktiv
@@ -165,18 +151,18 @@ function Profile() {
             <UserGoalsForm onComplete={() => setActiveSection('profil')} />
 
             {/* Info Box */}
-            <div className="glass-card rounded-2xl p-6 border border-neon-blue/20">
-              <h4 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                <span>💡</span> Warum ist das wichtig?
+            <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4]">
+              <h4 className="text-[16px] font-semibold text-[#2C2418] mb-3">
+                Warum ist das wichtig?
               </h4>
-              <div className="grid md:grid-cols-2 gap-4 text-sm text-text-secondary">
-                <div className="p-4 bg-white/5 rounded-xl">
-                  <p className="font-semibold text-neon-blue mb-2">Personalisierte Scores</p>
-                  <p>Die Gewichtung der Bewertungskriterien wird auf dein Ziel angepasst. Cashflow-Investoren bekommen andere Scores als Vermögensaufbauer.</p>
+              <div className="grid md:grid-cols-2 gap-4 text-[13px] text-[#8C7E6A]">
+                <div className="p-4 bg-[#F5F0E8] rounded-[12px]">
+                  <p className="font-medium text-[#5C4F3D] mb-2">Personalisierte Scores</p>
+                  <p>Die Gewichtung der Bewertungskriterien wird auf dein Ziel angepasst. Cashflow-Investoren bekommen andere Scores als Vermogensaufbauer.</p>
                 </div>
-                <div className="p-4 bg-white/5 rounded-xl">
-                  <p className="font-semibold text-neon-purple mb-2">Smarte Warnungen</p>
-                  <p>Basierend auf deiner Erfahrung und Risikobereitschaft erhältst du passende Hinweise und Warnungen.</p>
+                <div className="p-4 bg-[#F5F0E8] rounded-[12px]">
+                  <p className="font-medium text-[#5C4F3D] mb-2">Smarte Warnungen</p>
+                  <p>Basierend auf deiner Erfahrung und Risikobereitschaft erhaltst du passende Hinweise und Warnungen.</p>
                 </div>
               </div>
             </div>
@@ -185,22 +171,19 @@ function Profile() {
 
         {activeSection === 'profil' && (
           <div className="grid lg:grid-cols-3 gap-8 fade-in">
-            {/* Profil-Formular */}
             <div className="lg:col-span-2">
               <UserProfileForm profile={profile} onProfileChange={handleProfileChange} />
             </div>
-
-            {/* Kredit-Chance Anzeige (Mini) */}
             <div className="space-y-6">
               <CreditChanceIndicator profile={profile} kaufpreis={testKaufpreis} />
-
-              {/* Speicher-Hinweis */}
-              <div className="glass-card rounded-xl p-4 border border-neon-green/20">
+              <div className="bg-white rounded-[16px] p-4 border border-[#E8E0D4]">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">💾</span>
+                  <svg className="w-5 h-5 text-[#7C8B6F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                   <div>
-                    <p className="text-neon-green font-medium text-sm">Automatisch gespeichert</p>
-                    <p className="text-text-secondary text-xs">Daten bleiben lokal in Ihrem Browser</p>
+                    <p className="text-[#7C8B6F] font-medium text-[13px]">Automatisch gespeichert</p>
+                    <p className="text-[#8C7E6A] text-[12px]">Daten bleiben lokal in Ihrem Browser</p>
                   </div>
                 </div>
               </div>
@@ -210,19 +193,17 @@ function Profile() {
 
         {activeSection === 'test' && (
           <div className="grid lg:grid-cols-2 gap-8 fade-in">
-            {/* Test-Konfiguration */}
-            <div className="glass-card rounded-2xl p-6 border border-white/10">
-              <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                <span className="w-10 h-10 bg-neon-blue/20 rounded-xl flex items-center justify-center text-xl border border-neon-blue/30">🏠</span>
-                <span className="text-neon-blue">Test-Immobilie konfigurieren</span>
+            <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4]">
+              <h3 className="text-[18px] font-semibold text-[#2C2418] mb-6">
+                Test-Immobilie konfigurieren
               </h3>
 
               <div className="space-y-6">
                 {/* Kaufpreis Slider */}
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <label className="text-sm font-semibold text-text-secondary">Kaufpreis</label>
-                    <span className="text-2xl font-bold text-neon-blue">{formatCurrency(testKaufpreis)}</span>
+                    <label className="text-[13px] font-medium text-[#5C4F3D]">Kaufpreis</label>
+                    <span className="text-[20px] font-bold text-[#2C2418]">{formatCurrency(testKaufpreis)}</span>
                   </div>
                   <input
                     type="range"
@@ -237,57 +218,49 @@ function Profile() {
                     }}
                     className="w-full"
                   />
-                  <div className="flex justify-between text-xs text-text-muted mt-2">
-                    <span>50.000 €</span>
-                    <span>1.500.000 €</span>
+                  <div className="flex justify-between text-[12px] text-[#8C7E6A] mt-2">
+                    <span>50.000</span>
+                    <span>1.500.000</span>
                   </div>
                 </div>
 
                 {/* EK-Quote Anzeige */}
                 {testKaufpreis > 0 && gesamtEK() > 0 && (
-                  <div className="p-4 bg-white/5 rounded-xl">
+                  <div className="p-4 bg-[#F5F0E8] rounded-[12px]">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-text-secondary">Ihre EK-Quote</span>
-                      <span className={`text-lg font-bold ${
-                        (gesamtEK() / testKaufpreis) >= 0.2 ? 'text-neon-green' :
-                        (gesamtEK() / testKaufpreis) >= 0.1 ? 'text-accent' : 'text-red-400'
-                      }`}>
+                      <span className="text-[13px] text-[#5C4F3D]">Ihre EK-Quote</span>
+                      <span className="text-[16px] font-bold text-[#2C2418]">
                         {((gesamtEK() / testKaufpreis) * 100).toFixed(1)}%
                       </span>
                     </div>
-                    <div className="h-2 bg-surface rounded-full overflow-hidden">
+                    <div className="h-2 bg-[#E8E0D4] rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all ${
-                          (gesamtEK() / testKaufpreis) >= 0.2 ? 'bg-neon-green' :
-                          (gesamtEK() / testKaufpreis) >= 0.1 ? 'bg-accent' : 'bg-red-400'
-                        }`}
+                        className="h-full rounded-full transition-all bg-[#7C8B6F]"
                         style={{ width: `${Math.min((gesamtEK() / testKaufpreis) * 100, 100)}%` }}
                       />
                     </div>
-                    <p className="text-xs text-text-muted mt-2">
+                    <p className="text-[12px] text-[#8C7E6A] mt-2">
                       {(gesamtEK() / testKaufpreis) >= 0.2
-                        ? '✓ Sehr gute EK-Quote - beste Zinskonditionen'
+                        ? 'Sehr gute EK-Quote - beste Zinskonditionen'
                         : (gesamtEK() / testKaufpreis) >= 0.1
                           ? 'Akzeptable EK-Quote - mittlere Konditionen'
-                          : '⚠ Niedrige EK-Quote - höhere Zinsen oder EK-Ersatz nutzen'}
+                          : 'Niedrige EK-Quote - hohere Zinsen oder EK-Ersatz nutzen'}
                     </p>
                   </div>
                 )}
 
                 {/* Energieklasse */}
                 <div>
-                  <label className="block text-sm font-semibold text-text-secondary mb-3">Energieklasse</label>
+                  <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">Energieklasse</label>
                   <div className="grid grid-cols-5 sm:grid-cols-9 gap-2">
                     {ENERGY_CLASSES.map(k => (
                       <button
                         key={k}
                         onClick={() => setTestImmobilie(prev => ({ ...prev, energieKlasse: k }))}
-                        className={`py-2 px-3 rounded-lg text-sm font-bold transition-all ${
+                        className={`py-2 px-3 rounded-[8px] text-[13px] font-semibold transition-all ${
                           testImmobilie.energieKlasse === k
-                            ? k <= 'B' ? 'bg-neon-green/20 border border-neon-green/50 text-neon-green' :
-                              k <= 'D' ? 'bg-accent/20 border border-accent/50 text-accent' :
-                              'bg-red-500/20 border border-red-500/50 text-red-400'
-                            : 'border border-white/20 text-text-secondary hover:border-white/40'
+                            ? 'bg-[#7C8B6F]/10 border border-[#7C8B6F] text-[#7C8B6F]'
+                            : 'border border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
                         }`}
                       >
                         {k}
@@ -295,36 +268,34 @@ function Profile() {
                     ))}
                   </div>
                   {['F', 'G', 'H'].includes(testImmobilie.energieKlasse) && (
-                    <p className="text-xs text-neon-green mt-2">
-                      💡 KfW 308 "Jung kauft Alt" möglicherweise verfügbar!
+                    <p className="text-[12px] text-[#7C8B6F] mt-2">
+                      KfW 308 "Jung kauft Alt" moglicherweise verfugbar!
                     </p>
                   )}
                 </div>
 
                 {/* Verwendungszweck */}
                 <div>
-                  <label className="block text-sm font-semibold text-text-secondary mb-3">Verwendungszweck</label>
+                  <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">Verwendungszweck</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => setTestImmobilie(prev => ({ ...prev, verwendungszweck: 'kapitalanlage' }))}
-                      className={`py-4 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-2 ${
+                      className={`py-4 rounded-[12px] text-[13px] font-medium transition-all flex flex-col items-center gap-2 ${
                         testImmobilie.verwendungszweck === 'kapitalanlage'
-                          ? 'bg-neon-purple/20 border-2 border-neon-purple/50 text-neon-purple'
-                          : 'border border-white/20 text-text-secondary hover:border-white/40'
+                          ? 'bg-[#7C8B6F]/10 border-2 border-[#7C8B6F] text-[#7C8B6F]'
+                          : 'border border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
                       }`}
                     >
-                      <span className="text-2xl">💰</span>
                       Kapitalanlage
                     </button>
                     <button
                       onClick={() => setTestImmobilie(prev => ({ ...prev, verwendungszweck: 'eigennutzung' }))}
-                      className={`py-4 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-2 ${
+                      className={`py-4 rounded-[12px] text-[13px] font-medium transition-all flex flex-col items-center gap-2 ${
                         testImmobilie.verwendungszweck === 'eigennutzung'
-                          ? 'bg-neon-blue/20 border-2 border-neon-blue/50 text-neon-blue'
-                          : 'border border-white/20 text-text-secondary hover:border-white/40'
+                          ? 'bg-[#7C8B6F]/10 border-2 border-[#7C8B6F] text-[#7C8B6F]'
+                          : 'border border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
                       }`}
                     >
-                      <span className="text-2xl">🏠</span>
                       Eigennutzung
                     </button>
                   </div>
@@ -332,7 +303,6 @@ function Profile() {
               </div>
             </div>
 
-            {/* Kredit-Chance Anzeige */}
             <div>
               <CreditChanceIndicator profile={profile} kaufpreis={testKaufpreis} />
             </div>

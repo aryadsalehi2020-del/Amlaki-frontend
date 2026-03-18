@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Rounded square background -->
+  <rect width="200" height="200" rx="44" fill="#2C2418"/>
+
+  <!-- AI letters -->
+  <text x="50%" y="54%" dominant-baseline="central" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-weight="800" font-size="100" letter-spacing="-4">
+    <tspan fill="#7C8B6F">A</tspan><tspan fill="#FAF7F2" font-weight="300" font-size="80">·</tspan><tspan fill="#B5A68C">I</tspan>
+  </text>
+</svg>

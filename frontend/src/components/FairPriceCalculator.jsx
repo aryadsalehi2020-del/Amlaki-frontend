@@ -96,10 +96,10 @@ function FairPriceCalculator({ analysisData }) {
     let empfehlungFarbe;
     if (differenzProzent <= -5) {
       empfehlung = 'Schnäppchen! Preis liegt unter dem fairen Wert.';
-      empfehlungFarbe = 'neon-green';
+      empfehlungFarbe = 'olive';
     } else if (differenzProzent <= 5) {
       empfehlung = 'Fairer Preis. Kaufen wenn Objekt passt.';
-      empfehlungFarbe = 'neon-green';
+      empfehlungFarbe = 'olive';
     } else if (differenzProzent <= 15) {
       empfehlung = 'Leicht überteuert. Preisverhandlung empfohlen.';
       empfehlungFarbe = 'accent';
@@ -157,32 +157,32 @@ function FairPriceCalculator({ analysisData }) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-xl font-bold text-white flex items-center gap-3">
-          <span className="w-10 h-10 bg-gradient-to-br from-accent/20 to-orange-500/20 rounded-xl flex items-center justify-center text-xl border border-accent/30">⚖️</span>
-          <span className="text-gradient-neon">Fairer Preis Rechner</span>
+        <h3 className="text-xl font-bold text-[#2C2418] flex items-center gap-3">
+          <span className="w-10 h-10 bg-gradient-to-br from-accent/20 to-orange-500/20 rounded-xl flex items-center justify-center text-xl border border-accent/30"></span>
+          <span className="text-[#2C2418]">Fairer Preis Rechner</span>
         </h3>
-        <p className="text-text-secondary text-sm mt-1">
+        <p className="text-[#8C7E6A] text-sm mt-1">
           Berechnen Sie den objektiven Marktwert und das optimale Verhandlungsziel
         </p>
       </div>
 
       {/* Live-Marktdaten Section */}
-      <div className="glass-card rounded-2xl p-4 border border-neon-blue/30 bg-neon-blue/5">
+      <div className="bg-white rounded-2xl p-4 border border-[#E8E0D4] bg-[#7C8B6F]/5">
         <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
           <div className="flex-1">
-            <label className="block text-sm text-neon-blue font-medium mb-2">🔴 Live-Marktdaten laden</label>
+            <label className="block text-sm text-[#7C8B6F] font-medium mb-2"> Live-Marktdaten laden</label>
             <input
               type="text"
               value={stadtInput}
               onChange={(e) => setStadtInput(e.target.value)}
               placeholder="Stadt eingeben (z.B. München, Hamburg-Eimsbüttel)"
-              className="w-full px-3 py-2 bg-surface border border-neon-blue/30 rounded-lg text-white placeholder-text-muted focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] placeholder-text-muted focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <button
             onClick={fetchLiveMarktdaten}
             disabled={isLoadingMarkt || !stadtInput.trim()}
-            className="px-4 py-2 bg-neon-blue text-white rounded-lg font-medium hover:bg-neon-blue/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+            className="px-4 py-2 bg-[#7C8B6F] text-[#2C2418] rounded-lg font-medium hover:bg-[#7C8B6F]/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
           >
             {isLoadingMarkt ? (
               <>
@@ -190,103 +190,103 @@ function FairPriceCalculator({ analysisData }) {
                 Lade...
               </>
             ) : (
-              <>📊 Preise abrufen</>
+              <> Preise abrufen</>
             )}
           </button>
         </div>
         {marktdatenInfo && (
-          <div className="mt-3 p-2 bg-neon-green/10 border border-neon-green/30 rounded-lg text-sm">
-            <span className="text-neon-green font-medium">✓ {marktdatenInfo.standort}:</span>
-            <span className="text-white ml-2">{marktdatenInfo.preis.toLocaleString('de-DE')} €/m²</span>
-            <span className="text-text-muted ml-2">({marktdatenInfo.quelle})</span>
+          <div className="mt-3 p-2 bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-lg text-sm">
+            <span className="text-[#7C8B6F] font-medium">✓ {marktdatenInfo.standort}:</span>
+            <span className="text-[#2C2418] ml-2">{marktdatenInfo.preis.toLocaleString('de-DE')} €/m²</span>
+            <span className="text-[#B5A68C] ml-2">({marktdatenInfo.quelle})</span>
           </div>
         )}
       </div>
 
       {/* Input Section */}
-      <div className="glass-card rounded-2xl p-6 border border-white/10">
-        <h4 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">Objektdaten</h4>
+      <div className="bg-white rounded-2xl p-6 border border-[#E8E0D4]">
+        <h4 className="text-sm font-bold text-[#8C7E6A] uppercase tracking-wider mb-4">Objektdaten</h4>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Kaufpreis</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Kaufpreis</label>
             <input
               type="number"
               value={values.kaufpreis}
               onChange={(e) => setValues(v => ({ ...v, kaufpreis: parseInt(e.target.value) || 0 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Kaltmiete/Monat</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Kaltmiete/Monat</label>
             <input
               type="number"
               value={values.kaltmiete}
               onChange={(e) => setValues(v => ({ ...v, kaltmiete: parseInt(e.target.value) || 0 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Wohnfläche m²</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Wohnfläche m²</label>
             <input
               type="number"
               value={values.wohnflaeche}
               onChange={(e) => setValues(v => ({ ...v, wohnflaeche: parseInt(e.target.value) || 1 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">
+            <label className="block text-sm text-[#8C7E6A] mb-2">
               Vergleichspreis €/m²
-              {marktdatenInfo && <span className="text-neon-green text-xs ml-1">(Live)</span>}
+              {marktdatenInfo && <span className="text-[#7C8B6F] text-xs ml-1">(Live)</span>}
             </label>
             <input
               type="number"
               value={values.vergleichspreisProQm}
               onChange={(e) => setValues(v => ({ ...v, vergleichspreisProQm: parseInt(e.target.value) || 0 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
         </div>
 
-        <h4 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4 mt-6">Zielwerte</h4>
+        <h4 className="text-sm font-bold text-[#8C7E6A] uppercase tracking-wider mb-4 mt-6">Zielwerte</h4>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Ziel-Bruttorendite %</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Ziel-Bruttorendite %</label>
             <input
               type="number"
               step="0.1"
               value={values.zielRendite}
               onChange={(e) => setValues(v => ({ ...v, zielRendite: parseFloat(e.target.value) || 4 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Ziel-Kaufpreisfaktor</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Ziel-Kaufpreisfaktor</label>
             <input
               type="number"
               value={values.zielFaktor}
               onChange={(e) => setValues(v => ({ ...v, zielFaktor: parseInt(e.target.value) || 20 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Zinssatz %</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Zinssatz %</label>
             <input
               type="number"
               step="0.1"
               value={values.zinssatz}
               onChange={(e) => setValues(v => ({ ...v, zinssatz: parseFloat(e.target.value) || 3 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Tilgung %</label>
+            <label className="block text-sm text-[#8C7E6A] mb-2">Tilgung %</label>
             <input
               type="number"
               step="0.1"
               value={values.tilgungssatz}
               onChange={(e) => setValues(v => ({ ...v, tilgungssatz: parseFloat(e.target.value) || 1 }))}
-              className="w-full px-3 py-2 bg-surface border border-white/10 rounded-lg text-white text-right focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all"
+              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-lg text-[#2C2418] text-right focus:ring-2 focus:ring-[#7C8B6F]/30 focus:border-[#7C8B6F] outline-none transition-all"
             />
           </div>
         </div>
@@ -295,16 +295,16 @@ function FairPriceCalculator({ analysisData }) {
       {/* Result Section */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Aktueller vs. Fairer Preis */}
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
-          <h4 className="text-lg font-bold text-white mb-4">Preisvergleich</h4>
+        <div className="bg-white rounded-2xl p-6 border border-[#E8E0D4]">
+          <h4 className="text-lg font-bold text-[#2C2418] mb-4">Preisvergleich</h4>
 
           <div className="space-y-4">
-            <div className="p-4 bg-white/5 rounded-xl">
+            <div className="p-4 bg-[#F5F0E8] rounded-xl">
               <div className="flex justify-between items-center">
-                <span className="text-text-secondary">Aktueller Preis</span>
-                <span className="text-2xl font-bold text-white">{formatCurrency(calculation.aktuell.kaufpreis)}</span>
+                <span className="text-[#8C7E6A]">Aktueller Preis</span>
+                <span className="text-2xl font-bold text-[#2C2418]">{formatCurrency(calculation.aktuell.kaufpreis)}</span>
               </div>
-              <div className="flex gap-4 mt-2 text-sm text-text-muted">
+              <div className="flex gap-4 mt-2 text-sm text-[#B5A68C]">
                 <span>Faktor {calculation.aktuell.faktor.toFixed(1)}</span>
                 <span>{calculation.aktuell.rendite.toFixed(2)}% Rendite</span>
                 <span>{formatCurrency(calculation.aktuell.preisProQm)}/m²</span>
@@ -314,52 +314,52 @@ function FairPriceCalculator({ analysisData }) {
             <div className="flex items-center justify-center">
               <div className={`px-4 py-2 rounded-full font-bold ${
                 calculation.differenzProzent > 0
-                  ? 'bg-red-500/20 text-red-400'
-                  : 'bg-neon-green/20 text-neon-green'
+                  ? 'bg-[#B85C5C]/10 text-[#B85C5C]'
+                  : 'bg-[#7C8B6F]/10 text-[#7C8B6F]'
               }`}>
                 {calculation.differenzProzent > 0 ? '+' : ''}{calculation.differenzProzent.toFixed(1)}%
                 ({calculation.differenz > 0 ? '+' : ''}{formatCurrency(calculation.differenz)})
               </div>
             </div>
 
-            <div className="p-4 bg-neon-green/10 rounded-xl border border-neon-green/30">
+            <div className="p-4 bg-[#7C8B6F]/5 rounded-xl border border-[#7C8B6F]/20">
               <div className="flex justify-between items-center">
-                <span className="text-neon-green font-medium">Fairer Preis</span>
-                <span className="text-2xl font-bold text-neon-green">{formatCurrency(calculation.fairerPreis)}</span>
+                <span className="text-[#7C8B6F] font-medium">Fairer Preis</span>
+                <span className="text-2xl font-bold text-[#7C8B6F]">{formatCurrency(calculation.fairerPreis)}</span>
               </div>
             </div>
 
             <div className="p-4 bg-accent/10 rounded-xl border border-accent/30">
               <div className="flex justify-between items-center">
-                <span className="text-accent font-medium">Verhandlungsziel (-5%)</span>
-                <span className="text-xl font-bold text-accent">{formatCurrency(calculation.verhandlungsziel)}</span>
+                <span className="text-[#B5A68C] font-medium">Verhandlungsziel (-5%)</span>
+                <span className="text-xl font-bold text-[#B5A68C]">{formatCurrency(calculation.verhandlungsziel)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Bewertungsmethoden */}
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
-          <h4 className="text-lg font-bold text-white mb-4">Bewertungsmethoden</h4>
+        <div className="bg-white rounded-2xl p-6 border border-[#E8E0D4]">
+          <h4 className="text-lg font-bold text-[#2C2418] mb-4">Bewertungsmethoden</h4>
 
           <div className="space-y-3">
             {calculation.methoden.map((methode, idx) => (
-              <div key={idx} className="p-3 bg-white/5 rounded-xl">
+              <div key={idx} className="p-3 bg-[#F5F0E8] rounded-xl">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-white">{methode.name}</p>
-                    <p className="text-xs text-text-muted">{methode.beschreibung}</p>
+                    <p className="font-medium text-[#2C2418]">{methode.name}</p>
+                    <p className="text-xs text-[#B5A68C]">{methode.beschreibung}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-white">{formatCurrency(methode.preis)}</p>
-                    <p className="text-xs text-text-muted">Gewicht: {methode.gewicht}</p>
+                    <p className="font-bold text-[#2C2418]">{formatCurrency(methode.preis)}</p>
+                    <p className="text-xs text-[#B5A68C]">Gewicht: {methode.gewicht}</p>
                   </div>
                 </div>
                 {/* Visual bar */}
-                <div className="mt-2 h-2 bg-surface rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-[#FAF7F2] rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${
-                      methode.preis >= values.kaufpreis ? 'bg-neon-green' : 'bg-red-400'
+                      methode.preis >= values.kaufpreis ? 'bg-[#7C8B6F]' : 'bg-red-400'
                     }`}
                     style={{ width: `${Math.min((methode.preis / values.kaufpreis) * 100, 100)}%` }}
                   />
@@ -371,13 +371,13 @@ function FairPriceCalculator({ analysisData }) {
       </div>
 
       {/* Empfehlung */}
-      <div className="glass-card rounded-xl p-5 border"
+      <div className="bg-white rounded-xl p-5 border"
            style={{
-             borderColor: calculation.empfehlungFarbe === 'neon-green' ? 'rgba(34, 197, 94, 0.3)' :
+             borderColor: calculation.empfehlungFarbe === 'olive' ? 'rgba(124, 139, 111, 0.3)' :
                           calculation.empfehlungFarbe === 'accent' ? 'rgba(251, 191, 36, 0.3)' :
                           calculation.empfehlungFarbe === 'orange-400' ? 'rgba(251, 146, 60, 0.3)' :
                           'rgba(248, 113, 113, 0.3)',
-             backgroundColor: calculation.empfehlungFarbe === 'neon-green' ? 'rgba(34, 197, 94, 0.05)' :
+             backgroundColor: calculation.empfehlungFarbe === 'olive' ? 'rgba(124, 139, 111, 0.05)' :
                               calculation.empfehlungFarbe === 'accent' ? 'rgba(251, 191, 36, 0.05)' :
                               calculation.empfehlungFarbe === 'orange-400' ? 'rgba(251, 146, 60, 0.05)' :
                               'rgba(248, 113, 113, 0.05)'
@@ -385,17 +385,17 @@ function FairPriceCalculator({ analysisData }) {
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
                style={{
-                 backgroundColor: calculation.empfehlungFarbe === 'neon-green' ? 'rgba(34, 197, 94, 0.2)' :
+                 backgroundColor: calculation.empfehlungFarbe === 'olive' ? 'rgba(124, 139, 111, 0.2)' :
                                   calculation.empfehlungFarbe === 'accent' ? 'rgba(251, 191, 36, 0.2)' :
                                   calculation.empfehlungFarbe === 'orange-400' ? 'rgba(251, 146, 60, 0.2)' :
                                   'rgba(248, 113, 113, 0.2)'
                }}>
-            {calculation.differenzProzent <= 5 ? '✅' : calculation.differenzProzent <= 15 ? '⚠️' : '❌'}
+            {calculation.differenzProzent <= 5 ? '' : calculation.differenzProzent <= 15 ? '' : ''}
           </div>
           <div>
-            <p className="font-bold text-white text-lg">{calculation.empfehlung}</p>
+            <p className="font-bold text-[#2C2418] text-lg">{calculation.empfehlung}</p>
             {calculation.differenz > 0 && (
-              <p className="text-text-secondary text-sm mt-1">
+              <p className="text-[#8C7E6A] text-sm mt-1">
                 Verhandlungsargument: "Der faire Marktpreis liegt bei {formatCurrency(calculation.fairerPreis)}.
                 Mein maximales Angebot ist {formatCurrency(calculation.verhandlungsziel)}."
               </p>

@@ -72,7 +72,7 @@ function ZinsTilgungChart({ tilgungsplan }) {
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-lg font-bold text-primary flex items-center gap-2">
-          <span className="text-2xl">📉</span>
+          <span className="text-2xl"></span>
           Zinsen vs. Tilgung pro Jahr
         </h4>
         <div className="flex items-center gap-2">

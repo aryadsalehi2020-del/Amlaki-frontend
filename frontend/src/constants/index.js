@@ -1,11 +1,11 @@
 // Central constants file for the application
 
 // Styling constants
-export const INPUT_CLASS = "w-full px-4 py-3 bg-surface border border-white/10 rounded-xl focus:ring-2 focus:ring-neon-blue/30 focus:border-neon-blue outline-none transition-all text-white placeholder:text-text-muted";
-export const LABEL_CLASS = "block text-sm font-semibold text-text-secondary mb-2";
-export const BUTTON_PRIMARY = "btn-neon px-6 py-3 font-bold rounded-xl";
-export const BUTTON_SECONDARY = "px-6 py-3 border border-white/20 text-text-secondary hover:border-neon-blue/50 hover:text-neon-blue rounded-xl transition-all";
-export const CARD_CLASS = "glass-card rounded-2xl p-6 border border-white/10";
+export const INPUT_CLASS = "w-full px-4 py-3 bg-transparent border border-zinc-800 rounded-md focus:border-zinc-600 outline-none transition-all text-white placeholder:text-zinc-600 text-[14px]";
+export const LABEL_CLASS = "block text-[11px] font-medium text-zinc-500 uppercase tracking-[0.15em] mb-2";
+export const BUTTON_PRIMARY = "px-5 py-2.5 bg-white text-[#09090B] font-semibold rounded text-[13px] hover:bg-zinc-200 transition-colors";
+export const BUTTON_SECONDARY = "px-5 py-2.5 border border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white rounded text-[13px] transition-all";
+export const CARD_CLASS = "border border-zinc-800/50 rounded-md p-6";
 
 // Financial calculation constants
 export const KAUFNEBENKOSTEN_PERCENT = 0.12; // 12% buying costs
@@ -78,12 +78,12 @@ export const SCORE_THRESHOLDS = {
   ACCEPTABLE: 30   // war 35 -> jetzt 30
 };
 
-// Score color helper (angepasste Schwellen: +10 positiver)
+// Score color helper — monochrome
 export const getScoreColor = (score) => {
-  if (score >= 60) return { color: 'neon-green', hex: '#22c55e', label: 'Sehr gut' };  // war 70
-  if (score >= 45) return { color: 'accent', hex: '#fbbf24', label: 'Gut' };           // war 50
-  if (score >= 30) return { color: 'orange-400', hex: '#f97316', label: 'Okay' };      // war 30, Label geändert
-  return { color: 'red-400', hex: '#ef4444', label: 'Kritisch' };
+  if (score >= 60) return { color: 'white', hex: '#FAFAFA', label: 'Sehr gut' };
+  if (score >= 45) return { color: 'white', hex: '#A1A1AA', label: 'Gut' };
+  if (score >= 30) return { color: 'white', hex: '#71717A', label: 'Okay' };
+  return { color: 'white', hex: '#52525B', label: 'Kritisch' };
 };
 
 // Format helpers

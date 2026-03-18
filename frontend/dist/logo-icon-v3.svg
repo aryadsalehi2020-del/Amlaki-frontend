@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Minimal cream background -->
+  <rect width="200" height="200" rx="44" fill="#FAF7F2"/>
+  <rect x="2" y="2" width="196" height="196" rx="42" fill="none" stroke="#E8E0D4" stroke-width="2"/>
+
+  <!-- Geometric A shape - abstract building/roof -->
+  <path d="M100 40 L155 130 H45 Z" fill="none" stroke="#7C8B6F" stroke-width="8" stroke-linejoin="round"/>
+  <!-- Horizontal bar of A -->
+  <line x1="65" y1="100" x2="135" y2="100" stroke="#7C8B6F" stroke-width="6" stroke-linecap="round"/>
+  <!-- I cursor / AI indicator -->
+  <rect x="125" y="138" width="4" height="24" rx="2" fill="#B5A68C"/>
+</svg>

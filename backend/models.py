@@ -8,6 +8,34 @@ from datetime import datetime
 from database import Base
 
 
+class Conversation(Base):
+    """Chat-Konversation eines Users"""
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String, default="Neue Unterhaltung")
+    analysis_id = Column(Integer, ForeignKey("analyses.id"), nullable=True)  # optional link to an analysis
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    messages = relationship("ChatMessage", back_populates="conversation", cascade="all, delete-orphan")
+
+
+class ChatMessage(Base):
+    """Einzelne Nachricht in einer Konversation"""
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+    role = Column(String, nullable=False)  # "user" or "assistant"
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    tokens_used = Column(Integer, default=0)
+
+    conversation = relationship("Conversation", back_populates="messages")
+
+
 class User(Base):
     """User-Modell für Authentifizierung"""
     __tablename__ = "users"

@@ -36,7 +36,7 @@ function ScenarioSimulator({ analysisData }) {
     return [
       {
         name: 'Basisfall',
-        icon: '📍',
+        icon: '',
         description: 'Aktuelle Eingaben',
         values: { ...base },
         cashflow: baseCashflow,
@@ -46,7 +46,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Kaufpreis -5%',
-        icon: '💰',
+        icon: '',
         description: 'Erfolgreiche Preisverhandlung',
         values: { ...base, kaufpreis: base.kaufpreis * 0.95 },
         cashflow: calcCashflow({ ...base, kaufpreis: base.kaufpreis * 0.95 }),
@@ -56,7 +56,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Kaufpreis -10%',
-        icon: '💰💰',
+        icon: '',
         description: 'Aggressive Verhandlung',
         values: { ...base, kaufpreis: base.kaufpreis * 0.90 },
         cashflow: calcCashflow({ ...base, kaufpreis: base.kaufpreis * 0.90 }),
@@ -66,7 +66,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Miete +10%',
-        icon: '📈',
+        icon: '',
         description: 'Mieterhöhung nach §558',
         values: { ...base, kaltmiete: base.kaltmiete * 1.10 },
         cashflow: calcCashflow({ ...base, kaltmiete: base.kaltmiete * 1.10 }),
@@ -76,7 +76,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Miete -10%',
-        icon: '📉',
+        icon: '',
         description: 'Mietausfall/Leerstand',
         values: { ...base, kaltmiete: base.kaltmiete * 0.90 },
         cashflow: calcCashflow({ ...base, kaltmiete: base.kaltmiete * 0.90 }),
@@ -86,7 +86,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Zins +1%',
-        icon: '📊',
+        icon: '',
         description: 'Anschlussfinanzierung teurer',
         values: { ...base, zinssatz: base.zinssatz + 1 },
         cashflow: calcCashflow({ ...base, zinssatz: base.zinssatz + 1 }),
@@ -96,7 +96,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Zins +2%',
-        icon: '📊📊',
+        icon: '',
         description: 'Stark steigende Zinsen',
         values: { ...base, zinssatz: base.zinssatz + 2 },
         cashflow: calcCashflow({ ...base, zinssatz: base.zinssatz + 2 }),
@@ -106,7 +106,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Tilgung 2%',
-        icon: '💳',
+        icon: '',
         description: 'Schneller schuldenfrei',
         values: { ...base, tilgungssatz: 2 },
         cashflow: calcCashflow({ ...base, tilgungssatz: 2 }),
@@ -116,7 +116,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Tilgung 3%',
-        icon: '💳💳',
+        icon: '',
         description: 'Sehr schnelle Tilgung',
         values: { ...base, tilgungssatz: 3 },
         cashflow: calcCashflow({ ...base, tilgungssatz: 3 }),
@@ -126,7 +126,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: '20% Eigenkapital',
-        icon: '🏦',
+        icon: '',
         description: 'Klassische Finanzierung',
         values: { ...base, eigenkapitalQuote: 20 },
         cashflow: calcCashflow({ ...base, eigenkapitalQuote: 20 }),
@@ -136,7 +136,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'Mit KfW 1,12%',
-        icon: '🏛️',
+        icon: '',
         description: 'KfW 300/308 Förderung',
         values: { ...base, zinssatz: 1.12 },
         cashflow: calcCashflow({ ...base, zinssatz: 1.12 }),
@@ -146,7 +146,7 @@ function ScenarioSimulator({ analysisData }) {
       },
       {
         name: 'WORST CASE',
-        icon: '⚠️',
+        icon: '',
         description: 'Miete -10%, Zins +2%',
         values: { ...base, kaltmiete: base.kaltmiete * 0.90, zinssatz: base.zinssatz + 2 },
         cashflow: calcCashflow({ ...base, kaltmiete: base.kaltmiete * 0.90, zinssatz: base.zinssatz + 2 }),
@@ -171,11 +171,11 @@ function ScenarioSimulator({ analysisData }) {
   }, [baseValues]);
 
   const categories = [
-    { id: 'all', label: 'Alle', icon: '📊' },
-    { id: 'preis', label: 'Kaufpreis', icon: '💰' },
-    { id: 'miete', label: 'Miete', icon: '📈' },
-    { id: 'finanzierung', label: 'Finanzierung', icon: '🏦' },
-    { id: 'stress', label: 'Stress-Test', icon: '⚠️' }
+    { id: 'all', label: 'Alle', icon: '' },
+    { id: 'preis', label: 'Kaufpreis', icon: '' },
+    { id: 'miete', label: 'Miete', icon: '' },
+    { id: 'finanzierung', label: 'Finanzierung', icon: '' },
+    { id: 'stress', label: 'Stress-Test', icon: '' }
   ];
 
   const [activeCategory, setActiveCategory] = useState('all');
@@ -189,24 +189,24 @@ function ScenarioSimulator({ analysisData }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-white flex items-center gap-3">
-            <span className="w-10 h-10 bg-gradient-to-br from-neon-purple/20 to-neon-pink/20 rounded-xl flex items-center justify-center text-xl border border-neon-purple/30">🔮</span>
-            <span className="text-gradient-neon">Was wäre wenn...</span>
+          <h3 className="text-xl font-bold text-[#2C2418] flex items-center gap-3">
+            <span className="w-10 h-10 bg-[#F5F0E8] rounded-xl flex items-center justify-center text-xl border border-[#E8E0D4]"></span>
+            <span className="text-[#2C2418]">Was wäre wenn...</span>
           </h3>
-          <p className="text-text-secondary text-sm mt-1">
+          <p className="text-[#8C7E6A] text-sm mt-1">
             Simulieren Sie verschiedene Szenarien und sehen Sie die Auswirkungen
           </p>
         </div>
       </div>
 
       {/* Base Values Sliders */}
-      <div className="glass-card rounded-2xl p-6 border border-white/10">
-        <h4 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-4">Basiswerte anpassen</h4>
+      <div className="bg-white rounded-2xl p-6 border border-[#E8E0D4]">
+        <h4 className="text-sm font-bold text-[#8C7E6A] uppercase tracking-wider mb-4">Basiswerte anpassen</h4>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <label className="text-text-secondary">Kaufpreis</label>
-              <span className="text-neon-blue font-bold">{formatCurrency(baseValues.kaufpreis)}</span>
+              <label className="text-[#8C7E6A]">Kaufpreis</label>
+              <span className="text-[#7C8B6F] font-bold">{formatCurrency(baseValues.kaufpreis)}</span>
             </div>
             <input
               type="range"
@@ -215,13 +215,13 @@ function ScenarioSimulator({ analysisData }) {
               step={10000}
               value={baseValues.kaufpreis}
               onChange={(e) => setBaseValues(v => ({ ...v, kaufpreis: parseInt(e.target.value) }))}
-              className="w-full accent-neon-blue cursor-pointer"
+              className="w-full accent-[#7C8B6F] cursor-pointer"
             />
           </div>
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <label className="text-text-secondary">Kaltmiete</label>
-              <span className="text-neon-green font-bold">{formatCurrency(baseValues.kaltmiete)}/Monat</span>
+              <label className="text-[#8C7E6A]">Kaltmiete</label>
+              <span className="text-[#7C8B6F] font-bold">{formatCurrency(baseValues.kaltmiete)}/Monat</span>
             </div>
             <input
               type="range"
@@ -230,13 +230,13 @@ function ScenarioSimulator({ analysisData }) {
               step={50}
               value={baseValues.kaltmiete}
               onChange={(e) => setBaseValues(v => ({ ...v, kaltmiete: parseInt(e.target.value) }))}
-              className="w-full accent-neon-blue cursor-pointer"
+              className="w-full accent-[#7C8B6F] cursor-pointer"
             />
           </div>
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <label className="text-text-secondary">Zinssatz</label>
-              <span className="text-accent font-bold">{baseValues.zinssatz}%</span>
+              <label className="text-[#8C7E6A]">Zinssatz</label>
+              <span className="text-[#B5A68C] font-bold">{baseValues.zinssatz}%</span>
             </div>
             <input
               type="range"
@@ -245,7 +245,7 @@ function ScenarioSimulator({ analysisData }) {
               step={0.1}
               value={baseValues.zinssatz}
               onChange={(e) => setBaseValues(v => ({ ...v, zinssatz: parseFloat(e.target.value) }))}
-              className="w-full accent-neon-blue cursor-pointer"
+              className="w-full accent-[#7C8B6F] cursor-pointer"
             />
           </div>
         </div>
@@ -259,8 +259,8 @@ function ScenarioSimulator({ analysisData }) {
             onClick={() => setActiveCategory(cat.id)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
               activeCategory === cat.id
-                ? 'bg-gradient-to-r from-neon-blue to-neon-purple text-white'
-                : 'bg-white/5 text-text-secondary hover:bg-white/10 hover:text-white border border-white/10'
+                ? 'bg-[#7C8B6F] text-[#2C2418]'
+                : 'bg-[#F5F0E8] text-[#8C7E6A] hover:bg-white/10 hover:text-[#2C2418] border border-[#E8E0D4]'
             }`}
           >
             <span>{cat.icon}</span>
@@ -274,41 +274,41 @@ function ScenarioSimulator({ analysisData }) {
         {filteredScenarios.map((scenario, idx) => (
           <div
             key={idx}
-            className={`glass-card rounded-xl p-5 border transition-all ${
+            className={`bg-white rounded-xl p-5 border transition-all ${
               scenario.category === 'basis'
-                ? 'border-neon-blue/50 bg-neon-blue/5'
+                ? 'border-[#7C8B6F]/30 bg-[#7C8B6F]/5'
                 : scenario.category === 'stress'
                   ? 'border-red-500/30'
                   : scenario.category === 'optimistisch'
-                    ? 'border-neon-green/30'
-                    : 'border-white/10 hover:border-white/20'
+                    ? 'border-[#7C8B6F]/20'
+                    : 'border-[#E8E0D4] hover:border-[#E8E0D4]'
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
               <span className="text-2xl">{scenario.icon}</span>
               <div>
-                <h4 className="font-bold text-white">{scenario.name}</h4>
-                <p className="text-xs text-text-muted">{scenario.description}</p>
+                <h4 className="font-bold text-[#2C2418]">{scenario.name}</h4>
+                <p className="text-xs text-[#B5A68C]">{scenario.description}</p>
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-text-secondary">Cashflow/Monat</span>
-                <span className={`font-bold ${scenario.cashflow >= 0 ? 'text-neon-green' : 'text-red-400'}`}>
+                <span className="text-sm text-[#8C7E6A]">Cashflow/Monat</span>
+                <span className={`font-bold ${scenario.cashflow >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
                   {formatCurrency(scenario.cashflow)}
                 </span>
               </div>
 
               {scenario.name !== 'Basisfall' && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-text-secondary">Veränderung</span>
+                  <span className="text-sm text-[#8C7E6A]">Veränderung</span>
                   <span className={`font-bold text-sm px-2 py-0.5 rounded ${
                     scenario.change > 0
-                      ? 'bg-neon-green/20 text-neon-green'
+                      ? 'bg-[#7C8B6F]/10 text-[#7C8B6F]'
                       : scenario.change < 0
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-white/10 text-text-muted'
+                        ? 'bg-[#B85C5C]/10 text-[#B85C5C]'
+                        : 'bg-white/10 text-[#B5A68C]'
                   }`}>
                     {scenario.change > 0 ? '+' : ''}{formatCurrency(scenario.change)}
                   </span>
@@ -316,20 +316,20 @@ function ScenarioSimulator({ analysisData }) {
               )}
 
               <div className="flex justify-between items-center">
-                <span className="text-sm text-text-secondary">Bruttorendite</span>
-                <span className="text-white font-medium">{scenario.rendite.toFixed(2)}%</span>
+                <span className="text-sm text-[#8C7E6A]">Bruttorendite</span>
+                <span className="text-[#2C2418] font-medium">{scenario.rendite.toFixed(2)}%</span>
               </div>
             </div>
 
             {/* Visual indicator */}
-            <div className="mt-4 pt-3 border-t border-white/10">
+            <div className="mt-4 pt-3 border-t border-[#E8E0D4]">
               <div className="flex items-center gap-2">
                 <span className="text-lg">
-                  {scenario.cashflow >= 100 ? '🟢' :
-                   scenario.cashflow >= 0 ? '🟡' :
-                   scenario.cashflow >= -200 ? '🟠' : '🔴'}
+                  {scenario.cashflow >= 100 ? '' :
+                   scenario.cashflow >= 0 ? '' :
+                   scenario.cashflow >= -200 ? '' : ''}
                 </span>
-                <span className="text-xs text-text-muted">
+                <span className="text-xs text-[#B5A68C]">
                   {scenario.cashflow >= 100 ? 'Sehr gut' :
                    scenario.cashflow >= 0 ? 'Tragbar' :
                    scenario.cashflow >= -200 ? 'Belastend' : 'Kritisch'}
@@ -341,20 +341,20 @@ function ScenarioSimulator({ analysisData }) {
       </div>
 
       {/* Summary Box */}
-      <div className="glass-card rounded-xl p-5 border border-accent/30 bg-accent/5">
+      <div className="bg-white rounded-xl p-5 border border-accent/30 bg-accent/5">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-            💡
+            
           </div>
           <div>
-            <h4 className="font-bold text-accent mb-2">Robustheits-Analyse</h4>
-            <p className="text-text-secondary text-sm">
+            <h4 className="font-bold text-[#B5A68C] mb-2">Robustheits-Analyse</h4>
+            <p className="text-[#8C7E6A] text-sm">
               {scenarios.find(s => s.name === 'WORST CASE')?.cashflow >= 0 ? (
-                <span className="text-neon-green">✓ Diese Immobilie trägt sich auch im Worst-Case-Szenario! Das ist ein robustes Investment.</span>
+                <span className="text-[#7C8B6F]">✓ Diese Immobilie trägt sich auch im Worst-Case-Szenario! Das ist ein robustes Investment.</span>
               ) : scenarios.find(s => s.name === 'WORST CASE')?.cashflow >= -200 ? (
-                <span className="text-accent">⚠ Im Worst Case negativer Cashflow. Halten Sie eine Liquiditätsreserve von mindestens {formatCurrency(Math.abs(scenarios.find(s => s.name === 'WORST CASE')?.cashflow || 0) * 12)} pro Jahr vor.</span>
+                <span className="text-[#B5A68C]">⚠ Im Worst Case negativer Cashflow. Halten Sie eine Liquiditätsreserve von mindestens {formatCurrency(Math.abs(scenarios.find(s => s.name === 'WORST CASE')?.cashflow || 0) * 12)} pro Jahr vor.</span>
               ) : (
-                <span className="text-red-400">⚠ Hohes Risiko im Worst Case. Prüfen Sie Preisverhandlung oder höheres Eigenkapital.</span>
+                <span className="text-[#B85C5C]">⚠ Hohes Risiko im Worst Case. Prüfen Sie Preisverhandlung oder höheres Eigenkapital.</span>
               )}
             </p>
           </div>

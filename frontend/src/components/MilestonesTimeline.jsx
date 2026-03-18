@@ -34,13 +34,13 @@ function MilestonesTimeline({ meilensteine }) {
     {
       key: 'eigenkapital_verdoppelt',
       label: 'Eigenkapital verdoppelt',
-      icon: '✨',
+      icon: '',
       color: 'amber'
     },
     {
       key: 'vermögen_100k_erreicht',
       label: '100.000€ Vermögen',
-      icon: '💰',
+      icon: '',
       color: 'purple'
     },
     {
@@ -52,7 +52,7 @@ function MilestonesTimeline({ meilensteine }) {
     {
       key: 'vermögen_250k_erreicht',
       label: '250.000€ Vermögen',
-      icon: '💎',
+      icon: '',
       color: 'purple'
     },
     {
@@ -64,13 +64,13 @@ function MilestonesTimeline({ meilensteine }) {
     {
       key: 'vermögen_500k_erreicht',
       label: '500.000€ Vermögen',
-      icon: '🏆',
+      icon: '',
       color: 'amber'
     },
     {
       key: 'kredit_komplett_getilgt',
       label: 'Kredit abbezahlt!',
-      icon: '🎉',
+      icon: '',
       color: 'green'
     }
   ];
@@ -88,7 +88,7 @@ function MilestonesTimeline({ meilensteine }) {
   return (
     <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
       <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
-        <span className="text-2xl">🎯</span>
+        <span className="text-2xl"></span>
         Ihre Investment-Meilensteine
       </h4>
       <p className="text-sm text-slate/60 mb-6">Wann erreichen Sie welche Ziele?</p>

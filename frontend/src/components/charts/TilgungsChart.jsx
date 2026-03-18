@@ -69,7 +69,7 @@ function TilgungsChart({ tilgungsplan }) {
   return (
     <div className="w-full">
       <h4 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
-        <span className="text-2xl">📊</span>
+        <span className="text-2xl"></span>
         Vermögensaufbau: Schulden vs. Eigenkapital
       </h4>
       <ResponsiveContainer width="100%" height={350}>

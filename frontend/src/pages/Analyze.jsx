@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MessageSquare } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import PropertyForm from '../components/PropertyForm';
 import AnalysisResult from '../components/AnalysisResult';
@@ -7,262 +9,122 @@ import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
 
 function Analyze() {
-  const [step, setStep] = useState('upload'); // upload, form, analyzing, result
+  const [step, setStep] = useState('upload');
   const [propertyData, setPropertyData] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [savedAnalysisId, setSavedAnalysisId] = useState(null);
   const [error, setError] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [lastFinanzierung, setLastFinanzierung] = useState(null);
   const [lastVerwendungszweck, setLastVerwendungszweck] = useState(null);
   const { token } = useAuth();
+  const navigate = useNavigate();
 
   const handleFileUpload = useCallback(async (file) => {
-    setError(null);
-    setStep('analyzing');
-    setLoadingMessage('Exposé wird analysiert...');
-
-    const formData = new FormData();
-    formData.append('file', file);
-
+    setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
+    const fd = new FormData(); fd.append('file', file);
     try {
-      const response = await fetch(`${API_BASE}/extract-pdf`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Fehler beim Analysieren des Exposés');
-      }
-
-      const data = await response.json();
-      setPropertyData(data);
-      setStep('form');
-    } catch (err) {
-      setError(err.message);
-      setStep('upload');
-    }
+      const res = await fetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
+      setPropertyData(await res.json()); setStep('form');
+    } catch (err) { setError(err.message); setStep('upload'); }
   }, []);
 
-  const handleManualEntry = useCallback(() => {
-    setPropertyData({});
-    setStep('form');
-  }, []);
+  const handleManualEntry = useCallback(() => { setPropertyData({}); setStep('form'); }, []);
 
   const handleAnalyze = useCallback(async (formData, verwendungszweck, finanzierung) => {
-    setError(null);
-    setStep('analyzing');
-    setLoadingMessage('Immobilie wird bewertet...');
-
-    // Speichere für spätere Neu-Analyse
-    setLastVerwendungszweck(verwendungszweck);
-    setLastFinanzierung(finanzierung);
-    setPropertyData(formData);
-
+    setError(null); setStep('analyzing'); setLoadingMessage('Immobilie wird bewertet...');
+    setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
-      const response = await fetch(`${API_BASE}/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          property_data: formData,
-          verwendungszweck,
-          eigenkapital: finanzierung.eigenkapital,
-          zinssatz: finanzierung.zinssatz,
-          tilgung: finanzierung.tilgung,
-        }),
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Fehler bei der Analyse');
-      }
-
-      const result = await response.json();
-      setAnalysisResult(result);
+      if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
+      const resultData = await res.json();
+      setAnalysisResult(resultData);
+      if (resultData.analysis_id) setSavedAnalysisId(resultData.analysis_id);
       setStep('result');
-    } catch (err) {
-      setError(err.message);
-      setStep('form');
-    }
+    } catch (err) { setError(err.message); setStep('form'); }
   }, [token]);
 
-  // Neu-Analyse mit anderem Verwendungszweck
-  const handleSwitchVerwendungszweck = useCallback(async (newVerwendungszweck) => {
+  const handleSwitchVerwendungszweck = useCallback(async (v) => {
     if (!propertyData) return;
-
-    // Verwende lastFinanzierung oder Default-Werte
-    const finanzierung = lastFinanzierung || {
-      eigenkapital: 0,
-      zinssatz: 3.75,
-      tilgung: 1.25
-    };
-
-    setError(null);
-    setStep('analyzing');
-    setLoadingMessage(newVerwendungszweck === 'kapitalanlage'
-      ? 'Bewerte als Kapitalanlage...'
-      : 'Bewerte als Eigennutzung...');
-    setLastVerwendungszweck(newVerwendungszweck);
-    setLastFinanzierung(finanzierung);
-
+    const fin = lastFinanzierung || { eigenkapital: 0, zinssatz: 3.75, tilgung: 1.25 };
+    setError(null); setStep('analyzing');
+    setLoadingMessage(v === 'kapitalanlage' ? 'Bewerte als Kapitalanlage...' : 'Bewerte als Eigennutzung...');
+    setLastVerwendungszweck(v); setLastFinanzierung(fin);
     try {
-      const response = await fetch(`${API_BASE}/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          property_data: propertyData,
-          verwendungszweck: newVerwendungszweck,
-          eigenkapital: finanzierung.eigenkapital,
-          zinssatz: finanzierung.zinssatz,
-          tilgung: finanzierung.tilgung,
-        }),
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ property_data: propertyData, verwendungszweck: v, eigenkapital: fin.eigenkapital, zinssatz: fin.zinssatz, tilgung: fin.tilgung }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Fehler bei der Analyse');
-      }
-
-      const result = await response.json();
-      setAnalysisResult(result);
-      setStep('result');
-    } catch (err) {
-      setError(err.message);
-      setStep('result'); // Bleibe auf result Seite bei Fehler
-    }
+      if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
+      setAnalysisResult(await res.json()); setStep('result');
+    } catch (err) { setError(err.message); setStep('result'); }
   }, [propertyData, lastFinanzierung, token]);
 
-  // NEU: Neu-Analyse mit geändertem Eigenkapital
-  const handleChangeEigenkapital = useCallback(async (neuesEigenkapital) => {
+  const handleChangeEigenkapital = useCallback(async (ek) => {
     if (!propertyData || !lastVerwendungszweck) return;
-
-    setError(null);
-    setStep('analyzing');
-    setLoadingMessage(`Berechne mit ${neuesEigenkapital.toLocaleString('de-DE')}€ Eigenkapital...`);
-
-    // Update lastFinanzierung
-    const updatedFinanzierung = {
-      ...lastFinanzierung,
-      eigenkapital: neuesEigenkapital
-    };
-    setLastFinanzierung(updatedFinanzierung);
-
+    setError(null); setStep('analyzing'); setLoadingMessage(`Berechne mit ${ek.toLocaleString('de-DE')} EUR EK...`);
+    setLastFinanzierung({ ...lastFinanzierung, eigenkapital: ek });
     try {
-      const response = await fetch(`${API_BASE}/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          property_data: propertyData,
-          verwendungszweck: lastVerwendungszweck,
-          eigenkapital: neuesEigenkapital,
-          zinssatz: lastFinanzierung?.zinssatz || 3.75,
-          tilgung: lastFinanzierung?.tilgung || 1.25,
-        }),
+      const res = await fetch(`${API_BASE}/analyze`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ property_data: propertyData, verwendungszweck: lastVerwendungszweck, eigenkapital: ek, zinssatz: lastFinanzierung?.zinssatz || 3.75, tilgung: lastFinanzierung?.tilgung || 1.25 }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Fehler bei der Analyse');
-      }
-
-      const result = await response.json();
-      setAnalysisResult(result);
-      setStep('result');
-    } catch (err) {
-      setError(err.message);
-    }
+      if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
+      setAnalysisResult(await res.json()); setStep('result');
+    } catch (err) { setError(err.message); }
   }, [propertyData, lastVerwendungszweck, lastFinanzierung, token]);
 
-  const handleReset = useCallback(() => {
-    setStep('upload');
-    setPropertyData(null);
-    setAnalysisResult(null);
-    setError(null);
-  }, []);
-
-  const handleBackToForm = useCallback(() => {
-    setStep('form');
-    setAnalysisResult(null);
-  }, []);
-
   return (
-    <div className="p-4 md:p-8 bg-mesh-animated min-h-screen relative">
-      {/* Background Glow Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="glow-orb w-96 h-96 bg-neon-blue/10 -top-48 -right-48" />
-        <div className="glow-orb w-80 h-80 bg-neon-purple/10 bottom-0 left-1/4" style={{ animationDelay: '5s' }} />
-        <div className="glow-orb w-64 h-64 bg-neon-green/5 top-1/2 right-1/4" style={{ animationDelay: '10s' }} />
-      </div>
-
-      <div className="max-w-5xl mx-auto relative z-10">
-        {/* Header */}
+    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
+      <div className="max-w-[900px]">
         {step === 'upload' && (
-          <header className="text-center mb-12 fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              <span className="text-gradient-neon">Neue Analyse</span>
-            </h1>
-            <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              Laden Sie ein Exposé hoch oder geben Sie die Daten manuell ein
-            </p>
+          <header className="text-center mb-16 fade-in">
+            <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] mb-3">Neue Analyse</h1>
+            <p className="text-[#8C7E6A] text-[16px] max-w-md mx-auto font-light">Expose hochladen oder Daten manuell eingeben</p>
           </header>
         )}
 
-        {/* Error Message */}
         {error && (
-          <div className="mb-6 p-5 glass border-2 border-red-500/30 rounded-2xl text-red-300 fade-in">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <span className="font-semibold text-red-200">Fehler</span>
-                <p className="text-sm text-red-300/80 mt-0.5">{error}</p>
-              </div>
-            </div>
+          <div className="mb-8 px-5 py-4 bg-[#B85C5C]/[0.08] border border-[#B85C5C]/[0.2] rounded-[16px] fade-in">
+            <p className="text-[#B85C5C] text-[14px]">{error}</p>
           </div>
         )}
 
-        {/* Main Content */}
         <main>
-          {step === 'upload' && (
-            <FileUpload
-              onFileUpload={handleFileUpload}
-              onManualEntry={handleManualEntry}
-            />
-          )}
-
-          {step === 'form' && (
-            <PropertyForm
-              initialData={propertyData}
-              onAnalyze={handleAnalyze}
-              onBack={handleReset}
-            />
-          )}
-
-          {step === 'analyzing' && (
-            <LoadingState message={loadingMessage} />
-          )}
-
+          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} />}
+          {step === 'form' && <PropertyForm initialData={propertyData} onAnalyze={handleAnalyze} onBack={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setError(null); }} />}
+          {step === 'analyzing' && <LoadingState message={loadingMessage} />}
           {step === 'result' && analysisResult && (
-            <AnalysisResult
-              result={analysisResult}
-              propertyData={propertyData}
-              onNewAnalysis={handleReset}
-              onEditData={handleBackToForm}
-              onSwitchVerwendungszweck={handleSwitchVerwendungszweck}
-              onChangeEigenkapital={handleChangeEigenkapital}
-            />
+            <>
+              {savedAnalysisId && (
+                <div className="mb-6 bg-white border border-[#E8E0D4] rounded-[16px] p-5 fade-in">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-[#7C8B6F]/10 rounded-[12px] flex items-center justify-center shrink-0">
+                      <MessageSquare className="w-5 h-5 text-[#7C8B6F]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[14px] font-semibold text-[#2C2418]">Analyse gespeichert</p>
+                      <p className="text-[12px] text-[#8C7E6A] mt-0.5">Mit dem Berater besprechen?</p>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/chat?analysis_id=${savedAnalysisId}`)}
+                      className="px-5 py-2.5 bg-[#7C8B6F] text-white font-medium rounded-[10px] hover:bg-[#6B7A5E] transition-all text-[13px] flex items-center gap-2"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Berater starten
+                    </button>
+                  </div>
+                </div>
+              )}
+              <AnalysisResult result={analysisResult} propertyData={propertyData}
+                onNewAnalysis={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setSavedAnalysisId(null); setError(null); }}
+                onEditData={() => { setStep('form'); setAnalysisResult(null); }}
+                onSwitchVerwendungszweck={handleSwitchVerwendungszweck} onChangeEigenkapital={handleChangeEigenkapital} />
+            </>
           )}
         </main>
       </div>

@@ -3,13 +3,14 @@ AmlakI Backend
 KI-gestützter Immobilienanalyse-Service mit User-Management
 """
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, status
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
-from datetime import timedelta
+from datetime import timedelta, datetime
 import anthropic
 import json
 import os
@@ -35,7 +36,8 @@ from knowledge_base import (
     DEALBREAKER
 )
 from database import get_db, init_db, Base
-from models import User, Analysis, UsageLog
+from models import User, Analysis, UsageLog, Conversation, ChatMessage
+from brain.topic_classifier import classify_topics, load_topic, build_knowledge_prompt
 from auth import (
     get_password_hash,
     authenticate_user,
@@ -575,6 +577,8 @@ class AnalysisResult(BaseModel):
     mietschaetzung: Optional[dict] = None  # Info wenn Miete geschätzt wurde
     # NEU: Kaufnebenkosten
     kaufnebenkosten: Optional[dict] = None  # Aufschlüsselung der Kaufnebenkosten
+    # NEU: Analysis-ID nach Speicherung
+    analysis_id: Optional[int] = None  # ID der gespeicherten Analyse
 
 
 def get_anthropic_client():
@@ -2302,6 +2306,9 @@ Antworte NUR mit dem JSON."""
         db.commit()
         db.refresh(db_analysis)
 
+        # Include the analysis ID in the result
+        result.analysis_id = db_analysis.id
+
         return result
         
     except json.JSONDecodeError as e:
@@ -2319,6 +2326,7 @@ class ChatRequest(BaseModel):
     message: str
     context: Optional[dict] = None  # Optionaler Analyse-Kontext
     stadt: Optional[str] = None  # Für Live-Marktdaten-Recherche
+    conversation_id: Optional[int] = None  # Optionale Konversations-ID
 
 
 class ChatResponse(BaseModel):
@@ -2326,6 +2334,7 @@ class ChatResponse(BaseModel):
     response: str
     marktdaten_verwendet: bool = False
     recherche_standort: Optional[str] = None
+    conversation_id: Optional[int] = None
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -2335,12 +2344,13 @@ async def chat_with_ai(
     db: Session = Depends(get_db)
 ):
     """
-    V3.0 Chat-Endpoint mit Live-Marktdaten-Recherche
+    V4.0 Chat-Endpoint mit Live-Marktdaten-Recherche + Konversationshistorie + Topic Classifier
 
     Die KI kann:
     - Fragen zu Immobilien beantworten
     - Live-Marktdaten für spezifische Standorte recherchieren
     - Auf Basis von Analyse-Kontext antworten
+    - Konversationshistorie beibehalten
     """
     # Prüfe Usage-Limit
     if not check_usage_limit(db, current_user):
@@ -2351,6 +2361,70 @@ async def chat_with_ai(
         )
 
     client = get_anthropic_client()
+
+    # Handle conversation: get or create
+    conversation = None
+    if request.conversation_id:
+        conversation = db.query(Conversation).filter(
+            Conversation.id == request.conversation_id,
+            Conversation.user_id == current_user.id
+        ).first()
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+    else:
+        # Create new conversation with auto-title from first message
+        title = request.message[:50].strip()
+        if len(request.message) > 50:
+            title += "..."
+        conversation = Conversation(
+            user_id=current_user.id,
+            title=title
+        )
+        db.add(conversation)
+        db.commit()
+        db.refresh(conversation)
+
+    # Load analysis context if conversation is linked to an analysis
+    analysis_context = ""
+    if conversation.analysis_id:
+        analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id).first()
+        if analysis and analysis.result:
+            try:
+                result_data = json.loads(analysis.result) if isinstance(analysis.result, str) else analysis.result
+                # Extract key fields
+                props = result_data.get("eingabedaten", result_data.get("input", {}))
+                score = result_data.get("score", result_data.get("gesamtscore", "N/A"))
+                cashflow = result_data.get("cashflow", {})
+                empfehlung = result_data.get("empfehlung", result_data.get("recommendation", ""))
+
+                analysis_context = f"""
+OBJEKT-DATEN (aus der gespeicherten Analyse):
+{json.dumps(result_data, indent=2, ensure_ascii=False)[:8000]}
+
+Du beraetest den Nutzer zu DIESEM konkreten Objekt. Beziehe dich in deinen Antworten immer auf die obigen Daten.
+Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze die konkreten Zahlen aus der Analyse.
+"""
+            except:
+                analysis_context = ""
+
+    # Save user message to DB
+    user_msg = ChatMessage(
+        conversation_id=conversation.id,
+        role="user",
+        content=request.message
+    )
+    db.add(user_msg)
+    db.commit()
+
+    # Build messages list with conversation history
+    messages_for_claude = []
+    if request.conversation_id and conversation.messages:
+        # Load previous messages (exclude the one we just added, it's already in the list)
+        for msg in conversation.messages:
+            if msg.id != user_msg.id:
+                messages_for_claude.append({"role": msg.role, "content": msg.content})
+    # Add current user message
+    messages_for_claude.append({"role": "user", "content": request.message})
 
     # Prüfe ob eine Stadt/Standort in der Nachricht erwähnt wird
     # oder im Kontext vorhanden ist
@@ -2374,6 +2448,9 @@ async def chat_with_ai(
         except:
             pass
 
+    # Build dynamic knowledge prompt using topic classifier
+    knowledge_section = build_knowledge_prompt(request.message, max_topics=3)
+
     # System Prompt für Chat
     chat_system = f"""Du bist AmlakI - Deutschlands bester Immobilienberater!
 
@@ -2384,10 +2461,14 @@ Du hilfst Nutzern bei Fragen zu:
 - Mietrecht (Mieterhöhung, Kündigung, WEG)
 - Bewertung (Kaufpreisfaktor, Rendite, Red Flags)
 
-WICHTIG V3.0:
+WICHTIG V4.0:
 - Bei Fragen zu konkreten Preisen/Märkten IMMER die Live-Daten unten verwenden
 - Keine generischen Antworten wie "zwischen 2.000 und 10.000€/m²"
 - Konkrete Zahlen für den gefragten Standort nennen
+
+{analysis_context}
+
+{knowledge_section}
 
 {f'''
 LIVE-MARKTDATEN FÜR {standort.upper()}:
@@ -2406,10 +2487,25 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
     try:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=1500,
+            max_tokens=4096,
             system=chat_system,
-            messages=[{"role": "user", "content": request.message}]
+            messages=messages_for_claude
         )
+
+        assistant_text = response.content[0].text
+
+        # Save assistant message to DB
+        assistant_msg = ChatMessage(
+            conversation_id=conversation.id,
+            role="assistant",
+            content=assistant_text,
+            tokens_used=response.usage.input_tokens + response.usage.output_tokens
+        )
+        db.add(assistant_msg)
+
+        # Update conversation timestamp
+        conversation.updated_at = datetime.utcnow()
+        db.commit()
 
         # Log Usage
         log_usage(
@@ -2421,15 +2517,266 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
         )
 
         return ChatResponse(
-            response=response.content[0].text,
+            response=assistant_text,
             marktdaten_verwendet=live_marktdaten is not None,
-            recherche_standort=standort
+            recherche_standort=standort,
+            conversation_id=conversation.id
         )
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat-Fehler: {str(e)}")
+
+
+# ============ CONVERSATION ENDPOINTS ============
+
+@app.get("/conversations")
+async def list_conversations(current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """List all conversations for the current user, newest first."""
+    conversations = db.query(Conversation).filter(
+        Conversation.user_id == current_user.id
+    ).order_by(Conversation.updated_at.desc()).all()
+
+    return [{
+        "id": c.id,
+        "title": c.title,
+        "analysis_id": c.analysis_id,
+        "created_at": c.created_at.isoformat(),
+        "updated_at": c.updated_at.isoformat(),
+        "message_count": len(c.messages),
+        "last_message": c.messages[-1].content[:100] if c.messages else None
+    } for c in conversations]
+
+
+@app.post("/conversations")
+async def create_conversation(data: dict = Body(default={}), current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Create a new conversation."""
+    conv = Conversation(
+        user_id=current_user.id,
+        title=data.get("title", "Neue Unterhaltung"),
+        analysis_id=data.get("analysis_id")
+    )
+    db.add(conv)
+    db.commit()
+    db.refresh(conv)
+    return {"id": conv.id, "title": conv.title, "created_at": conv.created_at.isoformat()}
+
+
+@app.get("/conversations/{conversation_id}")
+async def get_conversation(conversation_id: int, current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Get a conversation with all its messages."""
+    conv = db.query(Conversation).filter(
+        Conversation.id == conversation_id,
+        Conversation.user_id == current_user.id
+    ).first()
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return {
+        "id": conv.id,
+        "title": conv.title,
+        "analysis_id": conv.analysis_id,
+        "created_at": conv.created_at.isoformat(),
+        "messages": [{
+            "id": m.id,
+            "role": m.role,
+            "content": m.content,
+            "created_at": m.created_at.isoformat()
+        } for m in conv.messages]
+    }
+
+
+@app.delete("/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: int, current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Delete a conversation."""
+    conv = db.query(Conversation).filter(
+        Conversation.id == conversation_id,
+        Conversation.user_id == current_user.id
+    ).first()
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    db.delete(conv)
+    db.commit()
+    return {"status": "deleted"}
+
+
+@app.post("/chat/stream")
+async def chat_stream(data: dict = Body(...), current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """Streaming chat endpoint using Server-Sent Events."""
+    message = data.get("message", "")
+    conversation_id = data.get("conversation_id")
+    context = data.get("context")
+    stadt = data.get("stadt")
+
+    if not message:
+        raise HTTPException(status_code=400, detail="Message is required")
+
+    # Prüfe Usage-Limit
+    if not check_usage_limit(db, current_user):
+        usage = get_user_total_usage(db, current_user.id)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Nutzungslimit erreicht! Du hast ${usage['total_cost_usd']:.2f} von ${current_user.usage_limit_usd:.2f} verbraucht."
+        )
+
+    client = get_anthropic_client()
+
+    # Handle conversation: get or create
+    conversation = None
+    if conversation_id:
+        conversation = db.query(Conversation).filter(
+            Conversation.id == conversation_id,
+            Conversation.user_id == current_user.id
+        ).first()
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+    else:
+        title = message[:50].strip()
+        if len(message) > 50:
+            title += "..."
+        conversation = Conversation(
+            user_id=current_user.id,
+            title=title
+        )
+        db.add(conversation)
+        db.commit()
+        db.refresh(conversation)
+        conversation_id = conversation.id
+
+    # Load analysis context if conversation is linked to an analysis
+    analysis_context = ""
+    if conversation.analysis_id:
+        analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id).first()
+        if analysis and analysis.result:
+            try:
+                result_data = json.loads(analysis.result) if isinstance(analysis.result, str) else analysis.result
+                # Extract key fields
+                props = result_data.get("eingabedaten", result_data.get("input", {}))
+                score = result_data.get("score", result_data.get("gesamtscore", "N/A"))
+                cashflow = result_data.get("cashflow", {})
+                empfehlung = result_data.get("empfehlung", result_data.get("recommendation", ""))
+
+                analysis_context = f"""
+OBJEKT-DATEN (aus der gespeicherten Analyse):
+{json.dumps(result_data, indent=2, ensure_ascii=False)[:8000]}
+
+Du beraetest den Nutzer zu DIESEM konkreten Objekt. Beziehe dich in deinen Antworten immer auf die obigen Daten.
+Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze die konkreten Zahlen aus der Analyse.
+"""
+            except:
+                analysis_context = ""
+
+    # Save user message to DB
+    user_msg = ChatMessage(
+        conversation_id=conversation.id,
+        role="user",
+        content=message
+    )
+    db.add(user_msg)
+    db.commit()
+    db.refresh(user_msg)
+
+    # Build messages list with conversation history
+    messages_for_claude = []
+    if conversation.messages:
+        for msg in conversation.messages:
+            if msg.id != user_msg.id:
+                messages_for_claude.append({"role": msg.role, "content": msg.content})
+    messages_for_claude.append({"role": "user", "content": message})
+
+    # Standort detection
+    standort = stadt
+    if not standort and context:
+        standort = context.get('stadt')
+
+    # Live market data
+    live_marktdaten = None
+    if standort:
+        try:
+            live_marktdaten = await fetch_live_market_data(
+                stadt=standort,
+                stadtteil=context.get('stadtteil') if context else None,
+                objekttyp="Eigentumswohnung"
+            )
+        except:
+            pass
+
+    # Build dynamic knowledge prompt using topic classifier
+    knowledge_section = build_knowledge_prompt(message, max_topics=3)
+
+    # System Prompt
+    system_prompt = f"""Du bist AmlakI - Deutschlands bester Immobilienberater!
+
+Du hilfst Nutzern bei Fragen zu:
+- Finanzierung (Zinsen, Tilgung, Eigenkapital, Darlehen)
+- Förderungen (KfW 300, KfW 308, KfW 261, Landesförderungen)
+- Steuern (AfA, Werbungskosten, Spekulationsfrist)
+- Mietrecht (Mieterhöhung, Kündigung, WEG)
+- Bewertung (Kaufpreisfaktor, Rendite, Red Flags)
+
+{analysis_context}
+
+{knowledge_section}
+
+{f'''
+LIVE-MARKTDATEN FÜR {standort.upper()}:
+{json.dumps(live_marktdaten, indent=2, ensure_ascii=False)}
+''' if live_marktdaten else ''}
+
+{f'''
+ANALYSE-KONTEXT DES NUTZERS:
+{json.dumps(context, indent=2, ensure_ascii=False)}
+''' if context else ''}
+
+Antworte auf Deutsch, präzise und hilfreich.
+Nutze Markdown für Formatierung (fett, Listen, etc.).
+Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
+
+    async def generate():
+        try:
+            with client.messages.stream(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                system=system_prompt,
+                messages=messages_for_claude
+            ) as stream:
+                full_response = ""
+                for text in stream.text_stream:
+                    full_response += text
+                    yield f"data: {json.dumps({'text': text})}\n\n"
+
+                # Get final message for token usage
+                final_message = stream.get_final_message()
+
+                # Save assistant message to DB
+                assistant_msg = ChatMessage(
+                    conversation_id=conversation.id,
+                    role="assistant",
+                    content=full_response,
+                    tokens_used=final_message.usage.input_tokens + final_message.usage.output_tokens
+                )
+                db.add(assistant_msg)
+
+                # Update conversation timestamp
+                conversation.updated_at = datetime.utcnow()
+                db.commit()
+
+                # Log Usage
+                log_usage(
+                    db=db,
+                    user_id=current_user.id,
+                    action_type="chat_stream",
+                    input_tokens=final_message.usage.input_tokens,
+                    output_tokens=final_message.usage.output_tokens
+                )
+
+                yield f"data: {json.dumps({'done': True, 'conversation_id': conversation_id})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 
 @app.api_route("/health", methods=["GET", "HEAD"])

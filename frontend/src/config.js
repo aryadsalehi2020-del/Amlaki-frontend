@@ -10,9 +10,9 @@ const getApiBase = () => {
     return 'http://localhost:8000';
   }
 
-  // Production: Render Backend
-  if (window.location.hostname.includes('onrender.com')) {
-    return 'https://immobilien-berater-backend.onrender.com';
+  // Production: amlaki.de or Render
+  if (window.location.hostname.includes('amlaki.de') || window.location.hostname.includes('vercel.app') || window.location.hostname.includes('onrender.com')) {
+    return 'https://amlaki-backend.onrender.com';
   }
 
   // Sonst (z.B. vom Handy im gleichen Netzwerk), verwende die gleiche IP wie das Frontend

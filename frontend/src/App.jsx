@@ -14,7 +14,11 @@ import LibraryDetail from './pages/LibraryDetail';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import Tools from './pages/Tools';
+import Chat from './pages/Chat';
 import Admin from './pages/Admin';
+import LandingPage from './pages/LandingPage';
+import Impressum from './pages/Impressum';
+import Datenschutz from './pages/Datenschutz';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -48,7 +52,7 @@ function DashboardLayout({ children }) {
   );
 }
 
-// Root Redirect
+// Root Redirect – show LandingPage for guests, Dashboard for logged-in users
 function RootRedirect() {
   const { user, loading } = useAuth();
 
@@ -63,7 +67,11 @@ function RootRedirect() {
     );
   }
 
-  return <Navigate to={user ? "/dashboard" : "/login"} replace />;
+  if (user) {
+    return <Navigate to="/chat" replace />;
+  }
+
+  return <LandingPage />;
 }
 
 function App() {
@@ -78,8 +86,31 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/design-preview" element={<DesignPreview />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/impressum" element={<Impressum />} />
+          <Route path="/datenschutz" element={<Datenschutz />} />
 
           {/* Protected Routes with Sidebar */}
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Chat />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat/:conversationId"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Chat />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={

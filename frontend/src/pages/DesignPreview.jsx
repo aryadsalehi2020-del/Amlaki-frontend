@@ -1,691 +1,697 @@
-/**
- * DESIGN PREVIEW V2 - Premium Design System
- *
- * Basierend auf echter Analyse von:
- * - Slite: Soft off-white (moon-dust), gradient accents, 42px rounded buttons, 100px section spacing
- * - Setrex: Deep navy backgrounds, vibrant blue CTAs, animated elements, soft shadows
- * - Orrivo: Cream backgrounds, earth tones, Outfit font, luxury through restraint
- */
+import React, { useEffect, useRef, useState } from 'react';
 
-import React, { useState } from 'react';
-
-// ============================================
-// DESIGN TOKENS - Based on Real Analysis
-// ============================================
-
+// Premium Design v11 - Better Images + Good Labels
 const DesignPreview = () => {
-  const [activeTab, setActiveTab] = useState('light');
-  const [inputFocused, setInputFocused] = useState(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const containerRef = useRef(null);
 
-  // Light Theme (Slite + Orrivo inspired)
-  const lightTheme = {
-    bg: '#FAFAFA',
-    bgCard: '#FFFFFF',
-    bgAccent: '#F5F3EF', // Warm cream (Orrivo)
-    text: '#0F172A',
-    textSecondary: '#475569',
-    textMuted: '#94A3B8',
-    accent: '#6366F1', // Indigo
-    accentHover: '#4F46E5',
-    border: '#E2E8F0',
-    success: '#10B981',
-    successBg: '#ECFDF5',
+  // VIDEO SEQUENCE - Same style, dark cinematic city, like one continuous shot
+  const images = [
+    // 1. ORIGINAL - Dark dramatic city buildings
+    'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1920&q=95&auto=format',
+    // 2. Same style - dark city looking up at buildings
+    'https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?w=1920&q=95&auto=format',
+    // 3. Same style - dark modern architecture
+    'https://images.unsplash.com/photo-1478860409698-8707f313ee8b?w=1920&q=95&auto=format',
+    // 4. Same style - dark skyscrapers looking up
+    'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=1920&q=95&auto=format',
+  ];
+
+  // GOOD LABELS
+  const chapters = [
+    {
+      title: 'Analyse',
+      subtitle: 'Datengetrieben entscheiden',
+      stat: { value: '2.847', label: 'Objekte analysiert' }
+    },
+    {
+      title: 'Rendite',
+      subtitle: 'Potenzial erkennen',
+      stat: { value: '12.4%', label: 'Ø Eigenkapitalrendite' }
+    },
+    {
+      title: 'Cashflow',
+      subtitle: 'Passives Einkommen',
+      stat: { value: '+847€', label: 'Ø monatlicher Cashflow' }
+    },
+    {
+      title: 'Portfolio',
+      subtitle: 'Vermögen aufbauen',
+      stat: { value: '156M€', label: 'verwaltetes Volumen' }
+    },
+  ];
+
+  // Preload images
+  useEffect(() => {
+    let loaded = 0;
+    images.forEach(src => {
+      const img = new Image();
+      img.onload = () => {
+        loaded++;
+        if (loaded === images.length) setImagesLoaded(true);
+      };
+      img.src = src;
+    });
+  }, []);
+
+  // Ultra smooth scroll with lerp
+  useEffect(() => {
+    let current = 0;
+    let target = 0;
+    let rafId;
+
+    const lerp = (start, end, factor) => start + (end - start) * factor;
+
+    const update = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      target = Math.min(scrollTop / docHeight, 1);
+      current = lerp(current, target, 0.06);
+      setScrollProgress(current);
+      rafId = requestAnimationFrame(update);
+    };
+
+    rafId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  // Smooth mouse parallax
+  useEffect(() => {
+    let mouseX = 0, mouseY = 0;
+    let currentX = 0, currentY = 0;
+    let rafId;
+
+    const lerp = (start, end, factor) => start + (end - start) * factor;
+
+    const handleMouseMove = (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 12;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 12;
+    };
+
+    const animate = () => {
+      currentX = lerp(currentX, mouseX, 0.04);
+      currentY = lerp(currentY, mouseY, 0.04);
+      setMousePos({ x: currentX, y: currentY });
+      rafId = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    rafId = requestAnimationFrame(animate);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const totalImages = images.length;
+  const progressPerImage = 1 / totalImages;
+  const currentIndex = Math.min(Math.floor(scrollProgress / progressPerImage), totalImages - 1);
+  const localProgress = (scrollProgress - (currentIndex * progressPerImage)) / progressPerImage;
+  const currentChapter = chapters[currentIndex];
+
+  // Easing functions
+  const easeOutExpo = (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const icons = {
+    arrow: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>,
+    play: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>,
+    chart: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>,
+    shield: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+    coin: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v12m-4-8h8m-6 4h4"/></svg>,
+    building: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4"/></svg>,
   };
 
-  // Dark Theme (Setrex inspired)
-  const darkTheme = {
-    bg: '#0B1120',
-    bgCard: '#131C31',
-    bgAccent: '#1E293B',
-    text: '#F8FAFC',
-    textSecondary: '#CBD5E1',
-    textMuted: '#64748B',
-    accent: '#38BDF8', // Vibrant blue (Setrex)
-    accentHover: '#0EA5E9',
-    border: '#1E293B',
-    success: '#34D399',
-    successBg: 'rgba(52, 211, 153, 0.1)',
+  const features = [
+    { icon: 'chart', label: 'KI-Analyse', desc: 'In Sekunden' },
+    { icon: 'shield', label: 'Due Diligence', desc: 'Risiken erkennen' },
+    { icon: 'coin', label: 'Förderungen', desc: 'Bis 70%' },
+    { icon: 'building', label: 'Portfolio', desc: 'Im Blick' },
+  ];
+
+  const styles = {
+    container: {
+      backgroundColor: '#000',
+      color: '#fff',
+      minHeight: '500vh',
+      position: 'relative',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+
+    fixedViewport: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      backgroundColor: '#000',
+    },
+
+    imageLayer: (index) => {
+      let opacity = 0;
+      let scale = 1;
+      let x = 0;
+      let y = 0;
+
+      const transitionStart = 0.4;
+      const transitionProgress = Math.max(0, (localProgress - transitionStart) / (1 - transitionStart));
+
+      if (index === currentIndex) {
+        // Current image: move left and zoom in slightly (walking forward)
+        opacity = 1 - easeInOutCubic(transitionProgress);
+        scale = 1 + (localProgress * 0.08);
+        x = -localProgress * 8; // Move left as if walking past
+        y = localProgress * 2; // Slight upward movement
+      } else if (index === currentIndex + 1) {
+        // Next image: slide in from right (what's ahead)
+        opacity = easeInOutCubic(transitionProgress);
+        scale = 1.1 - (easeInOutCubic(transitionProgress) * 0.1);
+        x = (1 - easeInOutCubic(transitionProgress)) * 15; // Slide in from right
+        y = (1 - easeInOutCubic(transitionProgress)) * -3;
+      } else if (index < currentIndex) {
+        opacity = 0;
+        x = -20;
+      } else {
+        opacity = 0;
+        x = 20;
+      }
+
+      return {
+        position: 'absolute',
+        top: '-5%',
+        left: '-5%',
+        width: '110%',
+        height: '110%',
+        backgroundImage: `url(${images[index]})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity,
+        transform: `scale(${scale}) translate3d(${x + mousePos.x * 0.06}%, ${y + mousePos.y * 0.06}%, 0)`,
+        willChange: 'transform, opacity',
+        transition: 'opacity 0.3s ease-out',
+      };
+    },
+
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: `
+        linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.5) 100%),
+        linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.6) 100%)
+      `,
+      zIndex: 2,
+    },
+
+    grain: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      opacity: 0.02,
+      pointerEvents: 'none',
+      zIndex: 3,
+      backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+    },
+
+    header: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      padding: '1.8rem 4%',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      zIndex: 20,
+    },
+
+    logoContainer: {
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '0.6rem',
+    },
+
+    logo: {
+      fontSize: '1.4rem',
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+      color: 'rgba(255,255,255,0.7)',
+    },
+
+    logoHighlight: {
+      color: '#fff',
+      fontWeight: 700,
+    },
+
+    logoByline: {
+      fontSize: '0.95rem',
+      fontFamily: "'Reenie Beanie', cursive",
+      fontWeight: 400,
+      color: 'rgba(255,255,255,0.5)',
+      marginLeft: '0.4rem',
+      position: 'relative',
+      top: '1px',
+      transform: 'rotate(-1deg)',
+    },
+
+    nav: {
+      display: 'flex',
+      gap: '2rem',
+      alignItems: 'center',
+    },
+
+    navLink: {
+      fontSize: '0.8rem',
+      color: 'rgba(255,255,255,0.5)',
+      textDecoration: 'none',
+      cursor: 'pointer',
+      transition: 'color 0.3s',
+    },
+
+    navButton: {
+      padding: '0.55rem 1.2rem',
+      fontSize: '0.78rem',
+      fontWeight: 500,
+      color: '#000',
+      backgroundColor: '#fff',
+      border: 'none',
+      borderRadius: '5px',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+    },
+
+    mainContent: {
+      position: 'absolute',
+      top: '50%',
+      left: '4%',
+      transform: 'translateY(-50%)',
+      zIndex: 10,
+      maxWidth: '520px',
+    },
+
+    titleContainer: {
+      opacity: localProgress < 0.6 ? 1 : 1 - easeOutExpo((localProgress - 0.6) / 0.4),
+      transform: `translateY(${localProgress * 15}px)`,
+    },
+
+    eyebrow: {
+      fontSize: '0.68rem',
+      fontWeight: 500,
+      letterSpacing: '0.25em',
+      textTransform: 'uppercase',
+      color: 'rgba(255,255,255,0.4)',
+      marginBottom: '1rem',
+    },
+
+    mainTitle: {
+      fontSize: 'clamp(3rem, 8vw, 5.5rem)',
+      fontWeight: 600,
+      letterSpacing: '-0.03em',
+      lineHeight: 1,
+      margin: 0,
+      marginBottom: '0.6rem',
+    },
+
+    subtitle: {
+      fontSize: '1.1rem',
+      fontWeight: 300,
+      color: 'rgba(255,255,255,0.6)',
+      marginBottom: '2rem',
+    },
+
+    statCard: {
+      display: 'inline-flex',
+      flexDirection: 'column',
+      padding: '1.2rem 1.8rem',
+      background: 'rgba(255,255,255,0.05)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: '10px',
+      border: '1px solid rgba(255,255,255,0.08)',
+      marginBottom: '1.8rem',
+    },
+
+    statValue: {
+      fontSize: '2.2rem',
+      fontWeight: 600,
+      letterSpacing: '-0.02em',
+      fontVariantNumeric: 'tabular-nums',
+    },
+
+    statLabel: {
+      fontSize: '0.72rem',
+      color: 'rgba(255,255,255,0.45)',
+      marginTop: '0.2rem',
+    },
+
+    ctaGroup: {
+      display: 'flex',
+      gap: '0.8rem',
+      alignItems: 'center',
+    },
+
+    primaryCta: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      padding: '0.85rem 1.5rem',
+      fontSize: '0.82rem',
+      fontWeight: 500,
+      color: '#000',
+      backgroundColor: '#fff',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+    },
+
+    secondaryCta: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.4rem',
+      padding: '0.85rem 1.3rem',
+      fontSize: '0.82rem',
+      fontWeight: 500,
+      color: 'rgba(255,255,255,0.9)',
+      backgroundColor: 'rgba(255,255,255,0.08)',
+      border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+    },
+
+    // Features bar at bottom
+    featuresBar: {
+      position: 'absolute',
+      bottom: '5rem',
+      left: '4%',
+      right: '4%',
+      display: 'flex',
+      gap: '1px',
+      background: 'rgba(255,255,255,0.06)',
+      borderRadius: '10px',
+      overflow: 'hidden',
+      zIndex: 10,
+      opacity: scrollProgress < 0.15 ? 1 : Math.max(0, 1 - (scrollProgress - 0.15) / 0.15),
+      transition: 'opacity 0.4s',
+    },
+
+    featureItem: {
+      flex: 1,
+      padding: '1rem 1.2rem',
+      background: 'transparent',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.8rem',
+      cursor: 'pointer',
+      transition: 'background 0.3s',
+    },
+
+    featureIcon: {
+      color: 'rgba(255,255,255,0.6)',
+    },
+
+    featureLabel: {
+      fontSize: '0.8rem',
+      fontWeight: 500,
+    },
+
+    featureDesc: {
+      fontSize: '0.65rem',
+      color: 'rgba(255,255,255,0.4)',
+      marginTop: '0.1rem',
+    },
+
+    // Right side
+    rightSide: {
+      position: 'absolute',
+      right: '4%',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '2rem',
+      zIndex: 20,
+    },
+
+    progressDots: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+    },
+
+    progressDot: (index) => ({
+      width: '6px',
+      height: index === currentIndex ? '28px' : '6px',
+      borderRadius: '3px',
+      backgroundColor: index === currentIndex ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)',
+      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+    }),
+
+    chapterInfo: {
+      textAlign: 'right',
+    },
+
+    chapterNumber: {
+      fontSize: '0.6rem',
+      letterSpacing: '0.2em',
+      color: 'rgba(255,255,255,0.3)',
+      marginBottom: '0.3rem',
+    },
+
+    chapterName: {
+      fontSize: '0.9rem',
+      fontWeight: 500,
+      color: 'rgba(255,255,255,0.6)',
+    },
+
+    // Bottom
+    bottomBar: {
+      position: 'absolute',
+      bottom: '1.5rem',
+      left: '4%',
+      right: '4%',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      zIndex: 20,
+    },
+
+    progressText: {
+      fontSize: '0.7rem',
+      color: 'rgba(255,255,255,0.3)',
+      fontVariantNumeric: 'tabular-nums',
+    },
+
+    scrollHint: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      opacity: scrollProgress < 0.03 ? 1 : 0,
+      transition: 'opacity 0.4s',
+    },
+
+    scrollText: {
+      fontSize: '0.6rem',
+      letterSpacing: '0.2em',
+      textTransform: 'uppercase',
+      color: 'rgba(255,255,255,0.3)',
+    },
+
+    scrollIcon: {
+      width: '16px',
+      height: '26px',
+      borderRadius: '8px',
+      border: '1.5px solid rgba(255,255,255,0.2)',
+      display: 'flex',
+      justifyContent: 'center',
+      paddingTop: '4px',
+    },
+
+    scrollDot: {
+      width: '2px',
+      height: '4px',
+      backgroundColor: 'rgba(255,255,255,0.4)',
+      borderRadius: '1px',
+      animation: 'scrollMove 1.6s ease-in-out infinite',
+    },
+
+    loading: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100vw',
+      height: '100vh',
+      backgroundColor: '#000',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 100,
+      opacity: imagesLoaded ? 0 : 1,
+      pointerEvents: imagesLoaded ? 'none' : 'auto',
+      transition: 'opacity 0.6s ease',
+    },
+
+    loadingText: {
+      fontSize: '0.7rem',
+      letterSpacing: '0.3em',
+      textTransform: 'uppercase',
+      color: 'rgba(255,255,255,0.3)',
+    },
   };
 
-  const theme = activeTab === 'light' ? lightTheme : darkTheme;
+  const keyframes = `
+    @import url('https://fonts.googleapis.com/css2?family=Reenie+Beanie&display=swap');
+
+    /* Hide ALL scrollbars */
+    html, body, * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      background: transparent !important;
+    }
+
+    @keyframes scrollMove {
+      0%, 100% { transform: translateY(0); opacity: 0.8; }
+      50% { transform: translateY(5px); opacity: 0.2; }
+    }
+  `;
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: theme.bg,
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      color: theme.text,
-      transition: 'all 0.3s ease',
-    }}>
-      {/* Navigation Bar */}
-      <nav style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        backgroundColor: activeTab === 'light' ? 'rgba(255,255,255,0.8)' : 'rgba(11,17,32,0.8)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: `1px solid ${theme.border}`,
-        padding: '16px 40px',
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div style={{
-            fontSize: '1.25rem',
-            fontWeight: 700,
-            letterSpacing: '-0.025em',
-          }}>
-            ImmoBerater
-          </div>
+    <>
+      <style>{keyframes}</style>
 
-          {/* Theme Toggle */}
-          <div style={{
-            display: 'flex',
-            gap: '4px',
-            padding: '4px',
-            backgroundColor: theme.bgAccent,
-            borderRadius: '12px',
-          }}>
-            {['light', 'dark'].map((t) => (
+      <div style={styles.loading}>
+        <span style={styles.loadingText}>Laden...</span>
+      </div>
+
+      <div ref={containerRef} style={styles.container}>
+        <div style={styles.fixedViewport}>
+          {images.map((_, index) => (
+            <div key={index} style={styles.imageLayer(index)} />
+          ))}
+
+          <div style={styles.overlay} />
+          <div style={styles.grain} />
+
+          <header style={styles.header}>
+            <div style={styles.logoContainer}>
+              <div style={styles.logo}>
+                <span style={styles.logoHighlight}>A</span>MLAK<span style={styles.logoHighlight}>I</span>
+              </div>
+              <span style={styles.logoByline}>by Arya Salehi</span>
+            </div>
+            <nav style={styles.nav}>
+              <span style={styles.navLink}>Features</span>
+              <span style={styles.navLink}>Preise</span>
+              <span style={styles.navLink}>Über uns</span>
               <button
-                key={t}
-                onClick={() => setActiveTab(t)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  fontFamily: 'inherit',
-                  backgroundColor: activeTab === t ? (t === 'light' ? '#fff' : '#0EA5E9') : 'transparent',
-                  color: activeTab === t ? (t === 'light' ? theme.text : '#fff') : theme.textMuted,
-                  boxShadow: activeTab === t ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  transition: 'all 0.2s ease',
+                style={styles.navButton}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 4px 20px rgba(255,255,255,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
                 }}
               >
-                {t === 'light' ? '☀️ Light' : '🌙 Dark'}
+                Login
               </button>
-            ))}
-          </div>
-        </div>
-      </nav>
+            </nav>
+          </header>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 40px' }}>
+          <div style={styles.mainContent}>
+            <div style={styles.titleContainer}>
+              <p style={styles.eyebrow}>Immobilien Investment Platform</p>
+              <h1 style={styles.mainTitle}>{currentChapter.title}</h1>
+              <p style={styles.subtitle}>{currentChapter.subtitle}</p>
 
-        {/* Hero Section - Slite Style */}
-        <section style={{
-          padding: '100px 0',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            display: 'inline-block',
-            padding: '8px 16px',
-            backgroundColor: theme.bgAccent,
-            borderRadius: '100px',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            color: theme.textSecondary,
-            marginBottom: '24px',
-          }}>
-            ✨ Neues Premium Design System
-          </div>
-
-          <h1 style={{
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-            fontWeight: 700,
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            marginBottom: '24px',
-            background: activeTab === 'dark'
-              ? 'linear-gradient(135deg, #fff 0%, #38BDF8 100%)'
-              : 'linear-gradient(135deg, #0F172A 0%, #6366F1 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            Immobilien intelligent<br />analysieren
-          </h1>
-
-          <p style={{
-            fontSize: '1.25rem',
-            color: theme.textSecondary,
-            maxWidth: '600px',
-            margin: '0 auto 40px',
-            lineHeight: 1.6,
-          }}>
-            Professionelle Immobilienanalyse mit KI-Unterstützung.
-            Rendite berechnen, Risiken erkennen, fundiert entscheiden.
-          </p>
-
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button style={{
-              padding: '16px 32px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: theme.accent,
-              color: '#fff',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: `0 4px 14px ${theme.accent}40`,
-            }}>
-              Jetzt starten →
-            </button>
-            <button style={{
-              padding: '16px 32px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: 'transparent',
-              color: theme.text,
-              border: `2px solid ${theme.border}`,
-              borderRadius: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}>
-              Demo ansehen
-            </button>
-          </div>
-        </section>
-
-        {/* Stats Section - Setrex Style */}
-        <section style={{
-          padding: '60px 0',
-          borderTop: `1px solid ${theme.border}`,
-          borderBottom: `1px solid ${theme.border}`,
-        }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '40px',
-          }}>
-            {[
-              { value: '4.200+', label: 'Analysen erstellt' },
-              { value: '98%', label: 'Zufriedenheit' },
-              { value: '< 30s', label: 'Analysezeit' },
-              { value: '24/7', label: 'Verfügbar' },
-            ].map((stat, i) => (
-              <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: '3rem',
-                  fontWeight: 700,
-                  letterSpacing: '-0.03em',
-                  color: theme.accent,
-                  marginBottom: '8px',
-                }}>
-                  {stat.value}
-                </div>
-                <div style={{
-                  fontSize: '0.875rem',
-                  color: theme.textMuted,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                }}>
-                  {stat.label}
-                </div>
+              <div style={styles.statCard}>
+                <span style={styles.statValue}>{currentChapter.stat.value}</span>
+                <span style={styles.statLabel}>{currentChapter.stat.label}</span>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* Cards Section */}
-        <section style={{ padding: '100px 0' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{
-              fontSize: '2.5rem',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              marginBottom: '16px',
-            }}>
-              Komponenten
-            </h2>
-            <p style={{ color: theme.textSecondary, fontSize: '1.125rem' }}>
-              Premium UI-Elemente für die App
-            </p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '24px',
-          }}>
-            {/* Property Card */}
-            <div style={{
-              backgroundColor: theme.bgCard,
-              borderRadius: '16px',
-              border: `1px solid ${theme.border}`,
-              overflow: 'hidden',
-              transition: 'all 0.3s ease',
-            }}>
-              <div style={{
-                height: '200px',
-                background: activeTab === 'dark'
-                  ? 'linear-gradient(135deg, #1E293B 0%, #334155 100%)'
-                  : 'linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '4rem',
-              }}>
-                🏠
-              </div>
-              <div style={{ padding: '24px' }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '16px',
-                }}>
-                  <div>
-                    <h3 style={{
-                      fontSize: '1.25rem',
-                      fontWeight: 600,
-                      marginBottom: '4px',
-                    }}>
-                      Frankfurt-Bockenheim
-                    </h3>
-                    <p style={{ color: theme.textMuted, fontSize: '0.875rem' }}>
-                      3-Zimmer-Wohnung • 85 m²
-                    </p>
-                  </div>
-                  <span style={{
-                    padding: '6px 12px',
-                    backgroundColor: theme.successBg,
-                    color: theme.success,
-                    borderRadius: '100px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                  }}>
-                    +4,2% Rendite
-                  </span>
-                </div>
-                <div style={{
-                  fontSize: '1.75rem',
-                  fontWeight: 700,
-                  marginBottom: '20px',
-                }}>
-                  450.000 €
-                </div>
-                <div style={{
-                  display: 'flex',
-                  gap: '24px',
-                  paddingTop: '20px',
-                  borderTop: `1px solid ${theme.border}`,
-                }}>
-                  {[
-                    { label: 'Cashflow', value: '+127 €/M' },
-                    { label: 'Faktor', value: '22,4' },
-                    { label: 'Score', value: '78/100' },
-                  ].map((item, i) => (
-                    <div key={i}>
-                      <div style={{ fontSize: '0.75rem', color: theme.textMuted, marginBottom: '4px' }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>
-                        {item.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div style={styles.ctaGroup}>
+                <button
+                  style={styles.primaryCta}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 8px 30px rgba(255,255,255,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  Kostenlos starten {icons.arrow}
+                </button>
+                <button
+                  style={styles.secondaryCta}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.12)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.08)'}
+                >
+                  {icons.play} Demo
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Analysis Card */}
-            <div style={{
-              backgroundColor: theme.bgCard,
-              borderRadius: '16px',
-              border: `1px solid ${theme.border}`,
-              padding: '32px',
-            }}>
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '12px',
-                background: `linear-gradient(135deg, ${theme.accent}20 0%, ${theme.accent}10 100%)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '24px',
-                fontSize: '1.5rem',
-              }}>
-                📊
-              </div>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: 600,
-                marginBottom: '12px',
-              }}>
-                Schnell-Analyse
-              </h3>
-              <p style={{
-                color: theme.textSecondary,
-                fontSize: '0.9375rem',
-                lineHeight: 1.6,
-                marginBottom: '24px',
-              }}>
-                Gib Kaufpreis, Miete und Hausgeld ein – erhalte sofort
-                Rendite, Cashflow und Bewertung.
-              </p>
-              <button style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                fontFamily: 'inherit',
-                backgroundColor: theme.accent,
-                color: '#fff',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-              }}>
-                Analyse starten
-                <span style={{ fontSize: '1.125rem' }}>→</span>
-              </button>
-            </div>
-
-            {/* Stats Card */}
-            <div style={{
-              backgroundColor: theme.bgCard,
-              borderRadius: '16px',
-              border: `1px solid ${theme.border}`,
-              padding: '32px',
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '32px',
-              }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>
-                  Monatsübersicht
-                </h3>
-                <span style={{
-                  fontSize: '0.75rem',
-                  color: theme.textMuted,
-                  padding: '6px 12px',
-                  backgroundColor: theme.bgAccent,
-                  borderRadius: '6px',
-                }}>
-                  Januar 2026
-                </span>
-              </div>
-
-              {[
-                { label: 'Bruttorendite', value: '4,8%', color: theme.success },
-                { label: 'Eigenkapitalrendite', value: '12,4%', color: theme.accent },
-                { label: 'Monatl. Cashflow', value: '+245 €', color: theme.success },
-              ].map((item, i) => (
-                <div key={i} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px 0',
-                  borderBottom: i < 2 ? `1px solid ${theme.border}` : 'none',
-                }}>
-                  <span style={{ color: theme.textSecondary, fontSize: '0.9375rem' }}>
-                    {item.label}
-                  </span>
-                  <span style={{
-                    fontSize: '1.125rem',
-                    fontWeight: 700,
-                    color: item.color,
-                  }}>
-                    {item.value}
-                  </span>
-                </div>
+          <div style={styles.rightSide}>
+            <div style={styles.progressDots}>
+              {images.map((_, index) => (
+                <div key={index} style={styles.progressDot(index)} />
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* Form Elements */}
-        <section style={{ padding: '100px 0' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{
-              fontSize: '2.5rem',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              marginBottom: '16px',
-            }}>
-              Formular-Elemente
-            </h2>
+            <div style={styles.chapterInfo}>
+              <p style={styles.chapterNumber}>{String(currentIndex + 1).padStart(2, '0')} / {String(totalImages).padStart(2, '0')}</p>
+              <p style={styles.chapterName}>{currentChapter.title}</p>
+            </div>
           </div>
 
-          <div style={{
-            maxWidth: '500px',
-            margin: '0 auto',
-            backgroundColor: theme.bgCard,
-            borderRadius: '20px',
-            border: `1px solid ${theme.border}`,
-            padding: '40px',
-          }}>
-            <h3 style={{
-              fontSize: '1.5rem',
-              fontWeight: 600,
-              marginBottom: '8px',
-            }}>
-              Schnell-Rechner
-            </h3>
-            <p style={{
-              color: theme.textSecondary,
-              marginBottom: '32px',
-              fontSize: '0.9375rem',
-            }}>
-              Berechne Rendite und Cashflow in Sekunden
-            </p>
-
-            {[
-              { label: 'Kaufpreis', placeholder: '450.000 €', id: 'price' },
-              { label: 'Monatliche Kaltmiete', placeholder: '1.200 €', id: 'rent' },
-              { label: 'Hausgeld', placeholder: '350 €', id: 'hausgeld' },
-            ].map((field) => (
-              <div key={field.id} style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  marginBottom: '8px',
-                  color: theme.text,
-                }}>
-                  {field.label}
-                </label>
-                <input
-                  type="text"
-                  placeholder={field.placeholder}
-                  onFocus={() => setInputFocused(field.id)}
-                  onBlur={() => setInputFocused(null)}
-                  style={{
-                    width: '100%',
-                    padding: '14px 16px',
-                    fontSize: '1rem',
-                    fontFamily: 'inherit',
-                    backgroundColor: theme.bgAccent,
-                    border: `2px solid ${inputFocused === field.id ? theme.accent : 'transparent'}`,
-                    borderRadius: '10px',
-                    color: theme.text,
-                    outline: 'none',
-                    transition: 'all 0.2s ease',
-                    boxSizing: 'border-box',
-                  }}
-                />
+          <div style={styles.featuresBar}>
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                style={styles.featureItem}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={styles.featureIcon}>{icons[feature.icon]}</div>
+                <div>
+                  <div style={styles.featureLabel}>{feature.label}</div>
+                  <div style={styles.featureDesc}>{feature.desc}</div>
+                </div>
               </div>
             ))}
-
-            <button style={{
-              width: '100%',
-              padding: '16px',
-              fontSize: '1rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: theme.accent,
-              color: '#fff',
-              border: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer',
-              marginTop: '12px',
-              transition: 'all 0.2s ease',
-              boxShadow: `0 4px 14px ${theme.accent}40`,
-            }}>
-              Berechnen →
-            </button>
-          </div>
-        </section>
-
-        {/* Buttons Section */}
-        <section style={{ padding: '60px 0 100px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <h2 style={{
-              fontSize: '2rem',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              marginBottom: '16px',
-            }}>
-              Button-Varianten
-            </h2>
           </div>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '16px',
-            justifyContent: 'center',
-            marginBottom: '40px',
-          }}>
-            {/* Primary */}
-            <button style={{
-              padding: '14px 28px',
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: theme.accent,
-              color: '#fff',
-              border: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer',
-              boxShadow: `0 4px 14px ${theme.accent}40`,
-            }}>
-              Primary Button
-            </button>
-
-            {/* Secondary */}
-            <button style={{
-              padding: '14px 28px',
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: 'transparent',
-              color: theme.text,
-              border: `2px solid ${theme.border}`,
-              borderRadius: '10px',
-              cursor: 'pointer',
-            }}>
-              Secondary
-            </button>
-
-            {/* Ghost */}
-            <button style={{
-              padding: '14px 28px',
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: 'transparent',
-              color: theme.accent,
-              border: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer',
-            }}>
-              Ghost Button →
-            </button>
-
-            {/* Success */}
-            <button style={{
-              padding: '14px 28px',
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: theme.success,
-              color: '#fff',
-              border: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer',
-            }}>
-              Speichern ✓
-            </button>
-
-            {/* Pill Button (Slite style) */}
-            <button style={{
-              padding: '14px 28px',
-              fontSize: '0.9375rem',
-              fontWeight: 600,
-              fontFamily: 'inherit',
-              backgroundColor: 'transparent',
-              color: theme.text,
-              border: `1px solid ${theme.text}`,
-              borderRadius: '100px',
-              cursor: 'pointer',
-            }}>
-              Pill Style
-            </button>
+          <div style={styles.bottomBar}>
+            <span style={styles.progressText}>{Math.round(scrollProgress * 100)}%</span>
+            <div style={styles.scrollHint}>
+              <span style={styles.scrollText}>Scroll</span>
+              <div style={styles.scrollIcon}>
+                <div style={styles.scrollDot} />
+              </div>
+            </div>
+            <span style={styles.progressText}>AMLAKI</span>
           </div>
-
-          {/* Badges */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '12px',
-            justifyContent: 'center',
-          }}>
-            {[
-              { label: 'Empfehlenswert', bg: theme.successBg, color: theme.success },
-              { label: 'Prüfen', bg: `${theme.accent}15`, color: theme.accent },
-              { label: 'Risiko', bg: '#FEE2E2', color: '#DC2626' },
-              { label: 'Neu', bg: theme.bgAccent, color: theme.textSecondary },
-            ].map((badge, i) => (
-              <span key={i} style={{
-                padding: '8px 16px',
-                fontSize: '0.8125rem',
-                fontWeight: 600,
-                backgroundColor: badge.bg,
-                color: badge.color,
-                borderRadius: '100px',
-              }}>
-                {badge.label}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer style={{
-          padding: '40px 0',
-          borderTop: `1px solid ${theme.border}`,
-          textAlign: 'center',
-        }}>
-          <p style={{
-            color: theme.textMuted,
-            fontSize: '0.875rem',
-          }}>
-            Design Preview v2 • Basierend auf Slite, Setrex, Orrivo
-          </p>
-          <p style={{
-            color: theme.textMuted,
-            fontSize: '0.875rem',
-            marginTop: '8px',
-          }}>
-            Bestehende App wurde NICHT verändert
-          </p>
-        </footer>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

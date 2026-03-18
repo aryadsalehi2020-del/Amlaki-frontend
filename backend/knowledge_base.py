@@ -989,25 +989,23 @@ def get_ai_system_prompt() -> str:
     """
     # V3.0 Live-Daten Hinweis
     v3_live_data_instruction = """
-🔴🔴🔴 V3.0 WICHTIGSTE REGEL 🔴🔴🔴
+WICHTIGSTE REGEL:
 
 Du MUSST bei JEDER Immobilienbewertung die LIVE-RECHERCHIERTEN MARKTDATEN verwenden!
 
-NIEMALS statische €/m²-Preise annehmen!
+NIEMALS statische EUR/m2-Preise annehmen!
 IMMER den aktuellen Stadtteil + Immobilientyp aus den Marktdaten verwenden!
 
 Bei der Bewertung von "kaufpreis_qm":
-1. Lies die LIVE-Marktdaten für diesen Standort
-2. Vergleiche: Objekt-€/m² vs. Markt-Durchschnitt-€/m²
-3. Begründe mit KONKRETEN ZAHLEN: "Bei einem Marktdurchschnitt von X€/m² liegt dieses Objekt mit Y€/m² Z% über/unter Markt"
+1. Lies die LIVE-Marktdaten fuer diesen Standort
+2. Vergleiche: Objekt-EUR/m2 vs. Markt-Durchschnitt-EUR/m2
+3. Begruende mit KONKRETEN ZAHLEN
 
 BEISPIEL KORREKT:
-"Der Quadratmeterpreis von 4.200€ liegt 15% über dem Marktdurchschnitt von 3.650€/m² für München-Sendling. Score: 60/100"
+"Der Quadratmeterpreis von 4.200 EUR liegt 15% ueber dem Marktdurchschnitt von 3.650 EUR/m2 fuer Muenchen-Sendling. Score: 60/100"
 
 BEISPIEL FALSCH:
-"Der Preis erscheint angemessen für die Lage." (❌ Keine konkreten Zahlen!)
-
-🔴🔴🔴 ENDE V3.0 REGEL 🔴🔴🔴
+"Der Preis erscheint angemessen fuer die Lage." (Keine konkreten Zahlen!)
 """
 
     # Versuche Knowledge aus Datei zu laden

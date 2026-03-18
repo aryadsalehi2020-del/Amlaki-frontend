@@ -32,8 +32,8 @@ const useChartHeight = (desktopHeight = 350, mobileHeight = 250) => {
 function CashflowChart({ szenarien }) {
   if (!szenarien || szenarien.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-white/5 rounded-xl border border-white/10">
-        <p className="text-text-secondary">Keine Szenario-Daten verfügbar</p>
+      <div className="flex items-center justify-center h-64 bg-[#F5F0E8] rounded-xl border border-[#E8E0D4]">
+        <p className="text-[#8C7E6A]">Keine Szenario-Daten verfügbar</p>
       </div>
     );
   }
@@ -70,8 +70,8 @@ function CashflowChart({ szenarien }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="glass-card p-4 rounded-xl border border-neon-blue/30">
-          <p className="font-bold text-white mb-2">Jahr {label}</p>
+        <div className="bg-white p-4 rounded-xl border border-[#E8E0D4]">
+          <p className="font-bold text-[#2C2418] mb-2">Jahr {label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm flex justify-between gap-4">
               <span>{entry.name}:</span>
@@ -88,9 +88,9 @@ function CashflowChart({ szenarien }) {
 
   return (
     <div className="w-full">
-      <h4 className="text-base md:text-lg font-bold text-white mb-4 md:mb-6 flex items-center gap-2">
-        <span className="text-xl md:text-2xl">📈</span>
-        <span className="text-gradient-neon">Cashflow-Entwicklung über 30 Jahre</span>
+      <h4 className="text-base md:text-lg font-bold text-[#2C2418] mb-4 md:mb-6 flex items-center gap-2">
+        <span className="text-xl md:text-2xl"></span>
+        <span className="text-[#2C2418]">Cashflow-Entwicklung über 30 Jahre</span>
       </h4>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -126,7 +126,7 @@ function CashflowChart({ szenarien }) {
           <Tooltip content={<CustomTooltip />} />
           <Legend
             wrapperStyle={{ paddingTop: '20px' }}
-            formatter={(value) => <span className="text-white capitalize">{value}</span>}
+            formatter={(value) => <span className="text-[#2C2418] capitalize">{value}</span>}
           />
           <ReferenceLine
             y={0}
@@ -199,15 +199,15 @@ function CashflowChart({ szenarien }) {
       <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
         <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-xl">
           <p className="text-orange-400 font-semibold">Konservativ</p>
-          <p className="text-text-muted text-xs">Zins +1%, Miete +0.5%/Jahr</p>
+          <p className="text-[#B5A68C] text-xs">Zins +1%, Miete +0.5%/Jahr</p>
         </div>
-        <div className="p-3 bg-neon-blue/10 border border-neon-blue/30 rounded-xl">
-          <p className="text-neon-blue font-semibold">Realistisch</p>
-          <p className="text-text-muted text-xs">Aktuelle Werte</p>
+        <div className="p-3 bg-[#7C8B6F]/5 border border-[#E8E0D4] rounded-xl">
+          <p className="text-[#7C8B6F] font-semibold">Realistisch</p>
+          <p className="text-[#B5A68C] text-xs">Aktuelle Werte</p>
         </div>
-        <div className="p-3 bg-neon-green/10 border border-neon-green/30 rounded-xl">
-          <p className="text-neon-green font-semibold">Optimistisch</p>
-          <p className="text-text-muted text-xs">Miete +2.5%/Jahr</p>
+        <div className="p-3 bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-xl">
+          <p className="text-[#7C8B6F] font-semibold">Optimistisch</p>
+          <p className="text-[#B5A68C] text-xs">Miete +2.5%/Jahr</p>
         </div>
       </div>
     </div>

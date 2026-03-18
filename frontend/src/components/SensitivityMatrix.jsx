@@ -32,19 +32,19 @@ function SensitivityMatrix({ sensitivity }) {
     if (isCurrentCell) {
       return 'bg-accent/30 ring-2 ring-accent';
     }
-    if (cashflow >= 200) return 'bg-green-500 text-white';
-    if (cashflow >= 100) return 'bg-green-400 text-white';
+    if (cashflow >= 200) return 'bg-green-500 text-[#2C2418]';
+    if (cashflow >= 100) return 'bg-green-400 text-[#2C2418]';
     if (cashflow >= 0) return 'bg-green-300 text-green-900';
     if (cashflow >= -100) return 'bg-yellow-300 text-yellow-900';
-    if (cashflow >= -200) return 'bg-orange-400 text-white';
-    if (cashflow >= -300) return 'bg-orange-500 text-white';
-    return 'bg-red-500 text-white';
+    if (cashflow >= -200) return 'bg-orange-400 text-[#2C2418]';
+    if (cashflow >= -300) return 'bg-orange-500 text-[#2C2418]';
+    return 'bg-red-500 text-[#2C2418]';
   };
 
   return (
     <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
       <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
-        <span className="text-2xl">🔥</span>
+        <span className="text-2xl"></span>
         Sensitivitätsanalyse (Cashflow-Heatmap)
       </h4>
       <p className="text-sm text-slate/60 mb-6">
@@ -67,7 +67,7 @@ function SensitivityMatrix({ sensitivity }) {
       </div>
 
       {/* Mobile scroll hint */}
-      <p className="text-xs text-text-muted mb-2 md:hidden">← Tabelle horizontal scrollen →</p>
+      <p className="text-xs text-[#B5A68C] mb-2 md:hidden">← Tabelle horizontal scrollen →</p>
 
       {/* Matrix Table */}
       <div className="overflow-x-auto -mx-2 px-2">
@@ -135,7 +135,7 @@ function SensitivityMatrix({ sensitivity }) {
 
         {/* Current */}
         <div className="p-4 bg-accent/10 rounded-xl border border-accent/30">
-          <p className="text-xs text-accent font-medium mb-1">Aktuelle Einstellung</p>
+          <p className="text-xs text-[#B5A68C] font-medium mb-1">Aktuelle Einstellung</p>
           <p className="text-lg font-bold text-primary">
             {formatCurrency(matrix[aktueller_zins_index]?.[aktueller_ek_index]?.monatlicher_cashflow || 0)}/Monat
           </p>

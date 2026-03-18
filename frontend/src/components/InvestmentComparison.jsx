@@ -65,7 +65,7 @@ function InvestmentComparison({ vergleich }) {
   return (
     <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
       <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
-        <span className="text-2xl">⚖️</span>
+        <span className="text-2xl"></span>
         Investment-Vergleich: Immobilie vs. ETF
       </h4>
       <p className="text-sm text-slate/60 mb-6">Endvermögen nach 30 Jahren</p>
@@ -88,7 +88,7 @@ function InvestmentComparison({ vergleich }) {
       {/* Comparison Result */}
       <div className={`mt-6 p-4 rounded-xl ${immoBesser ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{immoBesser ? '🏆' : '📊'}</span>
+          <span className="text-3xl">{immoBesser ? '' : ''}</span>
           <div>
             <p className={`font-bold ${immoBesser ? 'text-green-700' : 'text-amber-700'}`}>
               {immoBesser
@@ -111,7 +111,7 @@ function InvestmentComparison({ vergleich }) {
         {/* Immobilie */}
         <div className="p-4 bg-green-50 rounded-xl border border-green-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">🏠</span>
+            <span className="text-xl"></span>
             <span className="font-bold text-green-700">Immobilie</span>
           </div>
           <div className="space-y-2 text-sm">
@@ -137,7 +137,7 @@ function InvestmentComparison({ vergleich }) {
         {/* ETF nur EK */}
         <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">📈</span>
+            <span className="text-xl"></span>
             <span className="font-bold text-blue-700">ETF (nur EK)</span>
           </div>
           <div className="space-y-2 text-sm">
@@ -159,7 +159,7 @@ function InvestmentComparison({ vergleich }) {
         {/* ETF mit Sparrate */}
         <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">💰</span>
+            <span className="text-xl"></span>
             <span className="font-bold text-purple-700">ETF + Sparrate</span>
           </div>
           <div className="space-y-2 text-sm">

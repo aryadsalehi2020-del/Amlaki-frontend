@@ -66,7 +66,7 @@ function RentalVariations({ variationen }) {
   return (
     <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
       <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
-        <span className="text-2xl">📊</span>
+        <span className="text-2xl"></span>
         Miet-Sensitivität
       </h4>
       <p className="text-sm text-slate/60 mb-6">

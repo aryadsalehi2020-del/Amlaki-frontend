@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="20" fill="#1a365d"/>
-  <path d="M50 20 L80 45 L80 80 L20 80 L20 45 Z" fill="#38b2ac"/>
-  <rect x="40" y="55" width="20" height="25" fill="#1a365d"/>
-  <rect x="30" y="35" width="15" height="12" fill="#f7fafc"/>
-  <rect x="55" y="35" width="15" height="12" fill="#f7fafc"/>
+  <rect width="100" height="100" rx="22" fill="#7C8B6F"/>
+  <text x="50%" y="54%" dominant-baseline="central" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="800" font-size="60" fill="#FAF7F2" letter-spacing="-1">A</text>
+  <rect x="70" y="70" width="18" height="18" rx="5" fill="#FAF7F2"/>
+  <text x="79" y="83" dominant-baseline="central" text-anchor="middle" font-family="'Plus Jakarta Sans', 'Inter', sans-serif" font-weight="800" font-size="12" fill="#7C8B6F">I</text>
 </svg>

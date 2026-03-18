@@ -14,33 +14,33 @@ export const useUserProfile = () => {
 export const INVESTMENT_GOALS = {
   cashflow: {
     label: 'Cashflow',
-    icon: '💰',
+    icon: '',
     description: 'Monatliche Einnahmen maximieren',
-    color: 'neon-green'
+    color: 'zinc-300'
   },
   vermoegensaufbau: {
-    label: 'Vermögensaufbau',
-    icon: '📈',
+    label: 'Vermoegensaufbau',
+    icon: '',
     description: 'Langfristiger Wertzuwachs',
-    color: 'neon-blue'
+    color: 'zinc-300'
   },
   flip: {
     label: 'Fix & Flip',
-    icon: '🔄',
+    icon: '',
     description: 'Kaufen, renovieren, verkaufen',
-    color: 'neon-purple'
+    color: 'zinc-300'
   },
   altersvorsorge: {
     label: 'Altersvorsorge',
-    icon: '🏖️',
+    icon: '',
     description: 'Sichere Rente durch Immobilien',
-    color: 'accent'
+    color: 'zinc-300'
   },
   steuern: {
     label: 'Steueroptimierung',
-    icon: '📋',
+    icon: '',
     description: 'Steuervorteile nutzen',
-    color: 'neon-pink'
+    color: 'zinc-300'
   }
 };
 
@@ -48,20 +48,20 @@ export const INVESTMENT_GOALS = {
 export const RISK_PROFILES = {
   konservativ: {
     label: 'Konservativ',
-    icon: '🛡️',
+    icon: '',
     description: 'Sicherheit vor Rendite, geringe Risiken',
     multiplier: 0.8
   },
   ausgewogen: {
     label: 'Ausgewogen',
-    icon: '⚖️',
+    icon: '',
     description: 'Balance zwischen Sicherheit und Rendite',
     multiplier: 1.0
   },
   risikofreudig: {
     label: 'Risikofreudig',
-    icon: '🚀',
-    description: 'Hohe Rendite, höhere Risiken akzeptiert',
+    icon: '',
+    description: 'Hohe Rendite, hoehere Risiken akzeptiert',
     multiplier: 1.2
   }
 };
@@ -69,21 +69,21 @@ export const RISK_PROFILES = {
 // Erfahrungslevel
 export const EXPERIENCE_LEVELS = {
   anfaenger: {
-    label: 'Anfänger',
-    icon: '🌱',
+    label: 'Anfaenger',
+    icon: '',
     description: '0-2 Immobilien, wenig Erfahrung',
     warningLevel: 'high'
   },
   fortgeschritten: {
     label: 'Fortgeschritten',
-    icon: '📚',
+    icon: '',
     description: '3-5 Immobilien, solide Grundlagen',
     warningLevel: 'medium'
   },
   profi: {
     label: 'Profi',
-    icon: '🎓',
-    description: '6+ Immobilien, tiefes Verständnis',
+    icon: '',
+    description: '6+ Immobilien, tiefes Verstaendnis',
     warningLevel: 'low'
   }
 };

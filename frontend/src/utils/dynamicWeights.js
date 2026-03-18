@@ -317,32 +317,32 @@ export function getProfileBasedRecommendation(score, profile) {
   if (score >= threshold + 15) {
     return {
       action: 'invest',
-      emoji: '🟢',
-      text: 'Sehr empfehlenswert für dein Profil',
-      color: 'neon-green'
+      emoji: '',
+      text: 'Sehr empfehlenswert fuer dein Profil',
+      color: 'zinc-200'
     };
   } else if (score >= threshold) {
     return {
       action: 'consider',
-      emoji: '🟡',
+      emoji: '',
       text: 'Gutes Potenzial - passt zu deinem Profil',
-      color: 'accent'
+      color: 'zinc-400'
     };
   } else if (score >= threshold - 10) {
     return {
       action: 'caution',
-      emoji: '🟠',
+      emoji: '',
       text: experience === 'anfaenger'
-        ? 'Mit Begleitung prüfenswert'
+        ? 'Mit Begleitung pruefenswert'
         : 'Genauer analysieren',
-      color: 'orange-500'
+      color: 'zinc-500'
     };
   } else {
     return {
       action: 'avoid',
-      emoji: '🔴',
-      text: 'Nicht optimal für dein Profil',
-      color: 'red-500'
+      emoji: '',
+      text: 'Nicht optimal fuer dein Profil',
+      color: 'zinc-600'
     };
   }
 }
