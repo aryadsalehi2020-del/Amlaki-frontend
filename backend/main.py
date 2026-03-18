@@ -2522,26 +2522,28 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
     knowledge_section = build_knowledge_prompt(request.message, max_topics=3)
 
     # System Prompt für Chat
-    chat_system = f"""Du bist AmlakI - Deutschlands bester Immobilienberater!
+    chat_system = f"""STRIKTE FORMATIERUNGSREGELN (IMMER EINHALTEN):
+1. KEINE Emojis, Symbole oder Unicode-Sonderzeichen verwenden. Niemals. Keine Ausnahmen.
+2. Keine Hashtags (#, ##, ###) fuer Ueberschriften. Verwende stattdessen **Fettschrift** fuer Ueberschriften.
+3. Verwende Aufzaehlungszeichen (-) fuer Listen.
+4. Halte den Ton professionell, sachlich und kompetent.
+5. Strukturiere Antworten klar mit Absaetzen und fetten Zwischenueberschriften.
 
-Du hilfst Nutzern bei Fragen zu:
-- Finanzierung (Zinsen, Tilgung, Eigenkapital, Darlehen)
-- Förderungen (KfW 300, KfW 308, KfW 261, Landesförderungen)
-- Steuern (AfA, Werbungskosten, Spekulationsfrist)
-- Mietrecht (Mieterhöhung, Kündigung, WEG)
-- Bewertung (Kaufpreisfaktor, Rendite, Red Flags)
+Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt (Deutschland, Oesterreich, Schweiz).
+Du verfuegst ueber Expertenwissen in: Immobilienbewertung, Finanzierung, Steueroptimierung, Foerderprogramme, Mietrecht, WEG-Recht, Due Diligence und Verhandlungsfuehrung.
+Deine Beratung basiert auf aktuellen Marktdaten, geltendem Recht und anerkannten Bewertungsverfahren.
 
 WICHTIG V4.0:
-- Bei Fragen zu konkreten Preisen/Märkten IMMER die Live-Daten unten verwenden
-- Keine generischen Antworten wie "zwischen 2.000 und 10.000€/m²"
-- Konkrete Zahlen für den gefragten Standort nennen
+- Bei Fragen zu konkreten Preisen/Maerkten IMMER die Live-Daten unten verwenden
+- Keine generischen Antworten wie "zwischen 2.000 und 10.000 EUR/m2"
+- Konkrete Zahlen fuer den gefragten Standort nennen
 
 {analysis_context}
 
 {knowledge_section}
 
 {f'''
-LIVE-MARKTDATEN FÜR {standort.upper()}:
+LIVE-MARKTDATEN FUER {standort.upper()}:
 {json.dumps(live_marktdaten, indent=2, ensure_ascii=False)}
 ''' if live_marktdaten else ''}
 
@@ -2550,11 +2552,9 @@ ANALYSE-KONTEXT DES NUTZERS:
 {json.dumps(request.context, indent=2, ensure_ascii=False)}
 ''' if request.context else ''}
 
-Antworte auf Deutsch, präzise und hilfreich.
-Nutze Markdown für Formatierung (fett, Listen, etc.).
-Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!
-
-WICHTIG: Verwende KEINE Emojis in deinen Antworten. Keine Symbole wie Pfeile oder Sonderzeichen. Nur reinen Text mit Markdown-Formatierung (fett, Listen, Ueberschriften). Halte den Ton professionell und sachlich."""
+Antworte auf Deutsch, praezise und hilfreich.
+Nutze Markdown fuer Formatierung (fett, Listen, etc.).
+Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
 
     try:
         # Use direct HTTP call to avoid Anthropic SDK unicode issues
@@ -2694,8 +2694,6 @@ async def chat_stream(data: dict = Body(...), current_user: User = Depends(get_c
             detail=f"Nutzungslimit erreicht! Du hast ${usage['total_cost_usd']:.2f} von ${current_user.usage_limit_usd:.2f} verbraucht."
         )
 
-    client = get_anthropic_client()
-
     # Handle conversation: get or create
     conversation = None
     if conversation_id:
@@ -2780,21 +2778,28 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
     knowledge_section = build_knowledge_prompt(message, max_topics=3)
 
     # System Prompt
-    system_prompt = f"""Du bist AmlakI - Deutschlands bester Immobilienberater!
+    system_prompt = f"""STRIKTE FORMATIERUNGSREGELN (IMMER EINHALTEN):
+1. KEINE Emojis, Symbole oder Unicode-Sonderzeichen verwenden. Niemals. Keine Ausnahmen.
+2. Keine Hashtags (#, ##, ###) fuer Ueberschriften. Verwende stattdessen **Fettschrift** fuer Ueberschriften.
+3. Verwende Aufzaehlungszeichen (-) fuer Listen.
+4. Halte den Ton professionell, sachlich und kompetent.
+5. Strukturiere Antworten klar mit Absaetzen und fetten Zwischenueberschriften.
 
-Du hilfst Nutzern bei Fragen zu:
-- Finanzierung (Zinsen, Tilgung, Eigenkapital, Darlehen)
-- Förderungen (KfW 300, KfW 308, KfW 261, Landesförderungen)
-- Steuern (AfA, Werbungskosten, Spekulationsfrist)
-- Mietrecht (Mieterhöhung, Kündigung, WEG)
-- Bewertung (Kaufpreisfaktor, Rendite, Red Flags)
+Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt (Deutschland, Oesterreich, Schweiz).
+Du verfuegst ueber Expertenwissen in: Immobilienbewertung, Finanzierung, Steueroptimierung, Foerderprogramme, Mietrecht, WEG-Recht, Due Diligence und Verhandlungsfuehrung.
+Deine Beratung basiert auf aktuellen Marktdaten, geltendem Recht und anerkannten Bewertungsverfahren.
+
+WICHTIG V4.0:
+- Bei Fragen zu konkreten Preisen/Maerkten IMMER die Live-Daten unten verwenden
+- Keine generischen Antworten wie "zwischen 2.000 und 10.000 EUR/m2"
+- Konkrete Zahlen fuer den gefragten Standort nennen
 
 {analysis_context}
 
 {knowledge_section}
 
 {f'''
-LIVE-MARKTDATEN FÜR {standort.upper()}:
+LIVE-MARKTDATEN FUER {standort.upper()}:
 {json.dumps(live_marktdaten, indent=2, ensure_ascii=False)}
 ''' if live_marktdaten else ''}
 
@@ -2803,54 +2808,61 @@ ANALYSE-KONTEXT DES NUTZERS:
 {json.dumps(context, indent=2, ensure_ascii=False)}
 ''' if context else ''}
 
-Antworte auf Deutsch, präzise und hilfreich.
-Nutze Markdown für Formatierung (fett, Listen, etc.).
-Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!
+Antworte auf Deutsch, praezise und hilfreich.
+Nutze Markdown fuer Formatierung (fett, Listen, etc.).
+Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
 
-WICHTIG: Verwende KEINE Emojis in deinen Antworten. Keine Symbole wie Pfeile oder Sonderzeichen. Nur reinen Text mit Markdown-Formatierung (fett, Listen, Ueberschriften). Halte den Ton professionell und sachlich."""
+    api_key = os.getenv("ANTHROPIC_API_KEY")
 
     async def generate():
+        full_response = ""
         try:
-            with client.messages.stream(
-                model="claude-sonnet-4-20250514",
-                max_tokens=4096,
-                system=system_prompt,
-                messages=messages_for_claude
-            ) as stream:
-                full_response = ""
-                for text in stream.text_stream:
-                    full_response += text
-                    yield f"data: {json.dumps({'text': text})}\n\n"
-
-                # Get final message for token usage
-                final_message = stream.get_final_message()
-
-                # Save assistant message to DB
-                assistant_msg = ChatMessage(
-                    conversation_id=conversation.id,
-                    role="assistant",
-                    content=full_response,
-                    tokens_used=final_message.usage.input_tokens + final_message.usage.output_tokens
-                )
-                db.add(assistant_msg)
-
-                # Update conversation timestamp
-                conversation.updated_at = datetime.utcnow()
-                db.commit()
-
-                # Log Usage
-                log_usage(
-                    db=db,
-                    user_id=current_user.id,
-                    action_type="chat_stream",
-                    input_tokens=final_message.usage.input_tokens,
-                    output_tokens=final_message.usage.output_tokens
-                )
-
-                yield f"data: {json.dumps({'done': True, 'conversation_id': conversation_id})}\n\n"
-
+            async with httpx.AsyncClient(timeout=120.0) as http_client:
+                async with http_client.stream(
+                    "POST",
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": api_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": "claude-sonnet-4-20250514",
+                        "max_tokens": 4096,
+                        "stream": True,
+                        "system": system_prompt,
+                        "messages": messages_for_claude,
+                    },
+                ) as response:
+                    async for line in response.aiter_lines():
+                        if line.startswith("data: "):
+                            try:
+                                chunk = json.loads(line[6:])
+                                if chunk.get("type") == "content_block_delta":
+                                    text = chunk.get("delta", {}).get("text", "")
+                                    if text:
+                                        full_response += text
+                                        yield f"data: {json.dumps({'text': text})}\n\n"
+                                elif chunk.get("type") == "message_stop":
+                                    pass
+                            except json.JSONDecodeError:
+                                pass
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+        # Save to DB after streaming complete
+        if full_response:
+            assistant_msg = ChatMessage(
+                conversation_id=conversation.id,
+                role="assistant",
+                content=full_response,
+                tokens_used=0
+            )
+            db.add(assistant_msg)
+            conversation.updated_at = datetime.utcnow()
+            db.commit()
+
+        yield f"data: {json.dumps({'done': True, 'conversation_id': conversation_id})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
 

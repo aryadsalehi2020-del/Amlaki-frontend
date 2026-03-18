@@ -1,6 +1,6 @@
-## TEIL 1: STAATLICHE FÖRDERUNGEN & ZUSCHÜSSE
+## TEIL 1: STAATLICHE FOERDERUNGEN & ZUSCHUESSE (Stand 2026)
 
-### KfW-Förderprogramme Übersicht
+### KfW-Foerderprogramme Uebersicht
 
 #### KfW 124 Wohneigentumsprogramm
 - **Kredit:** Bis zu 100.000 EUR
