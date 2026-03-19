@@ -2,48 +2,72 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { API_BASE } from '../config';
 import { useStreamingChat } from '../hooks/useStreamingChat';
+import { useAuth } from '../contexts/AuthContext';
 
 // ── Markdown renderer ──────────────────────────────────────────────
 function renderMarkdown(text) {
   if (!text) return null;
-  const paragraphs = text.split('\n\n');
-  return paragraphs.map((p, i) => {
-    const lines = p.split('\n');
-    // Bullet list
-    if (lines.every((l) => l.match(/^[\-\*]\s/) || l.trim() === '')) {
-      return (
-        <ul key={i} className="list-disc pl-5 space-y-1 my-2">
-          {lines
-            .filter((l) => l.trim())
-            .map((l, j) => (
-              <li key={j}>{inlineFormat(l.replace(/^[\-\*]\s/, ''))}</li>
-            ))}
+  const lines = text.split('\n');
+  const elements = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Skip empty lines
+    if (!trimmed) { i++; continue; }
+
+    // Headings
+    if (trimmed.startsWith('### ')) {
+      elements.push(<h4 key={i} style={{ color: '#2C2418', fontWeight: 600, fontSize: '0.95rem', marginTop: '16px', marginBottom: '6px' }}>{inlineFormat(trimmed.slice(4))}</h4>);
+      i++; continue;
+    }
+    if (trimmed.startsWith('## ')) {
+      elements.push(<h3 key={i} style={{ color: '#2C2418', fontWeight: 700, fontSize: '1.05rem', marginTop: '20px', marginBottom: '8px' }}>{inlineFormat(trimmed.slice(3))}</h3>);
+      i++; continue;
+    }
+    if (trimmed.startsWith('# ')) {
+      elements.push(<h2 key={i} style={{ color: '#2C2418', fontWeight: 700, fontSize: '1.15rem', marginTop: '20px', marginBottom: '8px' }}>{inlineFormat(trimmed.slice(2))}</h2>);
+      i++; continue;
+    }
+
+    // Bullet list - collect consecutive items
+    if (trimmed.match(/^[\-\*]\s/)) {
+      const items = [];
+      while (i < lines.length && (lines[i].trim().match(/^[\-\*]\s/) || lines[i].trim() === '')) {
+        if (lines[i].trim()) items.push(lines[i].trim().replace(/^[\-\*]\s/, ''));
+        i++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} style={{ paddingLeft: '20px', margin: '8px 0' }}>
+          {items.map((item, j) => <li key={j} style={{ marginBottom: '4px', listStyleType: 'disc' }}>{inlineFormat(item)}</li>)}
         </ul>
       );
+      continue;
     }
+
     // Numbered list
-    if (lines.every((l) => l.match(/^\d+[\.\)]\s/) || l.trim() === '')) {
-      return (
-        <ol key={i} className="list-decimal pl-5 space-y-1 my-2">
-          {lines
-            .filter((l) => l.trim())
-            .map((l, j) => (
-              <li key={j}>{inlineFormat(l.replace(/^\d+[\.\)]\s/, ''))}</li>
-            ))}
+    if (trimmed.match(/^\d+[\.\)]\s/)) {
+      const items = [];
+      while (i < lines.length && (lines[i].trim().match(/^\d+[\.\)]\s/) || lines[i].trim() === '')) {
+        if (lines[i].trim()) items.push(lines[i].trim().replace(/^\d+[\.\)]\s/, ''));
+        i++;
+      }
+      elements.push(
+        <ol key={`ol-${i}`} style={{ paddingLeft: '20px', margin: '8px 0' }}>
+          {items.map((item, j) => <li key={j} style={{ marginBottom: '4px', listStyleType: 'decimal' }}>{inlineFormat(item)}</li>)}
         </ol>
       );
+      continue;
     }
-    return (
-      <p key={i} className="my-1.5">
-        {lines.map((line, j) => (
-          <React.Fragment key={j}>
-            {j > 0 && <br />}
-            {inlineFormat(line)}
-          </React.Fragment>
-        ))}
-      </p>
-    );
-  });
+
+    // Regular paragraph
+    elements.push(<p key={i} style={{ margin: '6px 0' }}>{inlineFormat(trimmed)}</p>);
+    i++;
+  }
+
+  return elements;
 }
 
 function inlineFormat(text) {
@@ -64,24 +88,25 @@ function inlineFormat(text) {
 // ── Typing indicator ───────────────────────────────────────────────
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-2 px-4 py-3">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '12px 16px', height: '42px' }}>
       {[0, 1, 2].map((i) => (
         <span
           key={i}
           style={{
+            display: 'block',
             width: '6px',
             height: '6px',
             borderRadius: '50%',
-            backgroundColor: '#7C8B6F',
-            animation: 'smoothPulse 1.4s ease-in-out infinite',
-            animationDelay: `${i * 0.3}s`,
+            backgroundColor: '#B5A68C',
+            opacity: 0.3,
+            animation: `typingFade 1.5s ease-in-out ${i * 0.2}s infinite`,
           }}
         />
       ))}
       <style>{`
-        @keyframes smoothPulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
+        @keyframes typingFade {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1); }
         }
       `}</style>
     </div>
@@ -250,6 +275,7 @@ export default function Chat() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { sendMessage, stopStreaming, isStreaming } = useStreamingChat();
+  const { user } = useAuth();
 
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
@@ -261,6 +287,16 @@ export default function Chat() {
   const [analysisData, setAnalysisData] = useState(null);
   const [analysisLinkHandled, setAnalysisLinkHandled] = useState(false);
   const [generalMessageCount, setGeneralMessageCount] = useState(0);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(() => {
+    return localStorage.getItem('welcomeBannerDismissed') === 'true';
+  });
+
+  const showWelcomeBanner = !welcomeDismissed && !localStorage.getItem('profileSetupDone');
+
+  const dismissWelcome = () => {
+    setWelcomeDismissed(true);
+    localStorage.setItem('welcomeBannerDismissed', 'true');
+  };
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -708,12 +744,36 @@ export default function Chat() {
         >
           {isNewChat ? (
             <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto">
+              {/* Welcome Banner for new users */}
+              {showWelcomeBanner && (
+                <div className="w-full mb-6 p-4 bg-[#7C8B6F]/[0.08] border border-[#7C8B6F]/20 rounded-2xl relative">
+                  <button
+                    onClick={dismissWelcome}
+                    className="absolute top-3 right-3 text-[#8C7E6A] hover:text-[#2C2418] transition-colors text-lg leading-none"
+                    aria-label="Schliessen"
+                  >
+                    &times;
+                  </button>
+                  <h3 className="text-[15px] font-semibold text-[#2C2418] mb-1">
+                    Willkommen bei AmlakiAI{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
+                  </h3>
+                  <p className="text-[13px] text-[#5C4F3D] mb-3 pr-6">
+                    Richte dein Investoren-Profil ein, damit ich dich personalisiert beraten kann -- abgestimmt auf deine Ziele, Risikobereitschaft und finanzielle Situation.
+                  </p>
+                  <button
+                    onClick={() => navigate('/settings')}
+                    className="text-[13px] font-medium text-[#7C8B6F] hover:text-[#5C4F3D] transition-colors"
+                  >
+                    Profil einrichten &rarr;
+                  </button>
+                </div>
+              )}
               <div className="mb-8 text-center">
                 <h2 className="text-[22px] font-bold text-[#2C2418] mb-2">
                   Wie kann ich helfen?
                 </h2>
                 <p className="text-[14px] text-[#8C7E6A]">
-                  Dein KI-Berater fuer Immobilieninvestments in Deutschland
+                  Dein KI-Berater fuer den Immobilienkauf im DACH-Raum
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">

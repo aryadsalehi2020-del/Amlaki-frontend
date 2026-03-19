@@ -14,7 +14,7 @@ function UserGoalsForm({ onComplete, compact = false }) {
 
   const handleGoalSelect = (goal) => { updateProfile({ goal }); if (!compact) setActiveStep(1); };
   const handleRiskSelect = (riskProfile) => { updateProfile({ riskProfile }); if (!compact) setActiveStep(2); };
-  const handleExperienceSelect = (experience) => { updateProfile({ experience }); if (onComplete && isProfileComplete) onComplete(); };
+  const handleExperienceSelect = (experience) => { updateProfile({ experience }); localStorage.setItem('profileSetupDone', 'true'); if (onComplete && isProfileComplete) onComplete(); };
   const handleFinancialUpdate = (field, value) => { updateProfile({ [field]: value }); };
 
   const inputClass = "w-full px-3 py-2 bg-white border border-[#E8E0D4] rounded-[8px] text-[#2C2418] text-[13px] focus:border-[#7C8B6F] focus:outline-none focus:ring-2 focus:ring-[#7C8B6F]/10";

@@ -6,7 +6,6 @@ import { UserProfileProvider } from './contexts/UserProfileContext';
 // Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import DesignPreview from './pages/DesignPreview';
 import Analyze from './pages/Analyze';
 import Library from './pages/Library';
@@ -60,8 +59,8 @@ function RootRedirect() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate">Lade...</p>
+          <div className="w-10 h-10 border-[1.5px] border-[#E8E0D4] border-t-[#B5A68C] rounded-full mx-auto mb-4" style={{ animation: 'spin 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}></div>
+          <p className="text-[#8C7E6A] text-sm">Lade...</p>
         </div>
       </div>
     );
@@ -111,16 +110,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Dashboard />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
+          {/* /dashboard removed – Chat is the main entry point */}
           <Route
             path="/analyze"
             element={
