@@ -51,16 +51,22 @@ function DashboardLayout({ children }) {
   );
 }
 
-// Root Redirect – show LandingPage for guests, Dashboard for logged-in users
+// Root Redirect – show LandingPage for guests, Chat for logged-in users
 function RootRedirect() {
   const { user, loading } = useAuth();
+  const [slowLoad, setSlowLoad] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setSlowLoad(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
         <div className="text-center">
           <div className="w-10 h-10 border-[1.5px] border-[#E8E0D4] border-t-[#B5A68C] rounded-full mx-auto mb-4" style={{ animation: 'spin 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}></div>
-          <p className="text-[#8C7E6A] text-sm">Lade...</p>
+          <p className="text-[#8C7E6A] text-sm">{slowLoad ? 'Server wird gestartet, einen Moment...' : 'Lade...'}</p>
         </div>
       </div>
     );

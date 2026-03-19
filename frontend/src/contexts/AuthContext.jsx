@@ -25,29 +25,39 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const fetchCurrentUser = async (authToken = null) => {
+  const fetchCurrentUser = async (authToken = null, retries = 2) => {
     const currentToken = authToken || token || localStorage.getItem('token');
     if (!currentToken) return;
 
-    try {
-      const response = await fetch(`${API_BASE}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${currentToken}`
-        }
-      });
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${currentToken}`
+          }
+        });
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        // Token ungültig
-        logout();
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          setLoading(false);
+          return;
+        } else {
+          logout();
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error(`Fetch user attempt ${attempt + 1} failed:`, error);
+        if (attempt < retries) {
+          // Server wahrscheinlich im Cold Start - warten und nochmal versuchen
+          await new Promise(r => setTimeout(r, 3000));
+        } else {
+          // Alle Versuche fehlgeschlagen - NICHT ausloggen, Token koennte noch gueltig sein
+          console.error('Server nicht erreichbar nach allen Versuchen');
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      logout();
-    } finally {
-      setLoading(false);
     }
   };
 
