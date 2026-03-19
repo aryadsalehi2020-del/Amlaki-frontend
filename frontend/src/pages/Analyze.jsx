@@ -1,12 +1,105 @@
-import React, { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { MessageSquare, Lock } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import PropertyForm from '../components/PropertyForm';
 import AnalysisResult from '../components/AnalysisResult';
 import LoadingState from '../components/LoadingState';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
+
+function CreditsBadge({ credits }) {
+  if (credits === null || credits === undefined) return null;
+  return (
+    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full text-[13px] font-medium text-[#7C8B6F]">
+      {credits} {credits === 1 ? 'Credit' : 'Credits'}
+    </div>
+  );
+}
+
+function PaywallModal({ onClose, token }) {
+  const [loading, setLoading] = useState(null);
+
+  const packages = [
+    { id: 'single', credits: 1, price: '4,99', perUnit: '4,99', popular: false },
+    { id: 'pack5', credits: 5, price: '19,99', perUnit: '3,99', popular: true },
+    { id: 'pack10', credits: 10, price: '29,99', perUnit: '2,99', popular: false },
+  ];
+
+  const handlePurchase = async (packageId) => {
+    setLoading(packageId);
+    try {
+      const res = await fetch(`${API_BASE}/payments/create-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ package: packageId }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        alert(d.detail || 'Fehler beim Erstellen der Zahlung');
+        setLoading(null);
+        return;
+      }
+      const data = await res.json();
+      window.location.href = data.checkout_url;
+    } catch (err) {
+      alert('Verbindungsfehler. Bitte versuche es erneut.');
+      setLoading(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-[20px] max-w-lg w-full p-8 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-[#8C7E6A] hover:text-[#2C2418] text-xl">&times;</button>
+
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 bg-[#7C8B6F]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-6 h-6 text-[#7C8B6F]" />
+          </div>
+          <h2 className="text-[22px] font-bold text-[#2C2418] mb-2">Analyse-Credits kaufen</h2>
+          <p className="text-[14px] text-[#8C7E6A]">
+            Schalte die vollstaendige Immobilienanalyse frei -- mit Szenarien, Foerderungen und Verbesserungsvorschlaegen.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {packages.map((pkg) => (
+            <button
+              key={pkg.id}
+              onClick={() => handlePurchase(pkg.id)}
+              disabled={loading !== null}
+              className={`w-full p-4 rounded-[14px] border-2 text-left transition-all flex items-center justify-between ${
+                pkg.popular
+                  ? 'border-[#7C8B6F] bg-[#7C8B6F]/[0.04]'
+                  : 'border-[#E8E0D4] hover:border-[#B5A68C]'
+              } ${loading === pkg.id ? 'opacity-70' : ''}`}
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[15px] font-semibold text-[#2C2418]">
+                    {pkg.credits} {pkg.credits === 1 ? 'Analyse' : 'Analysen'}
+                  </span>
+                  {pkg.popular && (
+                    <span className="text-[11px] font-medium bg-[#7C8B6F] text-white px-2 py-0.5 rounded-full">Beliebt</span>
+                  )}
+                </div>
+                <span className="text-[12px] text-[#8C7E6A]">{pkg.perUnit} pro Analyse</span>
+              </div>
+              <span className="text-[18px] font-bold text-[#2C2418]">
+                {loading === pkg.id ? '...' : `${pkg.price} \u20AC`}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <p className="text-[11px] text-[#B5A68C] text-center mt-6">
+          Sichere Zahlung via Stripe. Keine Abos, keine versteckten Kosten.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function Analyze() {
   const [step, setStep] = useState('upload');
@@ -17,8 +110,33 @@ function Analyze() {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [lastFinanzierung, setLastFinanzierung] = useState(null);
   const [lastVerwendungszweck, setLastVerwendungszweck] = useState(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [credits, setCredits] = useState(null);
   const { token } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Fetch credits on mount + after payment
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/payments/credits`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCredits(data.credits);
+        }
+      } catch (err) { /* ignore */ }
+    };
+    fetchCredits();
+
+    // Check for payment success
+    const payment = searchParams.get('payment');
+    if (payment === 'success') {
+      fetchCredits();
+    }
+  }, [token, searchParams]);
 
   const handleFileUpload = useCallback(async (file) => {
     setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
@@ -32,18 +150,34 @@ function Analyze() {
 
   const handleManualEntry = useCallback(() => { setPropertyData({}); setStep('form'); }, []);
 
-  const handleAnalyze = useCallback(async (formData, verwendungszweck, finanzierung) => {
+  const handleAnalyze = useCallback(async (formData, verwendungszweck, finanzierung, investmentProfile) => {
     setError(null); setStep('analyzing'); setLoadingMessage('Immobilie wird bewertet...');
     setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
+      const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung };
+      if (investmentProfile) {
+        requestBody.investment_profile = {
+          goal: investmentProfile.goal,
+          risk_profile: investmentProfile.riskProfile,
+          eigenkapital: investmentProfile.eigenkapital,
+          mindest_rendite: investmentProfile.mindestRendite,
+        };
+      }
       const res = await fetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung }),
+        body: JSON.stringify(requestBody),
       });
+      if (res.status === 402) {
+        setShowPaywall(true);
+        setStep('form');
+        return;
+      }
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       const resultData = await res.json();
       setAnalysisResult(resultData);
       if (resultData.analysis_id) setSavedAnalysisId(resultData.analysis_id);
+      // Update credits after analysis
+      setCredits(prev => prev !== null && prev > 0 ? prev - 1 : prev);
       setStep('result');
     } catch (err) { setError(err.message); setStep('form'); }
   }, [token]);
@@ -59,6 +193,7 @@ function Analyze() {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ property_data: propertyData, verwendungszweck: v, eigenkapital: fin.eigenkapital, zinssatz: fin.zinssatz, tilgung: fin.tilgung }),
       });
+      if (res.status === 402) { setShowPaywall(true); setStep('result'); return; }
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       setAnalysisResult(await res.json()); setStep('result');
     } catch (err) { setError(err.message); setStep('result'); }
@@ -73,6 +208,7 @@ function Analyze() {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ property_data: propertyData, verwendungszweck: lastVerwendungszweck, eigenkapital: ek, zinssatz: lastFinanzierung?.zinssatz || 3.75, tilgung: lastFinanzierung?.tilgung || 1.25 }),
       });
+      if (res.status === 402) { setShowPaywall(true); setStep('result'); return; }
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       setAnalysisResult(await res.json()); setStep('result');
     } catch (err) { setError(err.message); }
@@ -83,9 +219,18 @@ function Analyze() {
       <div className="max-w-[900px]">
         {step === 'upload' && (
           <header className="text-center mb-16 fade-in">
-            <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] mb-3">Neue Analyse</h1>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418]">Neue Analyse</h1>
+              <CreditsBadge credits={credits} />
+            </div>
             <p className="text-[#8C7E6A] text-[16px] max-w-md mx-auto font-light">Expose hochladen oder Daten manuell eingeben</p>
           </header>
+        )}
+
+        {searchParams.get('payment') === 'success' && (
+          <div className="mb-8 px-5 py-4 bg-[#7C8B6F]/[0.08] border border-[#7C8B6F]/[0.2] rounded-[16px] fade-in">
+            <p className="text-[#7C8B6F] text-[14px] font-medium">Zahlung erfolgreich! Deine Credits wurden aufgeladen.</p>
+          </div>
         )}
 
         {error && (
@@ -123,11 +268,14 @@ function Analyze() {
               <AnalysisResult result={analysisResult} propertyData={propertyData}
                 onNewAnalysis={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setSavedAnalysisId(null); setError(null); }}
                 onEditData={() => { setStep('form'); setAnalysisResult(null); }}
-                onSwitchVerwendungszweck={handleSwitchVerwendungszweck} onChangeEigenkapital={handleChangeEigenkapital} />
+                onSwitchVerwendungszweck={handleSwitchVerwendungszweck} onChangeEigenkapital={handleChangeEigenkapital}
+                onUpgrade={() => setShowPaywall(true)} />
             </>
           )}
         </main>
       </div>
+
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} token={token} />}
     </div>
   );
 }
