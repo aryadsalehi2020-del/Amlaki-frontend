@@ -88,25 +88,28 @@ function inlineFormat(text) {
 // ── Typing indicator ───────────────────────────────────────────────
 function TypingIndicator() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '12px 16px', height: '42px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '12px 16px', height: '42px' }}>
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          style={{
-            display: 'block',
-            width: '6px',
-            height: '6px',
-            borderRadius: '50%',
-            backgroundColor: '#B5A68C',
-            opacity: 0.3,
-            animation: `typingFade 1.5s ease-in-out ${i * 0.2}s infinite`,
-          }}
+          className="typing-dot"
+          style={{ animationDelay: `${i * 0.15}s` }}
         />
       ))}
       <style>{`
-        @keyframes typingFade {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1); }
+        .typing-dot {
+          display: block;
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background-color: #B5A68C;
+          opacity: 0.25;
+          will-change: opacity;
+          animation: typingPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes typingPulse {
+          0%, 80%, 100% { opacity: 0.25; }
+          40% { opacity: 0.9; }
         }
       `}</style>
     </div>
