@@ -1362,6 +1362,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
       {/* Optionen Tab - Finanzierung & Miet-Variationen */}
       {activeTab === 'optionen' && hasExtendedData && (
+        result.is_premium === false ? <PremiumLock onUpgrade={onUpgrade} /> :
         <div className="space-y-8">
           {/* Financing Options */}
           {result.finanzierungsoptionen && (
@@ -1382,6 +1383,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
       {/* Vergleich Tab - Investment Comparison & Milestones */}
       {activeTab === 'vergleich' && hasExtendedData && (
+        result.is_premium === false ? <PremiumLock onUpgrade={onUpgrade} /> :
         <div className="space-y-8">
           {/* Investment Comparison */}
           {result.investment_vergleich && (

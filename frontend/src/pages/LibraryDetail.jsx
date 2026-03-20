@@ -240,7 +240,8 @@ function LibraryDetail() {
         {/* Full Analysis Result */}
         {analysis.analysis_result && (
           <AnalysisResult result={analysis.analysis_result} propertyData={analysis.property_data}
-            onNewAnalysis={() => navigate('/analyze')} onEditData={() => navigate('/analyze', { state: { prefill: analysis.property_data } })} />
+            onNewAnalysis={() => navigate('/analyze')} onEditData={() => navigate('/analyze', { state: { prefill: analysis.property_data } })}
+            onUpgrade={() => navigate('/pricing')} />
         )}
       </div>
 
