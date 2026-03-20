@@ -255,7 +255,7 @@ export default function LandingPage() {
         document.body.removeChild(form);
       }
 
-      console.log('Waitlist signup:', email);
+      // Waitlist signup recorded
       setSubmitted(true);
       setEmail('');
     },
