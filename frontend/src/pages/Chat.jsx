@@ -758,7 +758,7 @@ export default function Chat() {
                     &times;
                   </button>
                   <h3 className="text-[15px] font-semibold text-[#2C2418] mb-1">
-                    Willkommen bei AmlakiAI{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : ''}!
+                    Willkommen bei AmlakiAI{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : user?.username ? `, ${user.username}` : ''}!
                   </h3>
                   <p className="text-[13px] text-[#5C4F3D] mb-3 pr-6">
                     Richte dein Investoren-Profil ein, damit ich dich personalisiert beraten kann -- abgestimmt auf deine Ziele, Risikobereitschaft und finanzielle Situation.
