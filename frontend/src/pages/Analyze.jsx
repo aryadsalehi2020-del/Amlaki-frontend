@@ -138,6 +138,11 @@ function Analyze() {
     }
   }, [token, searchParams]);
 
+  const handleUrlImport = useCallback((data) => {
+    setPropertyData(data);
+    setStep('form');
+  }, []);
+
   const handleFileUpload = useCallback(async (file) => {
     setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
     const fd = new FormData(); fd.append('file', file);
@@ -240,7 +245,7 @@ function Analyze() {
         )}
 
         <main>
-          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} />}
+          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} />}
           {step === 'form' && <PropertyForm initialData={propertyData} onAnalyze={handleAnalyze} onBack={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setError(null); }} />}
           {step === 'analyzing' && <LoadingState message={loadingMessage} />}
           {step === 'result' && analysisResult && (
