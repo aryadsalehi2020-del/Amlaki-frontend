@@ -1299,6 +1299,30 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               </div>
             </div>
           )}
+
+          {/* Verhandlungsnachricht */}
+          {result.verhandlungsmail && (
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
+              <h3 className="text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
+                Verhandlungsnachricht
+              </h3>
+              <p className="text-[13px] text-[#8C7E6A] mb-5">Fertige Nachricht an den Verkaeufer/Makler - basierend auf deiner Analyse. Kopieren und anpassen.</p>
+              <div className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-6 relative">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(result.verhandlungsmail);
+                    const btn = document.getElementById('copy-btn-mail');
+                    if (btn) { btn.textContent = 'Kopiert!'; setTimeout(() => { btn.textContent = 'Kopieren'; }, 2000); }
+                  }}
+                  id="copy-btn-mail"
+                  className="absolute top-4 right-4 px-3 py-1.5 bg-[#7C8B6F] text-white text-[12px] font-medium rounded-[8px] hover:bg-[#6B7A5E] transition-all"
+                >
+                  Kopieren
+                </button>
+                <pre className="text-[14px] text-[#2C2418] whitespace-pre-wrap font-sans leading-relaxed">{result.verhandlungsmail}</pre>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
