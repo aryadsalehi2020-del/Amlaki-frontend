@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Tools from './pages/Tools';
 import Chat from './pages/Chat';
 import Admin from './pages/Admin';
+import Pricing from './pages/Pricing';
 import LandingPage from './pages/LandingPage';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
@@ -173,6 +174,16 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Tools />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Pricing />
                 </DashboardLayout>
               </ProtectedRoute>
             }

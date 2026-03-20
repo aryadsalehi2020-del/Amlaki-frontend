@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { MessageSquare, Search, BookOpen, Calculator, Settings } from 'lucide-react';
+import { MessageSquare, Search, BookOpen, Calculator, Settings, CreditCard } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const ICON_MAP = { MessageSquare, Search, BookOpen, Calculator, Settings };
+const ICON_MAP = { MessageSquare, Search, BookOpen, Calculator, Settings, CreditCard };
 
 function Sidebar() {
   const { user, logout } = useAuth();
@@ -22,6 +22,7 @@ function Sidebar() {
     { to: '/analyze', label: 'Analyse', icon: 'Search' },
     { to: '/library', label: 'Bibliothek', icon: 'BookOpen' },
     { to: '/tools', label: 'Rechner', icon: 'Calculator' },
+    { to: '/pricing', label: 'Credits', icon: 'CreditCard' },
     { to: '/settings', label: 'Einstellungen', icon: 'Settings' },
   ];
 
