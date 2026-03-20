@@ -308,7 +308,7 @@ export default function LandingPage() {
             {[
               ['features', 'Leistungen'],
               ['how', 'Ablauf'],
-              ['waitlist', 'Warteliste'],
+              ['pricing', 'Preise'],
             ].map(([id, label]) => (
               <button
                 key={id}
@@ -323,12 +323,21 @@ export default function LandingPage() {
             ))}
             <button
               onClick={() => navigate('/login')}
+              className="text-sm font-medium px-4 py-2 rounded-full transition-all duration-200"
+              style={{ background: 'transparent', color: C.body, border: `1px solid ${C.border}`, cursor: 'pointer' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.khaki)}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}
+            >
+              Anmelden
+            </button>
+            <button
+              onClick={() => navigate('/register')}
               className="text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200"
               style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer' }}
               onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
               onMouseLeave={(e) => (e.currentTarget.style.background = C.olive)}
             >
-              Anmelden
+              Kostenlos testen
             </button>
           </div>
 
@@ -352,7 +361,7 @@ export default function LandingPage() {
             {[
               ['features', 'Leistungen'],
               ['how', 'Ablauf'],
-              ['waitlist', 'Warteliste'],
+              ['pricing', 'Preise'],
             ].map(([id, label]) => (
               <button
                 key={id}
@@ -410,17 +419,17 @@ export default function LandingPage() {
           <FadeInSection delay={0.3}>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={() => scrollTo('waitlist')}
+                onClick={() => navigate('/register')}
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = C.olive)}
               >
-                Auf die Warteliste
+                Kostenlos testen
                 <ArrowRight size={18} />
               </button>
               <button
-                onClick={() => scrollTo('features')}
+                onClick={() => scrollTo('pricing')}
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{
                   background: 'transparent',
@@ -432,9 +441,12 @@ export default function LandingPage() {
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.khaki)}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}
               >
-                Mehr erfahren
+                Preise ansehen
               </button>
             </div>
+            <p className="text-xs mt-3" style={{ color: C.khaki }}>
+              Erste Analyse gratis -- keine Kreditkarte erforderlich
+            </p>
           </FadeInSection>
 
           {/* Icon grid – subtle feature preview */}
@@ -670,82 +682,85 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ===== WAITLIST CTA ===== */}
-      <section id="waitlist" className="py-14 md:py-24 px-4 sm:px-5" style={{ background: C.bgAlt }}>
-        <div className="max-w-xl mx-auto text-center">
+      {/* ===== PRICING ===== */}
+      <section id="pricing" className="py-14 md:py-24 px-4 sm:px-5" style={{ background: C.bgAlt }}>
+        <div className="max-w-4xl mx-auto">
           <FadeInSection>
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
-              style={{ background: `${C.khaki}15`, border: `1px solid ${C.khaki}30` }}
-            >
-              <Mail size={24} style={{ color: C.khaki }} />
+            <div className="text-center mb-10 md:mb-12">
+              <span
+                className="inline-block text-xs sm:text-sm font-semibold tracking-wide uppercase mb-3"
+                style={{ color: C.olive }}
+              >
+                Preise
+              </span>
+              <h2
+                className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
+                style={{ color: C.heading, letterSpacing: '-0.025em' }}
+              >
+                Professionelle Analyse ab 4,99
+              </h2>
+              <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
+                Erste Analyse gratis. Keine Abos, keine versteckten Kosten. Zum Vergleich: Ein Immobiliengutachter kostet 500-2.000.
+              </p>
             </div>
-            <h2
-              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
-              style={{ color: C.heading, letterSpacing: '-0.025em' }}
-            >
-              Auf die Warteliste eintragen
-            </h2>
-            <p className="text-sm sm:text-base mb-6 md:mb-8 max-w-md mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
-              AmlakI befindet sich aktuell in der finalen Entwicklungsphase. Trage dich ein, um benachrichtigt zu werden, sobald die Plattform verf&uuml;gbar ist.
-            </p>
           </FadeInSection>
 
-          <FadeInSection delay={0.1}>
-            {submitted ? (
-              <div
-                className="rounded-2xl p-6 flex flex-col items-center gap-3"
-                style={{ background: C.card, border: `1px solid ${C.border}` }}
-              >
-                <CheckCircle2 size={32} style={{ color: C.olive }} />
-                <p className="text-base font-semibold" style={{ color: C.heading }}>
-                  Vielen Dank f&uuml;r dein Interesse.
-                </p>
-                <p className="text-sm" style={{ color: C.body }}>
-                  Wir informieren dich, sobald AmlakI verf&uuml;gbar ist.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
-                    placeholder="deine@email.de"
-                    required
-                    className="flex-1 px-5 py-3.5 rounded-full outline-none transition-all duration-200"
-                    style={{
-                      background: C.card,
-                      border: `1.5px solid ${emailError ? '#D97706' : C.border}`,
-                      color: C.heading,
-                      minHeight: '48px',
-                      fontSize: '16px',
-                    }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = emailError ? '#D97706' : C.olive)}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = emailError ? '#D97706' : C.border)}
-                  />
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-5">
+            {[
+              { name: 'Gratis', price: '0', unit: '', desc: 'Zum Kennenlernen', credits: '1 Analyse', features: ['Score und Bewertung', 'Cashflow-Berechnung', 'Grundlegende Kennzahlen', 'KI-Chat'], cta: 'Kostenlos starten', popular: false },
+              { name: 'Starter', price: '4,99', unit: '', desc: 'Einzelne Analyse', credits: '1 Analyse', features: ['Alles aus Gratis', 'Szenarien-Vergleich', 'Foerderungen und AfA', 'Fairer Preis Berechnung', 'Verbesserungsvorschlaege'], cta: 'Analyse kaufen', popular: false },
+              { name: 'Investor', price: '19,99', unit: '', desc: 'Fuer ernsthafte Kaeufer', credits: '5 Analysen (3,99/St.)', features: ['Alles aus Starter', '5 vollstaendige Analysen', 'Mengenrabatt 20%', 'Ideal zum Vergleichen'], cta: 'Paket kaufen', popular: true },
+            ].map((plan, i) => (
+              <FadeInSection key={plan.name} delay={i * 0.1}>
+                <div
+                  className="rounded-2xl p-6 sm:p-7 h-full flex flex-col relative"
+                  style={{
+                    background: C.card,
+                    border: plan.popular ? `2px solid ${C.olive}` : `1px solid ${C.border}`,
+                  }}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold" style={{ background: C.olive, color: '#fff' }}>
+                      Beliebt
+                    </div>
+                  )}
+                  <h3 className="text-lg font-bold mb-1" style={{ color: C.heading }}>{plan.name}</h3>
+                  <p className="text-xs mb-4" style={{ color: C.khaki }}>{plan.desc}</p>
+                  <div className="mb-1">
+                    <span className="text-3xl font-bold" style={{ color: C.heading }}>{plan.price}</span>
+                    {plan.price !== '0' && <span className="text-lg font-bold" style={{ color: C.heading }}> EUR</span>}
+                  </div>
+                  <p className="text-sm mb-5" style={{ color: C.khaki }}>{plan.credits}</p>
+                  <ul className="space-y-2.5 mb-6 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm" style={{ color: C.body }}>
+                        <CheckCircle2 size={16} style={{ color: C.olive, marginTop: '2px', flexShrink: 0 }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                   <button
-                    type="submit"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full font-semibold transition-all duration-200 shrink-0"
-                    style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px', fontSize: '16px' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = C.olive)}
+                    onClick={() => navigate('/register')}
+                    className="w-full py-3 rounded-full font-semibold text-sm transition-all duration-200"
+                    style={{
+                      background: plan.popular ? C.olive : 'transparent',
+                      color: plan.popular ? '#fff' : C.olive,
+                      border: plan.popular ? 'none' : `1.5px solid ${C.olive}`,
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = plan.popular ? C.oliveHover : `${C.olive}10`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = plan.popular ? C.olive : 'transparent'; }}
                   >
-                    Eintragen
-                    <ArrowRight size={18} />
+                    {plan.cta}
                   </button>
                 </div>
-                {emailError && (
-                  <p className="text-sm text-left" style={{ color: '#D97706' }}>{emailError}</p>
-                )}
-              </form>
-            )}
-          </FadeInSection>
+              </FadeInSection>
+            ))}
+          </div>
 
-          <FadeInSection delay={0.2}>
-            <p className="text-xs mt-4" style={{ color: C.khaki }}>
-              Keine Werbung. Ausschlie&szlig;lich eine Benachrichtigung zum Start.
+          <FadeInSection delay={0.3}>
+            <p className="text-center text-xs mt-6" style={{ color: C.khaki }}>
+              Sichere Zahlung via Stripe. Auch 10er-Paket verfuegbar (29,99 / 2,99 pro Analyse).
             </p>
           </FadeInSection>
         </div>
@@ -766,7 +781,7 @@ export default function LandingPage() {
               {[
                 ['features', 'Leistungen'],
                 ['how', 'Ablauf'],
-                ['waitlist', 'Warteliste'],
+                ['pricing', 'Preise'],
               ].map(([id, label]) => (
                 <button
                   key={id}
