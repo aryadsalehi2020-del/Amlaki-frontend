@@ -220,7 +220,7 @@ function Analyze() {
   }, [propertyData, lastVerwendungszweck, lastFinanzierung, token]);
 
   return (
-    <div className="px-6 md:px-16 lg:px-20 py-6 md:py-10">
+    <div className="px-6 md:px-16 lg:px-20 py-3 md:py-5">
       <div className="max-w-[900px]">
         {step === 'upload' && (
           <header className="text-center mb-6 fade-in">
