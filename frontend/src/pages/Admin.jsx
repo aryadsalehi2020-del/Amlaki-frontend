@@ -12,12 +12,62 @@ function Admin() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [editingLimit, setEditingLimit] = useState(null);
+  const [agents, setAgents] = useState([]);
+  const [agentRunning, setAgentRunning] = useState(null);
+  const [editingAgent, setEditingAgent] = useState(null);
+  const [activeTab, setActiveTab] = useState('users');
 
   if (!user?.is_superuser) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/chat" replace />;
   }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); fetchAgents(); }, []);
+
+  const fetchAgents = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/agents`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) setAgents(await res.json());
+    } catch (err) { /* ignore */ }
+  };
+
+  const toggleAgent = async (agentId, currentEnabled) => {
+    try {
+      await fetch(`${API_BASE}/admin/agents/${agentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ enabled: !currentEnabled }),
+      });
+      await fetchAgents();
+    } catch (err) { alert(err.message); }
+  };
+
+  const runAgent = async (agentId) => {
+    setAgentRunning(agentId);
+    try {
+      const res = await fetch(`${API_BASE}/admin/agents/${agentId}/run`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.status === 'error') {
+        alert('Agent Fehler: ' + (data.error || 'Unbekannt'));
+      }
+      await fetchAgents();
+    } catch (err) { alert(err.message); }
+    finally { setAgentRunning(null); }
+  };
+
+  const saveAgent = async (agentId, updates) => {
+    try {
+      await fetch(`${API_BASE}/admin/agents/${agentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(updates),
+      });
+      setEditingAgent(null);
+      await fetchAgents();
+    } catch (err) { alert(err.message); }
+  };
 
   const fetchData = async () => {
     setLoading(true); setError(null);
@@ -105,9 +155,109 @@ function Admin() {
         {/* Header */}
         <div className="fade-in">
           <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">Admin Dashboard</h1>
-          <p className="text-[#8C7E6A] text-[14px] mt-2">User-Verwaltung und Statistiken</p>
+          <div className="flex items-center gap-4 mt-4">
+            <button onClick={() => setActiveTab('users')}
+              className={`px-4 py-2 rounded-[10px] text-[14px] font-medium transition-all ${activeTab === 'users' ? 'bg-[#7C8B6F]/10 text-[#7C8B6F] border border-[#7C8B6F]/30' : 'text-[#8C7E6A] hover:text-[#5C4F3D]'}`}>
+              Users
+            </button>
+            <button onClick={() => setActiveTab('agents')}
+              className={`px-4 py-2 rounded-[10px] text-[14px] font-medium transition-all ${activeTab === 'agents' ? 'bg-[#7C8B6F]/10 text-[#7C8B6F] border border-[#7C8B6F]/30' : 'text-[#8C7E6A] hover:text-[#5C4F3D]'}`}>
+              Research Agents
+            </button>
+          </div>
         </div>
 
+        {/* ===== AGENTS TAB ===== */}
+        {activeTab === 'agents' && (
+          <div className="space-y-4 fade-in">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[20px] font-semibold text-[#2C2418]">Research Agents</h2>
+              <button onClick={fetchAgents} className="text-[13px] text-[#8C7E6A] hover:text-[#7C8B6F] transition-colors">Aktualisieren</button>
+            </div>
+
+            {agents.length === 0 ? (
+              <div className="bg-white rounded-[16px] p-8 border border-[#E8E0D4] text-center">
+                <p className="text-[#8C7E6A]">Keine Agents konfiguriert.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {agents.map(agent => (
+                  <div key={agent.id} className="bg-white rounded-[16px] p-5 border border-[#E8E0D4]">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-[16px] font-semibold text-[#2C2418]">{agent.display_name}</h3>
+                          <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                            agent.enabled ? 'bg-[#7C8B6F]/10 text-[#7C8B6F]' : 'bg-[#B5A68C]/10 text-[#B5A68C]'
+                          }`}>
+                            {agent.enabled ? 'Aktiv' : 'Deaktiviert'}
+                          </span>
+                          {agent.last_status && (
+                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                              agent.last_status === 'success' ? 'bg-[#7C8B6F]/10 text-[#7C8B6F]' :
+                              agent.last_status === 'running' ? 'bg-[#D4A843]/10 text-[#D4A843]' :
+                              'bg-[#B85C5C]/10 text-[#B85C5C]'
+                            }`}>
+                              {agent.last_status === 'success' ? 'Erfolg' : agent.last_status === 'running' ? 'Laeuft...' : 'Fehler'}
+                            </span>
+                          )}
+                        </div>
+                        {editingAgent === agent.id ? (
+                          <div className="space-y-2 mt-3">
+                            <input defaultValue={agent.display_name} id={`edit-name-${agent.id}`}
+                              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[8px] text-[13px] text-[#2C2418]" placeholder="Name" />
+                            <input defaultValue={agent.description} id={`edit-desc-${agent.id}`}
+                              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[8px] text-[13px] text-[#2C2418]" placeholder="Beschreibung" />
+                            <input defaultValue={agent.schedule} id={`edit-sched-${agent.id}`}
+                              className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[8px] text-[13px] text-[#2C2418]" placeholder="Zeitplan" />
+                            <div className="flex gap-2">
+                              <button onClick={() => saveAgent(agent.id, {
+                                display_name: document.getElementById(`edit-name-${agent.id}`).value,
+                                description: document.getElementById(`edit-desc-${agent.id}`).value,
+                                schedule: document.getElementById(`edit-sched-${agent.id}`).value,
+                              })} className="px-3 py-1.5 bg-[#7C8B6F] text-white text-[12px] font-medium rounded-[8px]">Speichern</button>
+                              <button onClick={() => setEditingAgent(null)} className="px-3 py-1.5 text-[#8C7E6A] text-[12px]">Abbrechen</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-[13px] text-[#8C7E6A]">{agent.description}</p>
+                            <p className="text-[12px] text-[#B5A68C] mt-1">
+                              Zeitplan: {agent.schedule}
+                              {agent.last_run && ` | Letzter Lauf: ${formatRelativeTime(agent.last_run)}`}
+                            </p>
+                            {agent.last_error && (
+                              <p className="text-[12px] text-[#B85C5C] mt-1">Fehler: {agent.last_error}</p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button onClick={() => setEditingAgent(editingAgent === agent.id ? null : agent.id)}
+                          className="px-3 py-1.5 text-[12px] text-[#8C7E6A] hover:text-[#2C2418] border border-[#E8E0D4] rounded-[8px] transition-colors">
+                          Bearbeiten
+                        </button>
+                        <button onClick={() => runAgent(agent.id)} disabled={agentRunning !== null}
+                          className={`px-3 py-1.5 text-[12px] font-medium rounded-[8px] transition-all ${
+                            agentRunning === agent.id ? 'bg-[#D4A843]/10 text-[#D4A843]' : 'bg-[#7C8B6F] text-white hover:bg-[#6B7A5E]'
+                          }`}>
+                          {agentRunning === agent.id ? 'Laeuft...' : 'Jetzt ausfuehren'}
+                        </button>
+                        <button onClick={() => toggleAgent(agent.id, agent.enabled)}
+                          className={`w-12 h-6 rounded-full transition-all relative ${agent.enabled ? 'bg-[#7C8B6F]' : 'bg-[#E8E0D4]'}`}>
+                          <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all shadow-sm ${agent.enabled ? 'left-[26px]' : 'left-0.5'}`} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ===== USERS TAB ===== */}
+        {activeTab === 'users' && <>
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 fade-in fade-in-delay-1">
@@ -258,6 +408,7 @@ function Admin() {
             </table>
           </div>
         </div>
+        </>}
       </div>
     </div>
   );
