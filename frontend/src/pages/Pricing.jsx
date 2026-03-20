@@ -80,7 +80,7 @@ function Pricing() {
         'Verbesserungsvorschläge',
         'Finanzierungsoptionen',
       ],
-      cta: 'Analyse kaufen',
+      cta: '1 Credit kaufen',
       disabled: false,
       highlight: false,
     },
@@ -98,9 +98,9 @@ function Pricing() {
         '5 vollständige Analysen',
         '20% Mengenrabatt',
         'Ideal zum Vergleichen',
-        'Objekte gegeneinander abwaegen',
+        'Objekte gegeneinander abwägen',
       ],
-      cta: 'Paket kaufen',
+      cta: '5 Credits kaufen',
       disabled: false,
       highlight: true,
     },
@@ -110,16 +110,16 @@ function Pricing() {
       price: '29,99',
       period: '10 Analysen',
       pricePerUnit: '2,99 pro Analyse',
-      description: 'FürPortfolio-Aufbau',
+      description: 'Für Portfolio-Aufbau',
       icon: Crown,
       features: [
         'Alles aus Starter',
         '10 vollständige Analysen',
         '40% Mengenrabatt',
         'Bester Preis pro Analyse',
-        'Füraktive Investoren',
+        'Für aktive Investoren',
       ],
-      cta: 'Paket kaufen',
+      cta: '10 Credits kaufen',
       disabled: false,
       highlight: false,
     },
@@ -140,10 +140,11 @@ function Pricing() {
         {credits !== null && (
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full">
             <span className="text-[14px] font-medium text-[#7C8B6F]">
-              {credits} {credits === 1 ? 'Credit' : 'Credits'} verfügbar
+              {credits} {credits === 1 ? 'Analyse' : 'Analysen'} verfügbar
             </span>
           </div>
         )}
+        <p className="text-[12px] text-[#B5A68C] mt-2">1 Credit = 1 vollständige Immobilienanalyse</p>
       </div>
 
       {/* Plans Grid */}
