@@ -14,7 +14,9 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError('');
     if (formData.password !== formData.confirmPassword) { setError('Passwoerter stimmen nicht ueberein'); return; }
-    if (formData.password.length < 6) { setError('Mind. 6 Zeichen'); return; }
+    if (formData.password.length < 8) { setError('Passwort muss mindestens 8 Zeichen lang sein'); return; }
+    if (!/[0-9]/.test(formData.password)) { setError('Passwort muss mindestens eine Zahl enthalten'); return; }
+    if (formData.username.length < 3) { setError('Benutzername muss mindestens 3 Zeichen lang sein'); return; }
     setLoading(true);
     try { await register(formData.email, formData.username, formData.password, formData.fullName); navigate('/chat'); }
     catch (err) { setError(err.message || 'Fehler'); }
@@ -25,23 +27,35 @@ function Register() {
     { name: 'email', type: 'email', ph: 'E-Mail', auto: 'email' },
     { name: 'username', type: 'text', ph: 'Benutzername', auto: 'username' },
     { name: 'fullName', type: 'text', ph: 'Name (optional)', auto: 'name', req: false },
-    { name: 'password', type: 'password', ph: 'Passwort', auto: 'new-password' },
+    { name: 'password', type: 'password', ph: 'Passwort (min. 8 Zeichen + Zahl)', auto: 'new-password' },
     { name: 'confirmPassword', type: 'password', ph: 'Passwort bestaetigen', auto: 'new-password' },
   ];
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 bg-[#FAF7F2]">
-      <div className="w-full max-w-[320px]">
-        <div className="text-center mb-10 fade-in">
+      <div className="w-full max-w-[360px]">
+        <div className="text-center mb-8 fade-in">
           <h1 className="text-[32px] font-bold tracking-tight mb-1">
             <span className="font-extrabold text-[#7C8B6F]">A</span>
             <span className="text-[#2C2418]">mlak</span>
             <span className="font-extrabold text-[#7C8B6F]">I</span>
           </h1>
+          <p className="text-[14px] text-[#8C7E6A] mt-2">Dein KI-Immobilienberater</p>
         </div>
 
         <div className="fade-in fade-in-delay-1">
-          <h2 className="text-[22px] font-semibold text-[#2C2418] text-center mb-8 tracking-tight">Account erstellen</h2>
+          {/* Value Prop */}
+          <div className="mb-6 p-4 bg-[#7C8B6F]/[0.06] border border-[#7C8B6F]/15 rounded-[14px]">
+            <p className="text-[13px] font-medium text-[#2C2418] mb-2">Kostenlos starten:</p>
+            <ul className="space-y-1.5">
+              {['1 vollstaendige Immobilienanalyse gratis', 'Unbegrenzter KI-Chat', 'Keine Kreditkarte erforderlich'].map(item => (
+                <li key={item} className="flex items-center gap-2 text-[12px] text-[#5C4F3D]">
+                  <svg className="w-3.5 h-3.5 text-[#7C8B6F] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {error && <div className="mb-5 px-4 py-3 bg-[#B85C5C]/[0.08] border border-[#B85C5C]/[0.2] rounded-[12px] text-[#B85C5C] text-[13px]">{error}</div>}
 
@@ -56,13 +70,18 @@ function Register() {
             ))}
             <button type="submit" disabled={loading}
               className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-30 active:scale-[0.98]">
-              {loading ? 'Laden...' : 'Registrieren'}
+              {loading ? 'Laden...' : 'Kostenlos registrieren'}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-[13px] text-[#8C7E6A]">
+          <p className="mt-6 text-center text-[13px] text-[#8C7E6A]">
             Bereits registriert?{' '}
             <Link to="/login" className="text-[#7C8B6F] hover:text-[#6B7A5E] font-medium transition-colors">Anmelden</Link>
+          </p>
+
+          <p className="mt-4 text-center text-[11px] text-[#B5A68C]">
+            Mit der Registrierung akzeptierst du unsere{' '}
+            <Link to="/datenschutz" className="underline">Datenschutzerklaerung</Link>.
           </p>
         </div>
       </div>
