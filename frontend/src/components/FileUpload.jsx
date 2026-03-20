@@ -139,6 +139,18 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
         </button>
       </div>
 
+      <div className="grid md:grid-cols-3 gap-3 mt-5">
+        {[
+          { title: 'Transparente Regeln', desc: 'Klare Bewertungskriterien und nachvollziehbare Scores' },
+          { title: 'Unabhaengig', desc: 'Objektive Analyse ohne Interessenskonflikte' },
+          { title: 'KI-Powered', desc: 'Intelligente Analyse in Sekundenschnelle' }
+        ].map((card, i) => (
+          <div key={i} className="bg-white rounded-[12px] p-4 border border-[#E8E0D4]">
+            <h3 className="font-semibold text-[#2C2418] mb-1 text-[13px]">{card.title}</h3>
+            <p className="text-[11px] text-[#8C7E6A] leading-relaxed">{card.desc}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

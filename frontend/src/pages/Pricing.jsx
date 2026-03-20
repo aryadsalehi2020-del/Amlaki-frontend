@@ -126,20 +126,20 @@ function Pricing() {
   ];
 
   return (
-    <div className="px-4 md:px-8 lg:px-16 py-6 md:py-10 max-w-6xl mx-auto">
+    <div className="px-4 md:px-8 lg:px-16 py-8 md:py-12 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-5 md:mb-7">
-        <h1 className="text-[24px] md:text-[30px] font-bold text-[#2C2418] tracking-tight mb-2">
+      <div className="text-center mb-8 md:mb-10">
+        <h1 className="text-[28px] md:text-[34px] font-bold text-[#2C2418] tracking-tight mb-2">
           Analyse-Credits
         </h1>
-        <p className="text-[14px] text-[#8C7E6A] max-w-md mx-auto">
+        <p className="text-[15px] text-[#8C7E6A] max-w-md mx-auto">
           Vollstaendige Immobilienanalyse mit Szenarien, Foerderungen und Verhandlungstipps.
         </p>
 
         {/* Current credits */}
         {credits !== null && (
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full">
-            <span className="text-[13px] font-medium text-[#7C8B6F]">
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full">
+            <span className="text-[14px] font-medium text-[#7C8B6F]">
               {credits} {credits === 1 ? 'Credit' : 'Credits'} verfuegbar
             </span>
           </div>
@@ -153,7 +153,7 @@ function Pricing() {
           return (
             <div
               key={plan.id}
-              className={`rounded-[16px] p-5 flex flex-col relative transition-shadow duration-300 ${
+              className={`rounded-[18px] p-6 flex flex-col relative transition-shadow duration-300 ${
                 plan.highlight
                   ? 'bg-white border-2 border-[#7C8B6F] shadow-lg'
                   : 'bg-white border border-[#E8E0D4]'
@@ -167,16 +167,16 @@ function Pricing() {
               )}
 
               <div className="mb-3">
-                <div className="w-8 h-8 rounded-[10px] bg-[#7C8B6F]/10 flex items-center justify-center mb-2">
-                  <Icon className="w-4 h-4 text-[#7C8B6F]" />
+                <div className="w-9 h-9 rounded-[10px] bg-[#7C8B6F]/10 flex items-center justify-center mb-2.5">
+                  <Icon className="w-4.5 h-4.5 text-[#7C8B6F]" />
                 </div>
-                <h3 className="text-[16px] font-bold text-[#2C2418]">{plan.name}</h3>
-                <p className="text-[11px] text-[#8C7E6A]">{plan.description}</p>
+                <h3 className="text-[17px] font-bold text-[#2C2418]">{plan.name}</h3>
+                <p className="text-[12px] text-[#8C7E6A]">{plan.description}</p>
               </div>
 
               <div className="mb-0.5">
-                <span className="text-[26px] font-bold text-[#2C2418]">{plan.price}</span>
-                {plan.price !== '0' && <span className="text-[13px] font-medium text-[#2C2418]"> EUR</span>}
+                <span className="text-[28px] font-bold text-[#2C2418]">{plan.price}</span>
+                {plan.price !== '0' && <span className="text-[14px] font-medium text-[#2C2418]"> EUR</span>}
               </div>
               <p className="text-[12px] text-[#8C7E6A] mb-0.5">{plan.period}</p>
               {plan.pricePerUnit && (
@@ -184,10 +184,10 @@ function Pricing() {
               )}
               {!plan.pricePerUnit && <div className="mb-4" />}
 
-              <ul className="space-y-1.5 mb-4 flex-1">
+              <ul className="space-y-2 mb-5 flex-1">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-1.5 text-[12px] text-[#5C4F3D]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#7C8B6F] shrink-0 mt-0.5" />
+                  <li key={f} className="flex items-start gap-2 text-[13px] text-[#5C4F3D]">
+                    <CheckCircle2 className="w-4 h-4 text-[#7C8B6F] shrink-0 mt-0.5" />
                     {f}
                   </li>
                 ))}
