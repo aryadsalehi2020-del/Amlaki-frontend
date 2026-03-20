@@ -69,15 +69,15 @@ function Pricing() {
       name: 'Einzelanalyse',
       price: '4,99',
       period: 'einmalig',
-      description: 'Eine vollstaendige Analyse',
+      description: 'Eine vollständige Analyse',
       icon: TrendingUp,
       features: [
         'Alles aus Free',
         'Szenarien-Vergleich (Best/Worst Case)',
-        'Sensitivitaetsanalyse',
+        'Sensitivitätsanalyse',
         'Fairer Preis Berechnung',
-        'Foerderungen und AfA',
-        'Verbesserungsvorschlaege',
+        'Förderungen und AfA',
+        'Verbesserungsvorschläge',
         'Finanzierungsoptionen',
       ],
       cta: 'Analyse kaufen',
@@ -90,12 +90,12 @@ function Pricing() {
       price: '19,99',
       period: '5 Analysen',
       pricePerUnit: '3,99 pro Analyse',
-      description: 'Fuer ernsthafte Kaeufer',
+      description: 'Fürernsthafte Käufer',
       icon: Crown,
       badge: 'Beliebt',
       features: [
         'Alles aus Einzelanalyse',
-        '5 vollstaendige Analysen',
+        '5 vollständige Analysen',
         '20% Mengenrabatt',
         'Ideal zum Vergleichen',
         'Objekte gegeneinander abwaegen',
@@ -110,14 +110,14 @@ function Pricing() {
       price: '29,99',
       period: '10 Analysen',
       pricePerUnit: '2,99 pro Analyse',
-      description: 'Fuer Portfolio-Aufbau',
+      description: 'FürPortfolio-Aufbau',
       icon: Crown,
       features: [
         'Alles aus Starter',
-        '10 vollstaendige Analysen',
+        '10 vollständige Analysen',
         '40% Mengenrabatt',
         'Bester Preis pro Analyse',
-        'Fuer aktive Investoren',
+        'Füraktive Investoren',
       ],
       cta: 'Paket kaufen',
       disabled: false,
@@ -133,14 +133,14 @@ function Pricing() {
           Analyse-Credits
         </h1>
         <p className="text-[15px] text-[#8C7E6A] max-w-md mx-auto">
-          Vollstaendige Immobilienanalyse mit Szenarien, Foerderungen und Verhandlungstipps.
+          Vollständige Immobilienanalyse mit Szenarien, Förderungen und Verhandlungstipps.
         </p>
 
         {/* Current credits */}
         {credits !== null && (
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full">
             <span className="text-[14px] font-medium text-[#7C8B6F]">
-              {credits} {credits === 1 ? 'Credit' : 'Credits'} verfuegbar
+              {credits} {credits === 1 ? 'Credit' : 'Credits'} verfügbar
             </span>
           </div>
         )}
@@ -220,7 +220,7 @@ function Pricing() {
           </span>
           <span>Keine Abos</span>
           <span>Keine versteckten Kosten</span>
-          <span>Sofort verfuegbar</span>
+          <span>Sofort verfügbar</span>
         </div>
         <p className="text-[10px] text-[#B5A68C] mt-1">
           Zum Vergleich: Ein Immobiliengutachter kostet 500-2.000 EUR pro Bewertung.
