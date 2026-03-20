@@ -220,15 +220,15 @@ function Analyze() {
   }, [propertyData, lastVerwendungszweck, lastFinanzierung, token]);
 
   return (
-    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
+    <div className="px-6 md:px-16 lg:px-20 py-6 md:py-10">
       <div className="max-w-[900px]">
         {step === 'upload' && (
-          <header className="text-center mb-16 fade-in">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418]">Neue Analyse</h1>
+          <header className="text-center mb-6 fade-in">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <h1 className="text-[32px] md:text-[40px] font-bold tracking-tight text-[#2C2418]">Neue Analyse</h1>
               <CreditsBadge credits={credits} />
             </div>
-            <p className="text-[#8C7E6A] text-[16px] max-w-md mx-auto font-light">Expose hochladen oder Daten manuell eingeben</p>
+            <p className="text-[#8C7E6A] text-[15px] max-w-md mx-auto font-light">Expose hochladen oder Daten manuell eingeben</p>
           </header>
         )}
 

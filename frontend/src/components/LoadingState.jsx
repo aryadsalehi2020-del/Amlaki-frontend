@@ -1,46 +1,65 @@
 import React, { useState, useEffect } from 'react';
 
-const FACTS = [
-  { t: 'Munchen: 9.000+ EUR/m2', s: 'Spitzenreiter bei Immobilienpreisen' },
-  { t: '50% Eigentumsquote', s: 'Eine der niedrigsten in Europa' },
-  { t: '+75% seit 2010', s: 'Durchschnittliche Wertsteigerung' },
-  { t: 'Berlin +200%', s: 'Von gunstigster Hauptstadt zum Boom' },
-  { t: 'Klasse A+ = +20%', s: 'Energieeffizienz steigert den Wert' },
-  { t: '20% EK = bessere Zinsen', s: '0,3-0,5% Zinsvorteil' },
+const TIPS = [
+  'Kaufnebenkosten liegen bei 7-12% des Kaufpreises',
+  'Eigenkapital ab 20% verbessert den Zinssatz deutlich',
+  'Energieklasse A+ kann bis zu 650 EUR/qm mehr wert sein',
+  'Immer mindestens 3 Bankangebote vergleichen',
+  'WEG-Protokolle der letzten 3 Jahre immer anfordern',
+  'Grundbuch Abteilung II auf Belastungen pruefen',
 ];
 
 function LoadingState({ message }) {
-  const [idx, setIdx] = useState(() => Math.floor(Math.random() * FACTS.length));
-  const [vis, setVis] = useState(true);
+  const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
+  const [tipVisible, setTipVisible] = useState(true);
 
   useEffect(() => {
     const iv = setInterval(() => {
-      setVis(false);
-      setTimeout(() => { setIdx(p => (p + 1) % FACTS.length); setVis(true); }, 300);
-    }, 5000);
+      setTipVisible(false);
+      setTimeout(() => { setTipIdx(p => (p + 1) % TIPS.length); setTipVisible(true); }, 400);
+    }, 6000);
     return () => clearInterval(iv);
   }, []);
 
   return (
-    <div className="py-24 text-center fade-in">
-      <div className="w-12 h-12 mx-auto mb-12 relative">
-        <div className="absolute inset-0 border-2 border-[#E8E0D4] rounded-full" />
-        <div className="absolute inset-0 border-2 border-transparent border-t-[#7C8B6F] rounded-full animate-spin" style={{ animationDuration: '1s' }} />
+    <div style={{ padding: '80px 20px', textAlign: 'center' }}>
+      {/* Three dots - calm fade animation */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            style={{
+              display: 'block',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#B5A68C',
+              animation: `loadFade 1.8s ease-in-out ${i * 0.25}s infinite`,
+            }}
+          />
+        ))}
       </div>
 
-      <p className="text-[#2C2418] text-[17px] font-medium tracking-tight mb-2">{message || 'Analyse lauft...'}</p>
-      <p className="text-[#8C7E6A] text-[14px] mb-16">Bewertung wird erstellt</p>
+      <p style={{ color: '#2C2418', fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>
+        {message || 'Analyse wird erstellt'}
+      </p>
+      <p style={{ color: '#8C7E6A', fontSize: '13px', marginBottom: '48px' }}>
+        Das kann einen Moment dauern
+      </p>
 
-      <div className="max-w-[200px] mx-auto mb-16">
-        <div className="h-[3px] bg-[#E8E0D4] rounded-full overflow-hidden">
-          <div className="h-full w-1/3 bg-[#B5A68C] rounded-full animate-pulse" style={{ animationDuration: '2s' }} />
-        </div>
+      <div style={{
+        transition: 'opacity 0.5s ease',
+        opacity: tipVisible ? 1 : 0,
+      }}>
+        <p style={{ color: '#5C4F3D', fontSize: '13px' }}>{TIPS[tipIdx]}</p>
       </div>
 
-      <div className={`transition-all duration-300 ${vis ? 'opacity-100' : 'opacity-0'}`}>
-        <p className="text-[#5C4F3D] text-[14px] font-medium">{FACTS[idx].t}</p>
-        <p className="text-[#8C7E6A] text-[13px] mt-1">{FACTS[idx].s}</p>
-      </div>
+      <style>{`
+        @keyframes loadFade {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.7; }
+        }
+      `}</style>
     </div>
   );
 }

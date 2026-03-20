@@ -6,14 +6,14 @@
 // Basis-Gewichtungen für Kapitalanlage
 export const BASE_WEIGHTS_INVESTMENT = {
   cashflow_rendite: 30,
-  lage: 20,
-  kaufpreis_qm: 15,
+  lage: 15,
+  kaufpreis_qm: 20,
   zukunftspotenzial: 10,
   zustand_baujahr: 10,
+  mietpotenzial: 5,
   energieeffizienz: 5,
-  nebenkosten: 5,
-  grundriss: 3,
-  verkaeufertyp: 2
+  nebenkosten: 3,
+  grundriss: 2
 };
 
 // Gewichtungs-Modifikatoren pro Investitionsziel
@@ -22,21 +22,22 @@ export const GOAL_WEIGHT_MODIFIERS = {
     name: 'Cashflow-Fokus',
     description: 'Maximiert Rendite und laufende Einnahmen',
     modifiers: {
-      cashflow_rendite: +15,  // Sehr wichtig
-      lage: -5,               // Weniger wichtig
-      kaufpreis_qm: +5,       // Günstig = mehr Cashflow
-      zukunftspotenzial: -10, // Wertsteigerung unwichtig
-      nebenkosten: +5         // Wichtig für Cashflow
+      cashflow_rendite: +10,
+      mietpotenzial: +10,
+      kaufpreis_qm: +5,
+      zukunftspotenzial: -10,
+      lage: -5
     }
   },
   vermoegensaufbau: {
-    name: 'Vermögensaufbau',
+    name: 'Vermoegensaufbau',
     description: 'Fokus auf Wertsteigerung und gute Lagen',
     modifiers: {
-      cashflow_rendite: -10,  // Weniger wichtig
-      lage: +10,              // Sehr wichtig
-      zukunftspotenzial: +15, // Sehr wichtig
-      kaufpreis_qm: -5        // Kann höher sein
+      cashflow_rendite: -10,
+      lage: +10,
+      zukunftspotenzial: +15,
+      kaufpreis_qm: -5,
+      mietpotenzial: -5
     }
   },
   flip: {

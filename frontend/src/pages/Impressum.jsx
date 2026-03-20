@@ -99,7 +99,8 @@ export default function Impressum() {
               <h2 style={h2Style}>Angaben gemäß § 5 TMG</h2>
               <p style={pStyle}>
                 Arya Salehi<br />
-                [Adresse wird nachgetragen]<br />
+                Tilsiter Strasse 2<br />
+                22049 Hamburg<br />
                 Deutschland
               </p>
             </div>
@@ -118,7 +119,8 @@ export default function Impressum() {
               <h2 style={h2Style}>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
               <p style={pStyle}>
                 Arya Salehi<br />
-                [Adresse wird nachgetragen]
+                Tilsiter Strasse 2<br />
+                22049 Hamburg
               </p>
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useUserProfile, INVESTMENT_GOALS } from '../contexts/UserProfileContext';
+import { useUserProfile, INVESTMENT_GOALS, RISK_PROFILES } from '../contexts/UserProfileContext';
 
 function PropertyForm({ initialData, onAnalyze, onBack }) {
   const { profile: investorProfile, isProfileComplete } = useUserProfile();
@@ -19,6 +19,15 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
   const [finanzierung, setFinanzierung] = useState({ eigenkapital: 0, zinssatz: 3.75, tilgung: 1.25 });
   const [validationError, setValidationError] = useState(null);
 
+  // Profile toggle: 'default' uses global profile, 'custom' uses local overrides
+  const [profileMode, setProfileMode] = useState('default');
+  const [customProfile, setCustomProfile] = useState({
+    goal: investorProfile.goal || 'cashflow',
+    riskProfile: investorProfile.riskProfile || 'ausgewogen',
+    eigenkapital: investorProfile.eigenkapital || 50000,
+    mindestRendite: investorProfile.mindestRendite || 4,
+  });
+
   const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -29,6 +38,18 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     setFinanzierung(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
   }, []);
 
+  const getActiveProfile = useCallback(() => {
+    if (profileMode === 'custom') {
+      return customProfile;
+    }
+    return {
+      goal: investorProfile.goal,
+      riskProfile: investorProfile.riskProfile,
+      eigenkapital: investorProfile.eigenkapital,
+      mindestRendite: investorProfile.mindestRendite,
+    };
+  }, [profileMode, customProfile, investorProfile]);
+
   const handleSubmit = useCallback((e) => {
     e.preventDefault(); setValidationError(null);
     const kaufpreis = formData.kaufpreis ? parseFloat(formData.kaufpreis) : 0;
@@ -36,8 +57,9 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     if (!kaufpreis || kaufpreis < 1000) { setValidationError('Bitte geben Sie einen gultigen Kaufpreis ein (min. 1.000)'); return; }
     if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte geben Sie eine gultige Wohnflache ein (min. 5 m2)'); return; }
     const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
-    onAnalyze(processedData, verwendungszweck, finanzierung);
-  }, [formData, verwendungszweck, finanzierung, onAnalyze]);
+    const activeProfile = verwendungszweck === 'kapitalanlage' ? getActiveProfile() : null;
+    onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile);
+  }, [formData, verwendungszweck, finanzierung, onAnalyze, getActiveProfile]);
 
   const inputClass = "w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[15px]";
   const labelClass = "block text-[13px] font-medium text-[#5C4F3D] mb-2";
@@ -77,14 +99,14 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                 className={`py-5 px-6 rounded-[16px] border-2 font-medium transition-all text-left ${verwendungszweck === 'kapitalanlage' ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
                 <span className={`text-[16px] block mb-2 ${verwendungszweck === 'kapitalanlage' ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Kapitalanlage</span>
                 <div className={`text-[12px] space-y-1 ${verwendungszweck === 'kapitalanlage' ? 'text-[#7C8B6F]/80' : 'text-[#8C7E6A]'}`}>
-                  <p>Cashflow & Rendite: 30% Gewichtung</p><p>Lage: 20% | Preis/m2: 15%</p><p>Fokus auf Vermietbarkeit</p>
+                  <p>Rendite & Cashflow: 30%</p><p>Einkaufspreis: 20% | Lage & Potenzial: 25%</p><p>Zustand, Energie & Mietpotenzial: 25%</p>
                 </div>
               </button>
               <button type="button" onClick={() => setVerwendungszweck('eigennutzung')}
                 className={`py-5 px-6 rounded-[16px] border-2 font-medium transition-all text-left ${verwendungszweck === 'eigennutzung' ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
                 <span className={`text-[16px] block mb-2 ${verwendungszweck === 'eigennutzung' ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Eigennutzung</span>
                 <div className={`text-[12px] space-y-1 ${verwendungszweck === 'eigennutzung' ? 'text-[#7C8B6F]/80' : 'text-[#8C7E6A]'}`}>
-                  <p>Lage: 25% | Grundriss: 20%</p><p>Zustand: 15% | Zukunft: 15%</p><p>Fokus auf Wohnqualitat</p>
+                  <p>Lage & Umfeld: 25% | Grundriss: 20%</p><p>Zustand: 15% | Zukunftspotenzial: 15%</p><p>Wohnqualitaet & Lebensstandard</p>
                 </div>
               </button>
             </div>
@@ -92,38 +114,170 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
             {verwendungszweck === 'eigennutzung' && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Bei Eigennutzung wird Wohnqualitat, Lage und Zustand priorisiert</p>}
           </div>
 
-          {/* Investoren-Profil */}
+          {/* Investoren-Profil / Wohnprofil */}
+          {verwendungszweck === 'eigennutzung' ? (
           <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
-            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Dein Investment-Ziel</label>
-            <p className="text-[13px] text-[#8C7E6A] mb-4">Personalisiere die Bewertung nach deiner Strategie</p>
-            {isProfileComplete ? (
-              <div className="flex flex-col md:flex-row md:items-center gap-4 bg-[#7C8B6F]/5 rounded-[12px] p-4 border border-[#7C8B6F]/20">
-                <div className="flex items-center gap-3 flex-1">
-                  <div>
-                    <p className="text-[#7C8B6F] font-semibold text-[16px]">{INVESTMENT_GOALS[investorProfile.goal]?.label}</p>
-                    <p className="text-[#8C7E6A] text-[13px]">{INVESTMENT_GOALS[investorProfile.goal]?.description}</p>
+            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Deine Prioritaeten</label>
+            <p className="text-[13px] text-[#8C7E6A] mb-4">Die Bewertung wird auf dein Wohnprofil abgestimmt</p>
+            <div className="bg-[#7C8B6F]/5 rounded-[12px] p-4 border border-[#7C8B6F]/20">
+              <div className="grid grid-cols-2 gap-3 text-[13px]">
+                <div><span className="text-[#7C8B6F] font-medium">Lage & Umfeld</span><span className="text-[#8C7E6A] ml-1">25%</span></div>
+                <div><span className="text-[#7C8B6F] font-medium">Grundriss & Schnitt</span><span className="text-[#8C7E6A] ml-1">20%</span></div>
+                <div><span className="text-[#7C8B6F] font-medium">Zustand & Substanz</span><span className="text-[#8C7E6A] ml-1">15%</span></div>
+                <div><span className="text-[#7C8B6F] font-medium">Zukunftspotenzial</span><span className="text-[#8C7E6A] ml-1">15%</span></div>
+                <div><span className="text-[#7C8B6F] font-medium">Energieeffizienz</span><span className="text-[#8C7E6A] ml-1">10%</span></div>
+                <div><span className="text-[#7C8B6F] font-medium">Preis-Leistung</span><span className="text-[#8C7E6A] ml-1">15%</span></div>
+              </div>
+            </div>
+          </div>
+          ) : (
+          <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
+            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Dein Investment-Profil</label>
+            <p className="text-[13px] text-[#8C7E6A] mb-4">Verwende dein Standardprofil oder passe es fuer diese Analyse an</p>
+
+            {/* Toggle */}
+            <div className="flex mb-4 bg-white rounded-[10px] border border-[#E8E0D4] p-1">
+              <button
+                type="button"
+                onClick={() => setProfileMode('default')}
+                className={`flex-1 py-2.5 px-4 rounded-[8px] text-[13px] font-medium transition-all ${
+                  profileMode === 'default'
+                    ? 'bg-[#7C8B6F] text-white'
+                    : 'bg-white text-[#7C8B6F] hover:bg-[#FAF7F2]'
+                }`}
+              >
+                Mein Standard verwenden
+              </button>
+              <button
+                type="button"
+                onClick={() => setProfileMode('custom')}
+                className={`flex-1 py-2.5 px-4 rounded-[8px] text-[13px] font-medium transition-all ${
+                  profileMode === 'custom'
+                    ? 'bg-[#7C8B6F] text-white'
+                    : 'bg-white text-[#7C8B6F] hover:bg-[#FAF7F2]'
+                }`}
+              >
+                Individuell anpassen
+              </button>
+            </div>
+
+            {profileMode === 'default' ? (
+              <div className="bg-[#7C8B6F]/5 rounded-[12px] p-4 border border-[#7C8B6F]/20">
+                {isProfileComplete ? (
+                  <div className="flex flex-col md:flex-row md:items-center gap-3">
+                    <div className="flex items-center gap-2 flex-1 flex-wrap">
+                      <span className="text-[#7C8B6F] font-semibold text-[14px]">{INVESTMENT_GOALS[investorProfile.goal]?.label}</span>
+                      <span className="text-[#B5A68C]">|</span>
+                      <span className="text-[#5C4F3D] text-[14px]">{RISK_PROFILES[investorProfile.riskProfile]?.label}</span>
+                      <span className="text-[#B5A68C]">|</span>
+                      <span className="text-[#5C4F3D] text-[14px]">{Number(investorProfile.eigenkapital).toLocaleString('de-DE')} EUR EK</span>
+                    </div>
+                    <Link to="/settings" className="px-4 py-2 bg-white border border-[#E8E0D4] text-[#5C4F3D] rounded-[10px] font-medium hover:bg-[#F5F0E8] transition-all text-[13px] shrink-0">
+                      Standard andern
+                    </Link>
                   </div>
-                </div>
-                <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-end">
-                  <span className="text-[#7C8B6F] text-[13px] flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    Scores werden personalisiert
-                  </span>
-                  <Link to="/profile" className="px-4 py-2 bg-white border border-[#E8E0D4] text-[#5C4F3D] rounded-[10px] font-medium hover:bg-[#F5F0E8] transition-all text-[13px]">Ziel andern</Link>
-                </div>
+                ) : (
+                  <div className="flex flex-col md:flex-row md:items-center gap-3">
+                    <div className="flex-1">
+                      <p className="text-[#5C4F3D] font-semibold text-[14px]">Noch kein Profil eingerichtet</p>
+                      <p className="text-[#8C7E6A] text-[12px]">Richte dein Standardprofil ein oder passe es hier individuell an</p>
+                    </div>
+                    <Link to="/settings" className="px-4 py-2 bg-white border border-[#E8E0D4] text-[#5C4F3D] rounded-[10px] font-medium hover:bg-[#F5F0E8] transition-all text-[13px] shrink-0">
+                      Jetzt einrichten
+                    </Link>
+                  </div>
+                )}
               </div>
             ) : (
-              <Link to="/profile" className="flex flex-col md:flex-row md:items-center gap-4 bg-[#F5F0E8] rounded-[12px] p-4 border border-[#E8E0D4] hover:bg-[#E8E0D4]/50 transition-all group">
-                <div className="flex items-center gap-3 flex-1">
-                  <div>
-                    <p className="text-[#5C4F3D] font-semibold">Noch kein Ziel definiert</p>
-                    <p className="text-[#8C7E6A] text-[13px]">Richte dein Profil ein fur personalisierte Scores</p>
+              <div className="space-y-4">
+                {/* Investment-Ziel */}
+                <div>
+                  <label className="block text-[12px] font-medium text-[#5C4F3D] mb-2">Investment-Ziel</label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(INVESTMENT_GOALS).map(([key, goal]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setCustomProfile(prev => ({ ...prev, goal: key }))}
+                        className={`py-2 px-4 rounded-[10px] border text-[13px] font-medium transition-all ${
+                          customProfile.goal === key
+                            ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]'
+                            : 'border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
+                        }`}
+                      >
+                        {goal.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <span className="px-4 py-2 bg-white border border-[#E8E0D4] text-[#5C4F3D] rounded-[10px] font-medium text-[13px]">Jetzt einrichten</span>
-              </Link>
+
+                {/* Risikoprofil */}
+                <div>
+                  <label className="block text-[12px] font-medium text-[#5C4F3D] mb-2">Risikoprofil</label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(RISK_PROFILES).map(([key, rp]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setCustomProfile(prev => ({ ...prev, riskProfile: key }))}
+                        className={`py-2 px-4 rounded-[10px] border text-[13px] font-medium transition-all ${
+                          customProfile.riskProfile === key
+                            ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]'
+                            : 'border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
+                        }`}
+                      >
+                        {rp.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Eigenkapital & Ziel-Rendite */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <label className="text-[12px] font-medium text-[#5C4F3D]">Eigenkapital fuer dieses Objekt</label>
+                      <div className="group relative">
+                        <span className="text-[#B5A68C] cursor-help text-[10px] border border-[#E8E0D4] rounded-full w-3.5 h-3.5 inline-flex items-center justify-center">i</span>
+                        <div className="hidden group-hover:block absolute bottom-5 left-0 w-52 bg-white border border-[#E8E0D4] rounded-[10px] p-2.5 text-[11px] text-[#5C4F3D] shadow-lg z-10">
+                          Wie viel eigenes Geld du fuer diesen Kauf einsetzen willst.
+                        </div>
+                      </div>
+                    </div>
+                    <input
+                      type="number"
+                      value={customProfile.eigenkapital}
+                      onChange={(e) => setCustomProfile(prev => ({ ...prev, eigenkapital: parseFloat(e.target.value) || 0 }))}
+                      placeholder="z.B. 50000"
+                      className="w-full px-4 py-2.5 bg-white border border-[#E8E0D4] rounded-[10px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[14px]"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <label className="text-[12px] font-medium text-[#5C4F3D]">Ziel-Rendite pro Jahr (%)</label>
+                      <div className="group relative">
+                        <span className="text-[#B5A68C] cursor-help text-[10px] border border-[#E8E0D4] rounded-full w-3.5 h-3.5 inline-flex items-center justify-center">i</span>
+                        <div className="hidden group-hover:block absolute bottom-5 left-0 w-52 bg-white border border-[#E8E0D4] rounded-[10px] p-2.5 text-[11px] text-[#5C4F3D] shadow-lg z-10">
+                          Wie viel Prozent Gewinn du dir pro Jahr wuenschst. 3-6% ist ein guter Richtwert.
+                        </div>
+                      </div>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      value={customProfile.mindestRendite}
+                      onChange={(e) => setCustomProfile(prev => ({ ...prev, mindestRendite: parseFloat(e.target.value) || 0 }))}
+                      placeholder="z.B. 4"
+                      className="w-full px-4 py-2.5 bg-white border border-[#E8E0D4] rounded-[10px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[14px]"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-[#8C7E6A]">Diese Einstellungen gelten nur fuer diese Analyse und ueberschreiben nicht dein Standardprofil.</p>
+              </div>
             )}
           </div>
+          )}
 
           {/* Hauptdaten */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">

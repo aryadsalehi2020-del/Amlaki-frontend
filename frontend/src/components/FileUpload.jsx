@@ -51,9 +51,9 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
 
   return (
     <div className="fade-in">
-      <div className="bg-white rounded-[20px] p-8 md:p-10 border border-[#E8E0D4]">
-        <h2 className="text-[28px] font-bold text-[#2C2418] mb-2 text-center">Neue Analyse</h2>
-        <p className="text-[#8C7E6A] text-center text-[14px] mb-8">Expose hochladen, Link einfuegen oder manuell eingeben</p>
+      <div className="bg-white rounded-[20px] p-6 md:p-8 border border-[#E8E0D4]">
+        <h2 className="text-[24px] font-bold text-[#2C2418] mb-1 text-center">Neue Analyse</h2>
+        <p className="text-[#8C7E6A] text-center text-[13px] mb-5">Expose hochladen, Link einfuegen oder manuell eingeben</p>
 
         {/* URL Import */}
         <div className="mb-6">
@@ -79,15 +79,15 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
           <p className="text-[11px] text-[#B5A68C] mt-1.5">ImmoScout24, Immowelt, Immonet, Kleinanzeigen</p>
         </div>
 
-        <div className="flex items-center my-6">
+        <div className="flex items-center my-4">
           <div className="flex-1 border-t border-[#E8E0D4]"></div>
-          <span className="px-6 text-[13px] text-[#B5A68C] font-medium">oder</span>
+          <span className="px-4 text-[12px] text-[#B5A68C] font-medium">oder</span>
           <div className="flex-1 border-t border-[#E8E0D4]"></div>
         </div>
 
         {/* PDF Upload */}
         <div
-          className={`border-2 border-dashed rounded-[16px] p-6 md:p-12 text-center cursor-pointer transition-all duration-300
+          className={`border-2 border-dashed rounded-[16px] p-5 md:p-8 text-center cursor-pointer transition-all duration-300
             ${isDragging ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 scale-[1.02]' : 'border-[#E8E0D4] hover:border-[#B5A68C] hover:bg-[#FAF7F2]'}
             ${selectedFile ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : ''}`}
           onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={handleBrowseClick}
@@ -125,9 +125,9 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
           </button>
         )}
 
-        <div className="flex items-center my-6">
+        <div className="flex items-center my-4">
           <div className="flex-1 border-t border-[#E8E0D4]"></div>
-          <span className="px-6 text-[13px] text-[#B5A68C] font-medium">oder</span>
+          <span className="px-4 text-[12px] text-[#B5A68C] font-medium">oder</span>
           <div className="flex-1 border-t border-[#E8E0D4]"></div>
         </div>
 
@@ -139,18 +139,6 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4 mt-8">
-        {[
-          { title: 'Transparente Regeln', desc: 'Klare Bewertungskriterien und nachvollziehbare Scores' },
-          { title: 'Unabhaengig', desc: 'Objektive Analyse ohne Interessenskonflikte' },
-          { title: 'KI-Powered', desc: 'Intelligente Analyse in Sekundenschnelle' }
-        ].map((card, i) => (
-          <div key={i} className={`bg-white rounded-[16px] p-6 border border-[#E8E0D4] fade-in fade-in-delay-${i + 1}`}>
-            <h3 className="font-semibold text-[#2C2418] mb-2 text-[16px]">{card.title}</h3>
-            <p className="text-[13px] text-[#8C7E6A] leading-relaxed">{card.desc}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

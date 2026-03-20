@@ -124,7 +124,8 @@ export default function Datenschutz() {
               </p>
               <p style={pStyle}>
                 Arya Salehi<br />
-                [Adresse wird nachgetragen]<br />
+                Tilsiter Strasse 2<br />
+                22049 Hamburg<br />
                 E-Mail: kontakt@amlaki.de
               </p>
             </div>

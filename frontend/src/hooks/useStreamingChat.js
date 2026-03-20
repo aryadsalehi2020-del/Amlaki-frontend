@@ -11,8 +11,9 @@ export function useStreamingChat() {
 
     try {
       const token = localStorage.getItem('token');
-      // Use /chat directly (non-streaming) - more reliable
-      const response = await fetch(`${API_BASE}/chat`, {
+
+      // Try streaming first
+      const response = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,57 +23,49 @@ export function useStreamingChat() {
         signal: abortControllerRef.current.signal
       });
 
-      // Always use non-streaming fallback first (more reliable)
-      const useStreaming = response.ok && response.headers.get('content-type')?.includes('text/event-stream');
+      if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
+        // Streaming mode
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      if (!useStreaming) {
-        // Non-streaming: use /chat endpoint
-        let chatResponse = response;
-        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
-          chatResponse = await fetch(`${API_BASE}/chat`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ message, conversation_id: conversationId })
-          });
-        }
-        const data = await chatResponse.json();
-        const text = data.response || data.message || data.text || JSON.stringify(data);
-        onChunk(text);
-        onDone(data);
-        return;
-      }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const parsed = JSON.parse(line.slice(6));
-              if (parsed.text) onChunk(parsed.text);
-              if (parsed.done) onDone(parsed);
-            } catch (e) {
-              // Skip malformed JSON
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const parsed = JSON.parse(line.slice(6));
+                if (parsed.text) onChunk(parsed.text);
+                if (parsed.error) { onError(new Error(parsed.error)); return; }
+                if (parsed.done) { onDone(parsed); return; }
+              } catch (e) {}
             }
           }
         }
+        // If we get here without onDone, call it
+        onDone({});
+      } else {
+        // Fallback to non-streaming
+        const fallbackResponse = await fetch(`${API_BASE}/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ message, conversation_id: conversationId })
+        });
+        const data = await fallbackResponse.json();
+        onChunk(data.response || data.message || data.text || '');
+        onDone(data);
       }
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        onError(err);
-      }
+      if (err.name !== 'AbortError') onError(err);
     } finally {
       setIsStreaming(false);
     }

@@ -156,10 +156,10 @@ h1 { font-weight: 700; letter-spacing: -0.035em; }
    ============================================ */
 
 @keyframes spin { to { transform: rotate(360deg); } }
-.spinner { animation: spin 1s linear infinite; }
-.spinner-neon { border: 1.5px solid var(--border); border-top-color: var(--olive); animation: spin 1.2s linear infinite; }
-.pulse-neon { animation: pulseSoft 2s ease-in-out infinite; }
-@keyframes pulseSoft { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.spinner { animation: spin 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.spinner-neon { border: 1.5px solid var(--border); border-top-color: var(--olive); animation: spin 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.pulse-neon { animation: pulseSoft 3s ease-in-out infinite; }
+@keyframes pulseSoft { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* ============================================
    ANIMATIONS — Smooth reveals
