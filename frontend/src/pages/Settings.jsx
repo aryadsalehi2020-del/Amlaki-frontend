@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserProfile, INVESTMENT_GOALS, RISK_PROFILES, EXPERIENCE_LEVELS } from '../contexts/UserProfileContext';
+import { API_BASE } from '../config';
 
 function Settings() {
-  const { user, updateUser } = useAuth();
+  const { user, token, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
+  const { profile: investorProfile, updateProfile } = useUserProfile();
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
     default_verwendungszweck: user?.default_verwendungszweck || 'kapitalanlage',
     default_zinssatz: user?.default_zinssatz || 3.75,
     default_tilgung: user?.default_tilgung || 1.25
   });
+  const [profileData, setProfileData] = useState({
+    goal: investorProfile.goal || 'cashflow',
+    riskProfile: investorProfile.riskProfile || 'ausgewogen',
+    experience: investorProfile.experience || 'anfaenger',
+    eigenkapital: investorProfile.eigenkapital || 50000,
+    mindestRendite: investorProfile.mindestRendite || 4,
+    maxMonatlicheBelastung: investorProfile.maxMonatlicheBelastung || 1500,
+  });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -213,6 +227,184 @@ function Settings() {
           </div>
         </div>
 
+        {/* Dein Anlageprofil */}
+        <div className="bg-white rounded-[16px] p-6 md:p-8 border border-[#E8E0D4] fade-in fade-in-delay-3">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[18px] font-semibold text-[#2C2418]">
+              Dein Anlageprofil
+            </h2>
+            {profileSuccess && (
+              <span className="text-[13px] text-[#7C8B6F] font-medium">{profileSuccess}</span>
+            )}
+          </div>
+          <p className="text-[#8C7E6A] text-[13px] mb-6">
+            Dein Standard-Investmentprofil fuer neue Analysen
+          </p>
+
+          {/* Investitionsziel */}
+          <div className="mb-6">
+            <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
+              Investitionsziel
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries(INVESTMENT_GOALS).map(([key, goal]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setProfileData(prev => ({ ...prev, goal: key }))}
+                  className={`py-3 px-4 rounded-[12px] border-2 text-left transition-all ${
+                    profileData.goal === key
+                      ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
+                      : 'border-[#E8E0D4] hover:border-[#B5A68C]'
+                  }`}
+                >
+                  <span className={`text-[14px] font-medium block ${
+                    profileData.goal === key ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
+                  }`}>{goal.label}</span>
+                  <span className={`text-[11px] block mt-0.5 ${
+                    profileData.goal === key ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
+                  }`}>{goal.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Risikoprofil */}
+          <div className="mb-6">
+            <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
+              Risikoprofil
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {Object.entries(RISK_PROFILES).map(([key, rp]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setProfileData(prev => ({ ...prev, riskProfile: key }))}
+                  className={`py-3 px-4 rounded-[12px] border-2 text-left transition-all ${
+                    profileData.riskProfile === key
+                      ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
+                      : 'border-[#E8E0D4] hover:border-[#B5A68C]'
+                  }`}
+                >
+                  <span className={`text-[14px] font-medium block ${
+                    profileData.riskProfile === key ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
+                  }`}>{rp.label}</span>
+                  <span className={`text-[11px] block mt-0.5 ${
+                    profileData.riskProfile === key ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
+                  }`}>{rp.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Erfahrungslevel */}
+          <div className="mb-6">
+            <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
+              Erfahrungslevel
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {Object.entries(EXPERIENCE_LEVELS).map(([key, exp]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setProfileData(prev => ({ ...prev, experience: key }))}
+                  className={`py-3 px-4 rounded-[12px] border-2 text-left transition-all ${
+                    profileData.experience === key
+                      ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
+                      : 'border-[#E8E0D4] hover:border-[#B5A68C]'
+                  }`}
+                >
+                  <span className={`text-[14px] font-medium block ${
+                    profileData.experience === key ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
+                  }`}>{exp.label}</span>
+                  <span className={`text-[11px] block mt-0.5 ${
+                    profileData.experience === key ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
+                  }`}>{exp.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Finanzielle Parameter */}
+          <div className="mb-6">
+            <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
+              Deine Finanzen
+            </label>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <label className="text-[12px] text-[#8C7E6A]">Verfuegbares Eigenkapital</label>
+                  <div className="group relative">
+                    <span className="text-[#B5A68C] cursor-help text-[11px] border border-[#E8E0D4] rounded-full w-4 h-4 inline-flex items-center justify-center">i</span>
+                    <div className="hidden group-hover:block absolute bottom-6 left-0 w-56 bg-white border border-[#E8E0D4] rounded-[10px] p-3 text-[11px] text-[#5C4F3D] shadow-lg z-10">
+                      Das Geld, das du fuer den Kauf einsetzen kannst. Bei den meisten Banken brauchst du mindestens die Kaufnebenkosten (ca. 10-15%) als Eigenkapital.
+                    </div>
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  value={profileData.eigenkapital}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, eigenkapital: parseFloat(e.target.value) || 0 }))}
+                  placeholder="z.B. 50000"
+                  className="w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[15px]"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <label className="text-[12px] text-[#8C7E6A]">Ziel-Rendite pro Jahr (%)</label>
+                  <div className="group relative">
+                    <span className="text-[#B5A68C] cursor-help text-[11px] border border-[#E8E0D4] rounded-full w-4 h-4 inline-flex items-center justify-center">i</span>
+                    <div className="hidden group-hover:block absolute bottom-6 left-0 w-56 bg-white border border-[#E8E0D4] rounded-[10px] p-3 text-[11px] text-[#5C4F3D] shadow-lg z-10">
+                      Wie viel Prozent Gewinn du dir pro Jahr wuenschst. Ueblich sind 3-6%. Wir zeigen dir nur Objekte, die dein Ziel erreichen koennen.
+                    </div>
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={profileData.mindestRendite}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, mindestRendite: parseFloat(e.target.value) || 0 }))}
+                  placeholder="z.B. 4"
+                  className="w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[15px]"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <label className="text-[12px] text-[#8C7E6A]">Monatliches Budget</label>
+                  <div className="group relative">
+                    <span className="text-[#B5A68C] cursor-help text-[11px] border border-[#E8E0D4] rounded-full w-4 h-4 inline-flex items-center justify-center">i</span>
+                    <div className="hidden group-hover:block absolute bottom-6 left-0 w-56 bg-white border border-[#E8E0D4] rounded-[10px] p-3 text-[11px] text-[#5C4F3D] shadow-lg z-10">
+                      Der Betrag, den du maximal pro Monat fuer die Immobilie ausgeben moechtest (Kreditrate + Nebenkosten). Faustregel: nicht mehr als 35% deines Nettoeinkommens.
+                    </div>
+                  </div>
+                </div>
+                <input
+                  type="number"
+                  value={profileData.maxMonatlicheBelastung}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, maxMonatlicheBelastung: parseFloat(e.target.value) || 0 }))}
+                  placeholder="z.B. 1500"
+                  className="w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[15px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save Profile Button */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                updateProfile(profileData);
+                setProfileSuccess('Anlageprofil gespeichert');
+                setTimeout(() => setProfileSuccess(''), 3000);
+              }}
+              className="px-6 py-2.5 bg-[#7C8B6F]/10 text-[#7C8B6F] font-medium rounded-full hover:bg-[#7C8B6F]/20 transition-all text-[14px]"
+            >
+              Anlageprofil speichern
+            </button>
+          </div>
+        </div>
+
         {/* Save Button */}
         <div className="flex justify-end fade-in fade-in-delay-3">
           <button
@@ -236,6 +428,38 @@ function Settings() {
           </button>
         </div>
       </form>
+
+      {/* Account loeschen */}
+      <div className="mt-12 pt-8 border-t border-[#E8E0D4]">
+        <h3 className="text-[16px] font-semibold text-[#B85C5C] mb-2">Account loeschen</h3>
+        <p className="text-[13px] text-[#8C7E6A] mb-4">
+          Dein Account und alle gespeicherten Analysen werden unwiderruflich geloescht. Diese Aktion kann nicht rueckgaengig gemacht werden.
+        </p>
+        <button
+          onClick={async () => {
+            if (!confirm('Bist du sicher? Dein Account und ALLE Daten werden unwiderruflich geloescht.')) return;
+            if (!confirm('Letzte Warnung: Alle Analysen, Chats und Daten gehen verloren. Fortfahren?')) return;
+            try {
+              const res = await fetch(`${API_BASE}/auth/delete-account`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` },
+              });
+              if (!res.ok) {
+                const d = await res.json();
+                alert(d.detail || 'Fehler beim Loeschen');
+                return;
+              }
+              logout();
+              navigate('/');
+            } catch (err) {
+              alert('Fehler: ' + err.message);
+            }
+          }}
+          className="px-5 py-2.5 border-2 border-[#B85C5C]/30 text-[#B85C5C] text-[13px] font-medium rounded-[10px] hover:bg-[#B85C5C]/5 transition-all"
+        >
+          Account endgueltig loeschen
+        </button>
+      </div>
     </div>
   );
 }
