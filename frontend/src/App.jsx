@@ -68,7 +68,12 @@ function RootRedirect() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
         <div className="text-center">
-          <div className="w-10 h-10 border-[1.5px] border-[#E8E0D4] border-t-[#B5A68C] rounded-full mx-auto mb-4" style={{ animation: 'spin 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}></div>
+          <div className="flex items-center gap-[6px] mx-auto mb-4 justify-center">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="w-[8px] h-[8px] rounded-full bg-[#B5A68C]" style={{ animation: `typingPulse 1.4s ease-in-out ${i * 0.15}s infinite`, opacity: 0.25 }} />
+            ))}
+          </div>
+          <style>{`@keyframes typingPulse { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 0.9; } }`}</style>
           <p className="text-[#8C7E6A] text-sm">{slowLoad ? 'Server wird gestartet, einen Moment...' : 'Lade...'}</p>
         </div>
       </div>
