@@ -1,21 +1,4 @@
-/* -------------------------------------------------- */
-/*  MAILCHIMP INTEGRATION                              */
-/*  -------------------------------------------------- */
-/*  To connect Mailchimp:                               */
-/*  1. Replace MAILCHIMP_FORM_ACTION_URL below with     */
-/*     your Mailchimp form action URL, e.g.:            */
-/*     "https://yourapp.us1.list-manage.com/subscribe/post?u=XXXX&id=YYYY" */
-/*  2. Set MAILCHIMP_ENABLED to true                    */
-/*  3. The form will POST to Mailchimp AND store in     */
-/*     localStorage as a backup                         */
-/*                                                      */
-/*  Mailchimp List ID: [PASTE YOUR LIST ID HERE]        */
-/*  Mailchimp API Key: Set in backend/.env              */
-/* -------------------------------------------------- */
-const MAILCHIMP_FORM_ACTION_URL = 'https://yahoo.us10.list-manage.com/subscribe/post?u=e6136ed5a9a9f34a678f004d2&id=35a8555adf&f_id=007470e3f0';
-const MAILCHIMP_ENABLED = true;
-
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp,
@@ -33,7 +16,6 @@ import {
   BarChart3,
   Building2,
   MapPin,
-  Mail,
   ExternalLink,
   Menu,
   X,
@@ -186,81 +168,7 @@ const PROBLEMS = [
 /* ================================================== */
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const [emailError, setEmailError] = useState('');
-
-  const validateEmail = (value) => {
-    if (!value) return 'Bitte gib deine E-Mail-Adresse ein.';
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) return 'Bitte gib eine gültige E-Mail-Adresse ein.';
-    return '';
-  };
-
-  const handleSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
-
-      const error = validateEmail(email);
-      if (error) {
-        setEmailError(error);
-        return;
-      }
-      setEmailError('');
-
-      // --- localStorage backup ---
-      try {
-        const stored = JSON.parse(localStorage.getItem('waitlist_emails') || '[]');
-        if (!stored.includes(email)) {
-          stored.push(email);
-          localStorage.setItem('waitlist_emails', JSON.stringify(stored));
-        }
-      } catch {
-        localStorage.setItem('waitlist_emails', JSON.stringify([email]));
-      }
-
-      // --- Mailchimp via hidden iframe ---
-      if (MAILCHIMP_ENABLED && MAILCHIMP_FORM_ACTION_URL) {
-        let iframe = document.getElementById('mc-hidden-iframe');
-        if (!iframe) {
-          iframe = document.createElement('iframe');
-          iframe.id = 'mc-hidden-iframe';
-          iframe.name = 'mc-hidden-iframe';
-          iframe.style.display = 'none';
-          document.body.appendChild(iframe);
-        }
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = MAILCHIMP_FORM_ACTION_URL;
-        form.target = 'mc-hidden-iframe';
-
-        const emailInput = document.createElement('input');
-        emailInput.type = 'hidden';
-        emailInput.name = 'EMAIL';
-        emailInput.value = email;
-        form.appendChild(emailInput);
-
-        // Mailchimp honeypot (spam protection - must be empty)
-        const honeypot = document.createElement('input');
-        honeypot.type = 'hidden';
-        honeypot.name = 'b_e6136ed5a9a9f34a678f004d2_35a8555adf';
-        honeypot.value = '';
-        form.appendChild(honeypot);
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-      }
-
-      // Waitlist signup recorded
-      setSubmitted(true);
-      setEmail('');
-    },
-    [email]
-  );
 
   const scrollTo = useCallback((id) => {
     const el = document.getElementById(id);

@@ -17,6 +17,8 @@ import Chat from './pages/Chat';
 import Admin from './pages/Admin';
 import Pricing from './pages/Pricing';
 import LandingPage from './pages/LandingPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
 
@@ -95,6 +97,8 @@ function App() {
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Protected Routes with Sidebar */}
           <Route

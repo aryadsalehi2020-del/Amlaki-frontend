@@ -59,7 +59,13 @@ function Login() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-[13px] text-[#8C7E6A]">
+          <p className="mt-6 text-center">
+            <Link to="/forgot-password" className="text-[13px] text-[#B5A68C] hover:text-[#7C8B6F] transition-colors">
+              Passwort vergessen?
+            </Link>
+          </p>
+
+          <p className="mt-4 text-center text-[13px] text-[#8C7E6A]">
             Neu hier?{' '}
             <Link to="/register" className="text-[#7C8B6F] hover:text-[#6B7A5E] font-medium transition-colors">
               Account erstellen
