@@ -126,7 +126,7 @@ function Pricing() {
   ];
 
   return (
-    <div className="px-4 md:px-8 lg:px-16 py-8 md:py-12 max-w-6xl mx-auto">
+    <div className="px-4 md:px-8 lg:px-16 py-4 md:py-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8 md:mb-10">
         <h1 className="text-[28px] md:text-[34px] font-bold text-[#2C2418] tracking-tight mb-2">
@@ -140,7 +140,7 @@ function Pricing() {
         {credits !== null && (
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full">
             <span className="text-[14px] font-medium text-[#7C8B6F]">
-              {credits} {credits === 1 ? 'Analyse' : 'Analysen'} verfügbar
+              {credits} {credits === 1 ? 'Credit' : 'Credits'} verfügbar
             </span>
           </div>
         )}
