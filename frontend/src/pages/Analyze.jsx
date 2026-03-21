@@ -155,11 +155,11 @@ function Analyze() {
 
   const handleManualEntry = useCallback(() => { setPropertyData({}); setStep('form'); }, []);
 
-  const handleAnalyze = useCallback(async (formData, verwendungszweck, finanzierung, investmentProfile, besichtigt) => {
+  const handleAnalyze = useCallback(async (formData, verwendungszweck, finanzierung, investmentProfile, besichtigt, besichtigungsNotizen) => {
     setError(null); setStep('analyzing'); setLoadingMessage('Immobilie wird bewertet...');
     setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
-      const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung, besichtigt: besichtigt };
+      const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung, besichtigt: besichtigt, besichtigungs_notizen: besichtigungsNotizen || null };
       if (investmentProfile) {
         requestBody.investment_profile = {
           goal: investmentProfile.goal,

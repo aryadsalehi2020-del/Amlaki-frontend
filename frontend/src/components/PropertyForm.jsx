@@ -17,6 +17,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
 
   const [verwendungszweck, setVerwendungszweck] = useState('kapitalanlage');
   const [besichtigt, setBesichtigt] = useState(null); // null = nicht ausgewählt, true/false
+  const [besichtigungsNotizen, setBesichtigungsNotizen] = useState('');
   const [finanzierung, setFinanzierung] = useState({ eigenkapital: 0, zinssatz: 3.75, tilgung: 1.25 });
   const [validationError, setValidationError] = useState(null);
 
@@ -59,7 +60,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte geben Sie eine gultige Wohnflache ein (min. 5 m2)'); return; }
     const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
     const activeProfile = verwendungszweck === 'kapitalanlage' ? getActiveProfile() : null;
-    onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile, besichtigt);
+    onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile, besichtigt, besichtigungsNotizen);
   }, [formData, verwendungszweck, finanzierung, onAnalyze, getActiveProfile]);
 
   const inputClass = "w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[15px]";
@@ -129,8 +130,20 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                 <span className={`text-[15px] block ${besichtigt === false ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Nein, noch nicht</span>
               </button>
             </div>
-            {besichtigt === false && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Du erhaeltst eine personalisierte Besichtigungs-Checkliste mit deiner Analyse</p>}
-            {besichtigt === true && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Hast du bei der Besichtigung etwas Neues erfahren? Trage es unten ein fuer eine praezisere Analyse</p>}
+            {besichtigt === false && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Du erhältst eine personalisierte Besichtigungs-Checkliste mit deiner Analyse</p>}
+            {besichtigt === true && (
+              <div className="mt-4">
+                <label className="block text-[13px] font-medium text-[#5C4F3D] mb-2">Notizen von der Besichtigung (optional)</label>
+                <textarea
+                  value={besichtigungsNotizen}
+                  onChange={(e) => setBesichtigungsNotizen(e.target.value)}
+                  placeholder="z.B. Keller war feucht, Heizung ist von 2005, Nachbarn waren laut, Dach sah gut aus..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[14px] resize-none"
+                />
+                <p className="mt-1.5 text-[11px] text-[#8C7E6A]">Deine Beobachtungen fließen in die Analyse ein</p>
+              </div>
+            )}
           </div>
 
           {/* Investoren-Profil / Wohnprofil */}
