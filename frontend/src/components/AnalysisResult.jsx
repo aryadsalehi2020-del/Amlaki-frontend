@@ -1,5 +1,22 @@
 import React, { useState, useMemo } from 'react';
 
+// Info tooltip for financial terms
+function InfoTip({ text }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span className="relative inline-flex ml-1.5 align-middle">
+      <button type="button" onClick={() => setShow(!show)} onBlur={() => setTimeout(() => setShow(false), 200)}
+        className="w-4 h-4 rounded-full border border-[#B5A68C] text-[#B5A68C] text-[10px] font-medium inline-flex items-center justify-center hover:bg-[#B5A68C]/10 transition-colors cursor-pointer leading-none">i</button>
+      {show && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 bg-white border border-[#E8E0D4] rounded-xl p-3 text-[12px] text-[#5C4F3D] shadow-lg z-50 leading-relaxed">
+          {text}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-white border-r border-b border-[#E8E0D4] rotate-45 -mt-1" />
+        </div>
+      )}
+    </span>
+  );
+}
+
 // Chart components
 import CashflowChart from './charts/CashflowChart';
 import TilgungsChart from './charts/TilgungsChart';
@@ -760,7 +777,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                       </span>
                     </div>
                     <div className={`flex justify-between items-center py-4 px-5 rounded-2xl shadow-lg ${result.cashflow_analyse.monatlicher_cashflow >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'}`}>
-                      <span className="font-bold text-[#2C2418] text-lg">Monatlicher Cashflow</span>
+                      <span className="font-bold text-[#2C2418] text-lg">Monatlicher Cashflow<InfoTip text="Was am Ende des Monats übrig bleibt: Mieteinnahmen minus Kreditrate minus Nebenkosten. Positiv = du verdienst, negativ = du zahlst drauf." /></span>
                       <span className="font-black text-[#2C2418] text-2xl">
                         {result.cashflow_analyse.monatlicher_cashflow >= 0 ? '+' : ''}
                         {formatCurrency(result.cashflow_analyse.monatlicher_cashflow)}
@@ -799,7 +816,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                     </div>
 
                     <div className="flex justify-between items-center p-4 bg-accent/5 rounded-xl border border-accent/20">
-                      <span className="text-[#8C7E6A] font-medium">Bruttorendite</span>
+                      <span className="text-[#8C7E6A] font-medium">Bruttorendite<InfoTip text="Jahresmiete geteilt durch Kaufpreis. Zeigt wie viel Prozent des Kaufpreises du jährlich als Miete zurückbekommst. Ab 5% gilt als gut." /></span>
                       <span className="font-bold text-xl text-[#B5A68C]">
                         {result.cashflow_analyse.bruttorendite_prozent.toFixed(2)}%
                       </span>
@@ -962,7 +979,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                         ? 'bg-[#B5A68C]/10 border border-[#B5A68C]/30'
                         : 'bg-gradient-to-br from-red-50 to-orange-50 border-red-300'
                   }`}>
-                    <p className="text-sm text-[#8C7E6A]/70 mb-2 font-medium">Kaufpreisfaktor</p>
+                    <p className="text-sm text-[#8C7E6A]/70 mb-2 font-medium">Kaufpreisfaktor<InfoTip text="Kaufpreis geteilt durch Jahresmiete. Zeigt nach wie vielen Jahren sich der Kauf durch Mieteinnahmen bezahlt hat. Unter 20 ist gut, über 25 ist teuer." /></p>
                     <p className={`text-2xl font-bold ${
                       result.kennzahlen.kaufpreisfaktor < 20 ? 'text-[#7C8B6F]' :
                       result.kennzahlen.kaufpreisfaktor < 25 ? 'text-[#B5A68C]' : 'text-[#B85C5C]'
