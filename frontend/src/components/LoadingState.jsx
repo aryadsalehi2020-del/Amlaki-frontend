@@ -29,7 +29,6 @@ function LoadingState({ message }) {
           <span
             key={i}
             className="loading-dot-slow"
-            style={{ animationDelay: `${i * 0.3}s` }}
           />
         ))}
       </div>
@@ -51,16 +50,15 @@ function LoadingState({ message }) {
       <style>{`
         .loading-dot-slow {
           display: block;
-          width: 9px;
-          height: 9px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
           background-color: #B5A68C;
-          opacity: 0.15;
-          animation: loadPulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          animation: loadBreath 4s ease-in-out infinite;
         }
-        @keyframes loadPulseSlow {
-          0%, 100% { opacity: 0.15; transform: scale(1); }
-          50% { opacity: 0.55; transform: scale(1.1); }
+        @keyframes loadBreath {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.6; }
         }
       `}</style>
     </div>
