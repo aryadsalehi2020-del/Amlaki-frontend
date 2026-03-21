@@ -62,8 +62,8 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
     if (score >= 75) return 'Exzellent';
     if (score >= 65) return 'Gut';
     if (score >= 55) return 'Solide';
-    if (score >= 40) return 'Schwach';
-    return 'Schlecht';
+    if (score >= 40) return 'Unterdurchschnittlich';
+    return 'Nicht empfehlenswert';
   };
 
   return (
@@ -353,7 +353,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               Bewertungsergebnis
             </h2>
 
-            <p className="text-[#8C7E6A] text-lg leading-relaxed">{result.zusammenfassung}</p>
+            <p className="text-[#8C7E6A] text-lg leading-relaxed">{result.zusammenfassung?.replace(/\s*Dies ist eine datenbasierte Einschätzung[^.]*\.?\s*$/, '')}</p>
+            <p className="text-[#B5A68C] text-[11px] mt-3">Dies ist eine datenbasierte Einschätzung und ersetzt keine individuelle Anlageberatung.</p>
 
             {/* Personalized Recommendation */}
             {isProfileComplete && dynamicData.recommendation && (
@@ -440,8 +441,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 className={`
                   flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap
                   ${activeTab === tab.id
-                    ? 'bg-gradient-gold text-[#2C2418] shadow-lg'
-                    : 'text-[#8C7E6A]/70 hover:bg-slate/10 hover:text-[#2C2418]'
+                    ? 'bg-[#7C8B6F]/15 text-[#2C2418] border border-[#7C8B6F]/30 font-semibold'
+                    : 'text-[#8C7E6A]/70 hover:bg-[#FAF7F2] hover:text-[#2C2418]'
                   }
                 `}
               >
@@ -510,9 +511,6 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   
                 </span>
                 <span className="text-[#8C7E6A]">Geschätzte Mieteinnahmen</span>
-                <span className="text-xs bg-[#B5A68C]/20 text-[#8C7E6A] px-2 py-1 rounded-full">
-                  Immobilie ist frei/nicht vermietet
-                </span>
               </h3>
 
               <div className="grid md:grid-cols-3 gap-4 mb-6">
@@ -541,6 +539,65 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   Geschätzt auf Basis aktueller Neuvermietungspreise für {result.mietschaetzung.standort}. Die tatsächliche Miete kann je nach Zustand, Ausstattung und Lage innerhalb des Stadtteils abweichen.
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Neuvermietungs-Potenzial */}
+          {result.neuvermietung_potenzial && (
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-8 fade-in">
+              <h3 className="text-xl font-bold text-[#2C2418] mb-2">
+                Mietoptimierung
+              </h3>
+              <p className="text-[13px] text-[#8C7E6A] mb-6">So kannst du die Rendite verbessern</p>
+
+              <div className="space-y-3 mb-6">
+                {/* Neuvermietung */}
+                <div className="flex items-center justify-between p-4 bg-[#FAF7F2] rounded-xl border border-[#E8E0D4]">
+                  <div>
+                    <p className="text-[14px] font-medium text-[#2C2418]">Neuvermietung<InfoTip text="Aktuelle Angebotsmiete bei Neuvermietung. Mietpreisbremse erlaubt max. 10% über ortsüblicher Vergleichsmiete." /></p>
+                    <p className="text-[12px] text-[#8C7E6A]">{result.neuvermietung_potenzial.neuvermietung_qm?.toFixed(2)} EUR/m²</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[18px] font-bold text-[#2C2418]">{formatCurrency(result.neuvermietung_potenzial.neuvermietung)}/Monat</p>
+                    {result.neuvermietung_potenzial.aktuell > 0 && result.neuvermietung_potenzial.uplift_prozent > 0 && (
+                      <p className="text-[12px] text-[#7C8B6F] font-medium">+{result.neuvermietung_potenzial.uplift_prozent}% vs. aktuelle Miete</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* WG */}
+                <div className="flex items-center justify-between p-4 bg-[#FAF7F2] rounded-xl border border-[#E8E0D4]">
+                  <div>
+                    <p className="text-[14px] font-medium text-[#2C2418]">WG-Vermietung<InfoTip text="Zimmerweise Vermietung bringt typisch 20-40% mehr Miete, bedeutet aber mehr Verwaltungsaufwand und hoehere Fluktuation." /></p>
+                    <p className="text-[12px] text-[#8C7E6A]">+{result.neuvermietung_potenzial.wg_uplift_prozent}% vs. {result.neuvermietung_potenzial.aktuell > 0 ? 'aktuelle Miete' : 'Neuvermietung'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[18px] font-bold text-[#7C8B6F]">{formatCurrency(result.neuvermietung_potenzial.wg_miete)}/Monat</p>
+                  </div>
+                </div>
+
+                {/* Moebliert */}
+                <div className="flex items-center justify-between p-4 bg-[#FAF7F2] rounded-xl border border-[#E8E0D4]">
+                  <div>
+                    <p className="text-[14px] font-medium text-[#2C2418]">Möblierte Vermietung<InfoTip text="Möblierte Wohnungen erzielen 15-30% höhere Mieten. Kürzere Kündigungsfristen und steuerliche Vorteile durch Möbel-AfA." /></p>
+                    <p className="text-[12px] text-[#8C7E6A]">+{result.neuvermietung_potenzial.moebliert_uplift_prozent}% vs. {result.neuvermietung_potenzial.aktuell > 0 ? 'aktuelle Miete' : 'Neuvermietung'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[18px] font-bold text-[#7C8B6F]">{formatCurrency(result.neuvermietung_potenzial.moebliert_miete)}/Monat</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Aktuell vs. Potenzial bei vermieteten */}
+              {result.neuvermietung_potenzial.aktuell > 0 && result.neuvermietung_potenzial.uplift_prozent > 0 && (
+                <div className="p-4 bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-xl mb-4">
+                  <p className="text-[13px] text-[#5C4F3D]">
+                    <span className="font-semibold text-[#7C8B6F]">Mietpotenzial:</span> Die aktuelle Miete von {formatCurrency(result.neuvermietung_potenzial.aktuell)} liegt {result.neuvermietung_potenzial.uplift_prozent}% unter dem aktuellen Neuvermietungsniveau. Bei einem Mieterwechsel könnten die Einnahmen um {formatCurrency(result.neuvermietung_potenzial.uplift_monat)}/Monat steigen ({formatCurrency(result.neuvermietung_potenzial.uplift_jahr)}/Jahr).
+                  </p>
+                </div>
+              )}
+
+              <p className="text-[11px] text-[#8C7E6A]">{result.neuvermietung_potenzial.hinweis}</p>
             </div>
           )}
 
@@ -619,8 +676,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                     </p>
                     <p className="text-[#8C7E6A] text-sm">
                       {result.no_go_check.energie_analyse.lohnt_sich_sanierung
-                        ? `Mit ${result.no_go_check.energie_analyse.kfw_programm} können Sie die Sanierungskosten deutlich reduzieren. Die geschätzte Wertsteigerung beträgt ${formatCurrency(result.no_go_check.energie_analyse.geschaetzte_wertsteigerung)}.`
-                        : 'Die Sanierungskosten übersteigen den erwarteten Nutzen. Prüfen Sie alternative Objekte oder verhandeln Sie den Kaufpreis deutlich nach unten.'
+                        ? `Mit ${result.no_go_check.energie_analyse.kfw_programm} kannst du die Sanierungskosten deutlich reduzieren. Die geschätzte Wertsteigerung beträgt ${formatCurrency(result.no_go_check.energie_analyse.geschaetzte_wertsteigerung)}.`
+                        : 'Die Sanierungskosten übersteigen den erwarteten Nutzen. Prüfe alternative Objekte oder verhandle den Kaufpreis deutlich nach unten.'
                       }
                     </p>
                   </div>
@@ -776,6 +833,24 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                         {formatCurrency(result.cashflow_analyse.monatlicher_cashflow)}
                       </span>
                     </div>
+                    {result.cashflow_analyse?.steuereffekt && (
+                      <div className="mt-3 p-4 bg-[#7C8B6F]/5 rounded-xl border border-[#7C8B6F]/20">
+                        <p className="text-[13px] font-medium text-[#7C8B6F] mb-2">Cashflow nach Steuereffekt (geschätzt)</p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[13px] text-[#8C7E6A]">Bei 42% Grenzsteuersatz</span>
+                          <span className={`text-[16px] font-bold ${result.cashflow_analyse.steuereffekt.cashflow_nach_steuer_42 >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
+                            {result.cashflow_analyse.steuereffekt.cashflow_nach_steuer_42 >= 0 ? '+' : ''}{formatCurrency(result.cashflow_analyse.steuereffekt.cashflow_nach_steuer_42)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-[13px] text-[#8C7E6A]">Bei 35% Grenzsteuersatz</span>
+                          <span className={`text-[16px] font-bold ${result.cashflow_analyse.steuereffekt.cashflow_nach_steuer_35 >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
+                            {result.cashflow_analyse.steuereffekt.cashflow_nach_steuer_35 >= 0 ? '+' : ''}{formatCurrency(result.cashflow_analyse.steuereffekt.cashflow_nach_steuer_35)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#B5A68C] mt-2">Berücksichtigt AfA ({formatCurrency(result.cashflow_analyse.steuereffekt.jaehrliche_afa)}/Jahr) und Zinsabzug</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1296,7 +1371,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   {result.quick_check_result.ampel === 'gruen' ? '\u{1F7E2}' :
                    result.quick_check_result.ampel === 'gelb' ? '\u{1F7E1}' : '\u{1F534}'}
                 </span>
-                <p className="text-lg font-bold text-[#2C2418]">{result.quick_check_result.empfehlung}</p>
+                <p className="text-lg font-bold text-[#2C2418]">{result.quick_check_result.empfehlung?.replace(/\[(ROT|GELB|OK|ERROR)\]\s*/g, '')}</p>
                 <span className="text-lg text-[#8C7E6A]">{result.quick_check_result.bestanden}/{result.quick_check_result.gesamt} Kriterien</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -1329,7 +1404,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 >
                   Kopieren
                 </button>
-                <pre className="text-[14px] text-[#2C2418] whitespace-pre-wrap font-sans leading-relaxed">{result.verhandlungsmail}</pre>
+                <pre className="text-[14px] text-[#2C2418] whitespace-pre-wrap font-sans leading-relaxed">{result.verhandlungsmail?.replace(/\*\*/g, '')}</pre>
               </div>
             </div>
           )}
@@ -1455,10 +1530,12 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           {/* NEW: Full Live Calculator */}
           <LiveCalculator
             kaufpreis={propertyData?.kaufpreis || 0}
-            monatlicheMiete={propertyData?.aktuelle_miete || 0}
-            hausgeld={propertyData?.hausgeld || propertyData?.nebenkosten || 0}
+            monatlicheMiete={propertyData?.aktuelle_miete || result.mietschaetzung?.geschaetzte_miete_monat || 0}
+            hausgeld={propertyData?.hausgeld || propertyData?.nebenkosten || result.cashflow_analyse?.monatliche_nebenkosten_gesamt || 0}
+            hausgeldNichtUmlagefaehig={propertyData?.hausgeld_nicht_umlagefaehig || result.cashflow_analyse?.monatliche_nebenkosten || null}
             wohnflaeche={propertyData?.wohnflaeche || 0}
             baujahr={propertyData?.baujahr || null}
+            neuvermietungPotenzial={result.neuvermietung_potenzial}
             initialValues={{
               eigenkapital: result.cashflow_analyse?.eigenkapital || 0,
               zinssatz: result.cashflow_analyse?.zinssatz_prozent || 3.75,

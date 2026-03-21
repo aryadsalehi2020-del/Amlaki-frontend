@@ -605,10 +605,10 @@ export default function LandingPage() {
                 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
                 style={{ color: C.heading, letterSpacing: '-0.025em' }}
               >
-                Professionelle Analyse ab 4,99
+                Professionelle Analyse ab 9 EUR
               </h2>
               <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
-                Erste Analyse gratis. Keine Abos, keine versteckten Kosten. Zum Vergleich: Ein Immobiliengutachter kostet 500-2.000.
+                Erste Analyse gratis. Keine Abos, keine versteckten Kosten.
               </p>
             </div>
           </FadeInSection>
@@ -616,8 +616,8 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-4 sm:gap-5">
             {[
               { name: 'Free', price: '0', unit: '', desc: 'Zum Kennenlernen', credits: '1 Analyse', features: ['Score und Bewertung', 'Cashflow-Berechnung', 'Grundlegende Kennzahlen', 'KI-Chat'], cta: 'Kostenlos starten', popular: false },
-              { name: 'Basic', price: '4,99', unit: '', desc: '1 vollständige Analyse', credits: '1 Analyse', features: ['Alles aus Free', 'Szenarien-Vergleich', 'Förderungen und AfA', 'Fairer Preis Berechnung', 'Verbesserungsvorschläge'], cta: '1 Credit kaufen', popular: false },
-              { name: 'Plus', price: '19,99', unit: '', desc: 'Mehrere Objekte vergleichen', credits: '5 Analysen (3,99/St.)', features: ['Alles aus Basic', '5 vollständige Analysen', 'Mengenrabatt 20%', 'Ideal zum Vergleichen'], cta: '5 Credits kaufen', popular: true },
+              { name: 'Basic', price: '9', unit: '', desc: '1 vollständige Analyse', credits: '1 Analyse', features: ['Alles aus Free', 'Szenarien-Vergleich', 'Förderungen und AfA', 'Fairer Preis Berechnung', 'Verbesserungsvorschläge'], cta: '1 Credit kaufen', popular: false },
+              { name: 'Plus', price: '35', unit: '', desc: 'Mehrere Objekte vergleichen', credits: '5 Analysen (7/St.)', features: ['Alles aus Basic', '5 vollständige Analysen', 'Mengenrabatt 22%', 'Ideal zum Vergleichen'], cta: '5 Credits kaufen', popular: true },
             ].map((plan, i) => (
               <FadeInSection key={plan.name} delay={i * 0.1}>
                 <div
@@ -668,7 +668,7 @@ export default function LandingPage() {
 
           <FadeInSection delay={0.3}>
             <p className="text-center text-xs mt-6" style={{ color: C.khaki }}>
-              Sichere Zahlung via Stripe. Auch 10er-Paket verfuegbar (29,99 / 2,99 pro Analyse).
+              Sichere Zahlung via Stripe. Auch 10er-Paket verfügbar (50 EUR / 5 EUR pro Analyse).
             </p>
           </FadeInSection>
         </div>
@@ -744,7 +744,7 @@ export default function LandingPage() {
               </a>
               <span className="text-xs flex items-center gap-1" style={{ color: C.khaki, minHeight: '44px', display: 'flex', alignItems: 'center' }}>
                 <MapPin size={12} />
-                Made in Frankfurt
+                Made in Hamburg
               </span>
             </div>
           </div>

@@ -57,7 +57,7 @@ KFW_PROGRAMME = {
         "name": "KfW 261/262 BEG Wohngebäude (Energetische Sanierung)",
         "kredit_max": 150000,
         "tilgungszuschuss": {
-            "EH40": {"prozent": 20, "max": 24000},
+            "EH40": {"prozent": 20, "max": 30000},
             "EH40_EE": {"prozent": 25, "max": 37500},
             "EH55": {"prozent": 15, "max": 18000},
             "EH55_EE": {"prozent": 17.5, "max": 26250},
@@ -79,6 +79,7 @@ KFW_PROGRAMME = {
     "308": {
         "name": "KfW 308 Jung kauft Alt",
         "kredit_basis": 100000,
+        "kredit_ab_2_kinder": 125000,
         "kredit_ab_3_kinder": 150000,
         "zins_effektiv": 1.12,
         "einkommensgrenzen": {
@@ -453,12 +454,27 @@ def berechne_fairen_preis(kaufpreis: float, jahresmiete: float, wohnflaeche: flo
                           markt_qm_preis: float = None) -> Dict[str, Any]:
     """
     Berechnet den fairen Preis nach mehreren Methoden.
+    Zielrendite und Zielfaktor werden an den lokalen Markt angepasst.
     """
-    # Methode 1: Nach Rendite (Ziel 4.5% Brutto)
-    nach_rendite = jahresmiete / 0.045
+    # Zielwerte nach Marktklasse anpassen
+    if markt_qm_preis and markt_qm_preis > 7000:
+        # A-Stadt (München, Hamburg, Frankfurt etc.) - Faktor 30-38 üblich
+        ziel_rendite = 0.03
+        ziel_faktor = 30
+    elif markt_qm_preis and markt_qm_preis > 4000:
+        # B-Stadt - Faktor 24-28 üblich
+        ziel_rendite = 0.04
+        ziel_faktor = 24
+    else:
+        # C-Stadt / ländlich - Faktor 18-22 üblich
+        ziel_rendite = 0.05
+        ziel_faktor = 20
 
-    # Methode 2: Nach Faktor (Ziel Faktor 22)
-    nach_faktor = jahresmiete * 22
+    # Methode 1: Nach Rendite
+    nach_rendite = jahresmiete / ziel_rendite
+
+    # Methode 2: Nach Faktor
+    nach_faktor = jahresmiete * ziel_faktor
 
     # Methode 3: Nach Cashflow (vereinfacht)
     # Verfügbar für Rate ca. 65% der Miete (35% NK)
@@ -466,20 +482,52 @@ def berechne_fairen_preis(kaufpreis: float, jahresmiete: float, wohnflaeche: flo
     max_kredit = verfuegbar / 0.053  # 3.8% Zins + 1.5% Tilgung
     nach_cashflow = max_kredit * 0.9  # 10% Puffer
 
+    # Methode 4: Nach Markt (Vergleich mit lokalen qm-Preisen)
+    nach_markt = None
+    if markt_qm_preis and wohnflaeche and wohnflaeche > 0:
+        nach_markt = round(markt_qm_preis * wohnflaeche)
+
     # Gewichteter Durchschnitt
-    fairer_preis = round(nach_rendite * 0.4 + nach_faktor * 0.3 + nach_cashflow * 0.3)
+    if nach_markt is not None:
+        # Alle 4 Methoden: Rendite 30%, Faktor 30%, Markt 25%, Cashflow 15%
+        fairer_preis_raw = round(
+            nach_rendite * 0.30 + nach_faktor * 0.30 + nach_markt * 0.25 + nach_cashflow * 0.15
+        )
+    else:
+        # Ohne Marktdaten: Rendite 40%, Faktor 40%, Cashflow 20%
+        fairer_preis_raw = round(nach_rendite * 0.4 + nach_faktor * 0.4 + nach_cashflow * 0.2)
+
+    # Cap: fairer Preis darf max 25% unter Kaufpreis liegen (realistisch)
+    min_fairer_preis = round(kaufpreis * 0.75)
+    fairer_preis = max(fairer_preis_raw, min_fairer_preis)
 
     differenz_prozent = round((kaufpreis / fairer_preis - 1) * 100, 1)
 
-    return {
+    # Realistische Bewertung
+    if differenz_prozent > 20:
+        bewertung = "Stark überteuert"
+    elif differenz_prozent > 10:
+        bewertung = "Überteuert"
+    elif differenz_prozent > 5:
+        bewertung = "Leicht über Marktwert"
+    elif differenz_prozent >= -5:
+        bewertung = "Marktgerecht"
+    else:
+        bewertung = "Unter Marktwert"
+
+    result = {
         "fairer_preis": fairer_preis,
         "nach_rendite": round(nach_rendite),
         "nach_faktor": round(nach_faktor),
         "nach_cashflow": round(nach_cashflow),
         "aktueller_preis": kaufpreis,
         "differenz_prozent": differenz_prozent,
-        "bewertung": "überteuert" if differenz_prozent > 5 else "fair" if differenz_prozent >= -5 else "günstig"
+        "bewertung": bewertung
     }
+    if nach_markt is not None:
+        result["nach_markt"] = nach_markt
+
+    return result
 
 
 def empfehle_foerderungen(
@@ -522,7 +570,7 @@ def empfehle_foerderungen(
 
     # KfW 308 - Jung kauft Alt
     if selbstnutzung and kinder_anzahl > 0 and energieklasse and energieklasse.upper() in ['F', 'G', 'H']:
-        kredit = 100000 if kinder_anzahl < 3 else 150000
+        kredit = 100000 if kinder_anzahl == 1 else (125000 if kinder_anzahl == 2 else 150000)
         einkommensgrenze = 90000 + (kinder_anzahl - 1) * 10000
         empfehlungen.append({
             "programm": "KfW 308",
@@ -549,6 +597,7 @@ def empfehle_foerderungen(
             "foerderung_prozent": foerderung,
             "grund": "Alte Heizung austauschfähig",
             "beispiel": f"Bei 30.000€ Wärmepumpe: bis zu {int(30000 * foerderung / 100)}€ Zuschuss!",
+            "hinweis": None if selbstnutzung else "Als Vermieter nur 30% Grundförderung (Klimabonus und Einkommensbonus gelten nur für Eigennutzer)",
             "prioritaet": "hoch" if foerderung >= 50 else "mittel"
         })
 
@@ -641,7 +690,7 @@ def generiere_verbesserungsvorschlaege(
         "icon": "",
         "tipp": "Mehrere Banken vergleichen + KfW kombinieren",
         "optionen": [
-            "KfW 124: 100.000€ zu ca. 3.4% für Eigennutzer-Anteil",
+            "KfW 261: Energetische Sanierung, bis 150.000€ Kredit mit Tilgungszuschuss",
             f"Landesförderung prüfen ({bundesland or 'je nach Bundesland'})",
             "Disagio vereinbaren für Steuereffekt",
             "Sondertilgung 10% verhandeln"
@@ -664,7 +713,7 @@ def generiere_verbesserungsvorschlaege(
         })
 
     # 6. Fairer Preis
-    fairer = berechne_fairen_preis(kaufpreis, jahresmiete)
+    fairer = berechne_fairen_preis(kaufpreis, jahresmiete, markt_qm_preis=None)
     tipps.append({
         "typ": "Fairer Preis",
         "icon": "",
@@ -871,13 +920,13 @@ def quick_check(immobilie: Dict[str, Any]) -> Dict[str, Any]:
     total = len(checks)
 
     if passed == total:
-        empfehlung = "[OK] KAUFEN - Alle Kriterien erfüllt"
+        empfehlung = "KAUFEN - Alle Kriterien erfüllt"
         ampel = "gruen"
     elif passed >= 4:
-        empfehlung = "[GELB] PRÜFEN - Einige Schwächen"
+        empfehlung = "PRÜFEN - Einige Schwächen"
         ampel = "gelb"
     else:
-        empfehlung = "[ROT] VORSICHT - Mehrere Red Flags"
+        empfehlung = "VORSICHT - Mehrere Red Flags"
         ampel = "rot"
 
     return {

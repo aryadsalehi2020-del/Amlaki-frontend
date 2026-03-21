@@ -4,7 +4,10 @@ import React, { useState, useEffect, useMemo } from 'react';
  * LiveCalculator - Vollständig interaktive Immobilienberechnung
  * Berechnet bei jeder Slider-Änderung ALLE Werte neu und zeigt sie live an.
  */
-function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, baujahr, initialValues }) {
+function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUmlagefaehig, wohnflaeche, baujahr, initialValues, neuvermietungPotenzial }) {
+  const [vermietungsart, setVermietungsart] = useState('standard');
+  const [customMiete, setCustomMiete] = useState(null);
+
   // Slider-Werte
   const [values, setValues] = useState({
     eigenkapital: initialValues?.eigenkapital || 0,
@@ -14,12 +17,23 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
     wertsteigerung: 1.5
   });
 
+  // Miete basierend auf Vermietungsart
+  const aktiveMiete = useMemo(() => {
+    if (customMiete !== null) return customMiete;
+    if (!neuvermietungPotenzial) return monatlicheMiete;
+    switch (vermietungsart) {
+      case 'wg': return neuvermietungPotenzial.wg_miete || monatlicheMiete;
+      case 'moebliert': return neuvermietungPotenzial.moebliert_miete || monatlicheMiete;
+      default: return monatlicheMiete;
+    }
+  }, [vermietungsart, customMiete, monatlicheMiete, neuvermietungPotenzial]);
+
   // Berechnete Werte
   const calculations = useMemo(() => {
-    if (!kaufpreis || !monatlicheMiete) return null;
+    if (!kaufpreis || !aktiveMiete) return null;
 
     // Grundwerte
-    const jahresmiete = monatlicheMiete * 12;
+    const jahresmiete = aktiveMiete * 12;
     const finanzierungssumme = kaufpreis - values.eigenkapital;
     const kaufnebenkosten = kaufpreis * 0.12; // ~12% Kaufnebenkosten
     const gesamtinvestition = kaufpreis + kaufnebenkosten;
@@ -29,11 +43,11 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
     const jaehrlicheRate = finanzierungssumme * (gesamtrate / 100);
     const monatlicheRate = jaehrlicheRate / 12;
 
-    // Nebenkosten (nur nicht-umlagefähige ~30%)
-    const nichtUmlagefahig = (hausgeld || 0) * 0.3;
+    // Nebenkosten: exakter Wert wenn vorhanden, sonst 30% vom Hausgeld
+    const nichtUmlagefahig = hausgeldNichtUmlagefaehig || (hausgeld || 0) * 0.3;
 
     // Cashflow
-    const monatlichCashflow = monatlicheMiete - monatlicheRate - nichtUmlagefahig;
+    const monatlichCashflow = aktiveMiete - monatlicheRate - nichtUmlagefahig;
     const jaehrlichCashflow = monatlichCashflow * 12;
 
     // Renditen
@@ -59,19 +73,19 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
     const geschaetzteZinskosten = finanzierungssumme * (values.zinssatz / 100) * (kreditLaufzeit / 2);
 
     // Break-Even Eigenkapital
-    const verfuegbarFuerKredit = monatlicheMiete - nichtUmlagefahig;
+    const verfuegbarFuerKredit = aktiveMiete - nichtUmlagefahig;
     const maxKreditrate = verfuegbarFuerKredit * 12;
     const maxFinanzierung = maxKreditrate / (gesamtrate / 100);
     const breakEvenEK = Math.max(0, kaufpreis - maxFinanzierung);
 
     // Preis pro m²
     const preisProQm = wohnflaeche ? kaufpreis / wohnflaeche : null;
-    const mieteProQm = wohnflaeche ? monatlicheMiete / wohnflaeche : null;
+    const mieteProQm = wohnflaeche ? aktiveMiete / wohnflaeche : null;
 
     // 10-Jahres-Projektion
     const projektion = [];
     let aktuelleRestschuld = finanzierungssumme;
-    let aktuelleMiete = monatlicheMiete;
+    let aktuelleMiete = aktiveMiete;
     let aktuellerWert = kaufpreis;
 
     for (let jahr = 1; jahr <= 10; jahr++) {
@@ -139,7 +153,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
       selbsttragend: monatlichCashflow >= 0,
       cashflowPositiv: monatlichCashflow > 0
     };
-  }, [kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, values]);
+  }, [kaufpreis, aktiveMiete, hausgeld, wohnflaeche, values]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('de-DE', {
@@ -173,6 +187,45 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
           Passe die Werte an und sieh sofort wie sich alle Kennzahlen ändern
         </p>
       </div>
+
+      {/* Vermietungsart */}
+      {neuvermietungPotenzial && (
+        <div className="bg-white rounded-2xl p-6 border border-[#E8E0D4]">
+          <p className="text-[13px] font-medium text-[#5C4F3D] mb-3">Vermietungsart</p>
+          <div className="flex gap-2 mb-3">
+            {[
+              { id: 'standard', label: 'Standard' },
+              { id: 'wg', label: 'WG' },
+              { id: 'moebliert', label: 'Möbliert' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => { setVermietungsart(opt.id); setCustomMiete(null); }}
+                className={`px-4 py-2 rounded-[10px] text-[13px] font-medium transition-all ${
+                  vermietungsart === opt.id && customMiete === null
+                    ? 'bg-[#7C8B6F] text-white'
+                    : 'border border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-[12px] text-[#8C7E6A]">Miete anpassen:</label>
+            <input
+              type="number"
+              value={customMiete !== null ? customMiete : Math.round(aktiveMiete)}
+              onChange={(e) => setCustomMiete(parseFloat(e.target.value) || 0)}
+              className="w-28 px-3 py-2 bg-white border border-[#E8E0D4] rounded-[10px] text-[14px] text-[#2C2418] focus:outline-none focus:border-[#7C8B6F]"
+            />
+            <span className="text-[12px] text-[#8C7E6A]">EUR/Monat</span>
+            {customMiete !== null && (
+              <button onClick={() => setCustomMiete(null)} className="text-[11px] text-[#B5A68C] hover:text-[#5C4F3D]">Zurücksetzen</button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Sliders Grid */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -350,7 +403,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
             <div>
               <p className="text-[#8C7E6A] font-medium mb-1">Monatlicher Cashflow</p>
               <p className="text-xs text-[#B5A68C]">
-                Miete {formatCurrency(monatlicheMiete)} - Rate {formatCurrency(calculations.monatlicheRate)} - NK {formatCurrency(calculations.nichtUmlagefahig)}
+                Miete {formatCurrency(aktiveMiete)} - Rate {formatCurrency(calculations.monatlicheRate)} - NK {formatCurrency(calculations.nichtUmlagefahig)}
               </p>
             </div>
             <div className="text-right">
@@ -408,8 +461,11 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, wohnflaeche, bau
 
           <div className="p-4 glass-neon rounded-xl">
             <p className="text-xs text-[#B5A68C] mb-1">Kredit abbezahlt in</p>
-            <p className="text-2xl font-bold text-[#7C8B6F]">~{calculations.kreditLaufzeit} Jahren</p>
+            <p className={`text-2xl font-bold ${calculations.kreditLaufzeit > 40 ? 'text-[#B85C5C]' : 'text-[#7C8B6F]'}`}>~{calculations.kreditLaufzeit} Jahren</p>
             <p className="text-xs text-[#B5A68C] mt-1">bei {values.tilgung}% Tilgung</p>
+            {calculations.kreditLaufzeit > 40 && (
+              <p className="text-xs text-[#B85C5C] font-semibold mt-2">Unrealistisch lange Laufzeit - mehr Eigenkapital oder höhere Tilgung empfohlen</p>
+            )}
           </div>
 
           <div className="p-4 glass-neon rounded-xl">

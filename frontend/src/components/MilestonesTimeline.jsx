@@ -76,91 +76,70 @@ function MilestonesTimeline({ meilensteine }) {
   ];
 
   const colorClasses = {
-    green: 'bg-green-100 border-green-300 text-green-700',
-    blue: 'bg-blue-100 border-blue-300 text-blue-700',
-    amber: 'bg-amber-100 border-amber-300 text-amber-700',
-    purple: 'bg-purple-100 border-purple-300 text-purple-700'
+    green: 'bg-[#7C8B6F]/10 border-[#7C8B6F]/30 text-[#7C8B6F]',
+    blue: 'bg-[#B5A68C]/10 border-[#B5A68C]/30 text-[#8C7E6A]',
+    amber: 'bg-[#E8E0D4]/50 border-[#E8E0D4] text-[#5C4F3D]',
+    purple: 'bg-[#FAF7F2] border-[#E8E0D4] text-[#5C4F3D]'
   };
 
-  const activeMilestones = milestoneConfig.filter(m => meilensteine[m.key] !== null);
+  const activeMilestones = milestoneConfig
+    .filter(m => meilensteine[m.key] !== null)
+    .sort((a, b) => meilensteine[a.key] - meilensteine[b.key]);
   const futureMilestones = milestoneConfig.filter(m => meilensteine[m.key] === null);
 
   return (
-    <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
-      <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
-        <span className="text-2xl"></span>
-        Ihre Investment-Meilensteine
-      </h4>
-      <p className="text-sm text-slate/60 mb-6">Wann erreichen Sie welche Ziele?</p>
+    <div className="p-6 bg-white rounded-2xl border border-[#E8E0D4]">
+      <h4 className="text-lg font-bold text-[#2C2418] mb-2">Deine Investment-Meilensteine</h4>
+      <p className="text-sm text-[#8C7E6A] mb-6">Wann erreichst du welche Ziele?</p>
 
-      {/* Timeline */}
-      <div className="relative">
-        {/* Vertical line */}
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate/20"></div>
-
-        <div className="space-y-4">
-          {activeMilestones.map((milestone, index) => {
-            const jahr = meilensteine[milestone.key];
-            return (
-              <div key={milestone.key} className="relative flex items-center gap-4 pl-2">
-                {/* Circle on timeline */}
-                <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center border-2 ${colorClasses[milestone.color]}`}>
-                  <span className="text-lg">{milestone.icon}</span>
-                </div>
-
-                {/* Content */}
-                <div className={`flex-1 p-3 rounded-xl border ${colorClasses[milestone.color]}`}>
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{milestone.label}</span>
-                    <span className="font-bold text-lg">Jahr {jahr}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Future milestones (not reached within projection) */}
-          {futureMilestones.length > 0 && (
-            <div className="pt-4 border-t border-dashed border-slate/30 mt-4">
-              <p className="text-sm text-slate/50 mb-3 pl-14">Nicht innerhalb von 40 Jahren erreicht:</p>
-              <div className="flex flex-wrap gap-2 pl-14">
-                {futureMilestones.map((milestone) => (
-                  <span
-                    key={milestone.key}
-                    className="px-3 py-1 bg-slate/10 text-slate/50 rounded-full text-xs"
-                  >
-                    {milestone.icon} {milestone.label}
-                  </span>
-                ))}
-              </div>
+      <div className="space-y-3">
+        {activeMilestones.map((milestone) => {
+          const jahr = meilensteine[milestone.key];
+          return (
+            <div key={milestone.key} className="flex items-center justify-between p-4 bg-[#FAF7F2] rounded-xl border border-[#E8E0D4]">
+              <span className="text-[14px] font-medium text-[#2C2418]">{milestone.label}</span>
+              <span className="text-[16px] font-bold text-[#2C2418]">Jahr {jahr}</span>
             </div>
-          )}
-        </div>
+          );
+        })}
+
+        {futureMilestones.length > 0 && (
+          <div className="pt-3 mt-2">
+            <p className="text-[12px] text-[#B5A68C] mb-2">Nicht innerhalb von 40 Jahren erreicht:</p>
+            <div className="flex flex-wrap gap-2">
+              {futureMilestones.map((milestone) => (
+                <span key={milestone.key} className="px-3 py-1 bg-[#FAF7F2] text-[#B5A68C] rounded-full text-[12px] border border-[#E8E0D4]">
+                  {milestone.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3 mt-6">
-        <div className="p-3 bg-green-50 rounded-xl text-center">
-          <p className="text-xs text-green-600">Cashflow positiv ab</p>
-          <p className="text-xl font-bold text-green-700">
+        <div className="p-3 bg-[#7C8B6F]/10 rounded-xl text-center border border-[#7C8B6F]/20">
+          <p className="text-xs text-[#7C8B6F]">Cashflow positiv ab</p>
+          <p className="text-xl font-bold text-[#2C2418]">
             {meilensteine.erster_positiver_cashflow
               ? `Jahr ${meilensteine.erster_positiver_cashflow}`
-              : 'Sofort ✓'
+              : 'Sofort'
             }
           </p>
         </div>
-        <div className="p-3 bg-blue-50 rounded-xl text-center">
-          <p className="text-xs text-blue-600">50% getilgt in</p>
-          <p className="text-xl font-bold text-blue-700">
+        <div className="p-3 bg-[#FAF7F2] rounded-xl text-center border border-[#E8E0D4]">
+          <p className="text-xs text-[#8C7E6A]">50% getilgt in</p>
+          <p className="text-xl font-bold text-[#2C2418]">
             {meilensteine.kredit_50_prozent_getilgt
               ? `Jahr ${meilensteine.kredit_50_prozent_getilgt}`
               : '40+ Jahre'
             }
           </p>
         </div>
-        <div className="p-3 bg-purple-50 rounded-xl text-center">
-          <p className="text-xs text-purple-600">Schuldenfrei in</p>
-          <p className="text-xl font-bold text-purple-700">
+        <div className="p-3 bg-[#FAF7F2] rounded-xl text-center border border-[#E8E0D4]">
+          <p className="text-xs text-[#8C7E6A]">Schuldenfrei in</p>
+          <p className="text-xl font-bold text-[#2C2418]">
             {meilensteine.kredit_komplett_getilgt
               ? `Jahr ${meilensteine.kredit_komplett_getilgt}`
               : '40+ Jahre'

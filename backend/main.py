@@ -134,7 +134,7 @@ def startup_event():
     init_db()
 
 # CORS - Erlaubte Origins + Vercel Preview URLs
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://amlaki.de,https://www.amlaki.de,http://localhost:5173,http://localhost:3000").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://amlaki.de,https://www.amlaki.de,http://localhost:5173,http://localhost:3000,http://localhost:3001").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -727,6 +727,7 @@ class PropertyData(BaseModel):
     etage: Optional[str] = None
     nebenkosten: Optional[float] = None
     hausgeld: Optional[float] = None
+    hausgeld_nicht_umlagefaehig: Optional[float] = None  # Nicht umlagefähiger Anteil des Hausgelds
     energieausweis: Optional[str] = None
     energieklasse: Optional[str] = None
     heizungsart: Optional[str] = None
@@ -755,6 +756,7 @@ class AnalysisRequest(BaseModel):
     tilgung: Optional[float] = 1.25   # Angepasst auf 1.25%
     marktpreis_qm: Optional[float] = None  # Falls manuell eingegeben
     besichtigt: Optional[bool] = None  # Ob User schon bei Besichtigung war
+    besichtigungs_notizen: Optional[str] = None  # Notizen von der Besichtigung
     analysis_id: Optional[int] = None  # Wenn gesetzt: bestehende Analyse updaten statt neue erstellen
 
 
@@ -809,6 +811,8 @@ class AnalysisResult(BaseModel):
     analysis_id: Optional[int] = None  # ID der gespeicherten Analyse
     # Verhandlungsnachricht
     verhandlungsmail: Optional[str] = None  # Fertige Nachricht an Verkaeufer/Makler
+    # Neuvermietungs-Potenzial
+    neuvermietung_potenzial: Optional[dict] = None  # Mietoptimierung: Neuvermietung, WG, moebliert
     # Besichtigungs-Roadmap
     besichtigungs_roadmap: Optional[dict] = None  # Checkliste und Tipps fuer die Besichtigung
     besichtigt: Optional[bool] = None  # Ob User schon besichtigt hat
@@ -847,7 +851,7 @@ def call_claude_direct(system_prompt: str, messages: list, max_tokens: int = 409
         json={
             "model": model,
             "max_tokens": max_tokens,
-            "system": system_prompt,
+            "system": [{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
             "messages": messages,
         },
         timeout=120.0,
@@ -1035,6 +1039,7 @@ Gib die Daten als JSON zurück mit genau diesen Feldern (null wenn nicht gefunde
     "etage": "<z.B. 2. OG>",
     "nebenkosten": <monatlich in Euro>,
     "hausgeld": <monatlich in Euro>,
+    "hausgeld_nicht_umlagefaehig": <nicht umlagefähiger Anteil des Hausgelds in Euro, oft als "nicht umlagefähig", "Verwaltung + Instandhaltungsrücklage" oder "davon nicht umlagefähig" angegeben, null wenn nicht gefunden>,
     "energieausweis": "<Verbrauch oder Bedarf>",
     "energieklasse": "<A+ bis H>",
     "heizungsart": "<z.B. Gas-Zentralheizung>",
@@ -1100,26 +1105,27 @@ Antworte NUR mit dem JSON, kein anderer Text."""
 
 
 # Schnelle Marktdaten-Lookup aus Knowledge Base
+# Miete = aktuelle NEUVERMIETUNGSPREISE (Angebotsmieten), NICHT Bestandsdurchschnitt
 KNOWN_CITIES = {
-    "muenchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 19.5, "trend": "+2,5%", "faktor": "32-38"},
-    "münchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 19.5, "trend": "+2,5%", "faktor": "32-38"},
-    "berlin": {"kauf_von": 5600, "kauf_bis": 6200, "miete": 14.0, "trend": "+3,0%", "faktor": "26-32"},
-    "hamburg": {"kauf_von": 5300, "kauf_bis": 5800, "miete": 13.5, "trend": "+2,0%", "faktor": "25-30"},
-    "frankfurt": {"kauf_von": 5000, "kauf_bis": 5500, "miete": 14.0, "trend": "+1,5%", "faktor": "24-29"},
-    "koeln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 12.5, "trend": "+2,5%", "faktor": "23-28"},
-    "köln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 12.5, "trend": "+2,5%", "faktor": "23-28"},
-    "stuttgart": {"kauf_von": 4800, "kauf_bis": 5400, "miete": 14.0, "trend": "+2,0%", "faktor": "24-29"},
-    "duesseldorf": {"kauf_von": 4500, "kauf_bis": 5100, "miete": 12.0, "trend": "+2,5%", "faktor": "23-28"},
-    "düsseldorf": {"kauf_von": 4500, "kauf_bis": 5100, "miete": 12.0, "trend": "+2,5%", "faktor": "23-28"},
-    "leipzig": {"kauf_von": 2800, "kauf_bis": 3300, "miete": 8.5, "trend": "+4,0%", "faktor": "18-23"},
-    "dresden": {"kauf_von": 2600, "kauf_bis": 3100, "miete": 8.0, "trend": "+3,5%", "faktor": "17-22"},
-    "hannover": {"kauf_von": 3200, "kauf_bis": 3700, "miete": 10.0, "trend": "+2,5%", "faktor": "20-25"},
-    "nuernberg": {"kauf_von": 3500, "kauf_bis": 4000, "miete": 11.0, "trend": "+3,0%", "faktor": "21-26"},
-    "nürnberg": {"kauf_von": 3500, "kauf_bis": 4000, "miete": 11.0, "trend": "+3,0%", "faktor": "21-26"},
-    "bremen": {"kauf_von": 2800, "kauf_bis": 3300, "miete": 9.0, "trend": "+2,5%", "faktor": "19-24"},
-    "essen": {"kauf_von": 2200, "kauf_bis": 2800, "miete": 8.0, "trend": "+3,0%", "faktor": "16-21"},
-    "dortmund": {"kauf_von": 2100, "kauf_bis": 2700, "miete": 8.0, "trend": "+3,5%", "faktor": "16-21"},
-    "chemnitz": {"kauf_von": 1000, "kauf_bis": 1600, "miete": 6.0, "trend": "+5,0%", "faktor": "12-16"},
+    "muenchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 21.0, "trend": "+2,5%", "faktor": "32-38"},
+    "münchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 21.0, "trend": "+2,5%", "faktor": "32-38"},
+    "berlin": {"kauf_von": 5600, "kauf_bis": 6200, "miete": 15.5, "trend": "+3,0%", "faktor": "26-32"},
+    "hamburg": {"kauf_von": 5300, "kauf_bis": 5800, "miete": 15.5, "trend": "+2,0%", "faktor": "25-30"},
+    "frankfurt": {"kauf_von": 5000, "kauf_bis": 5500, "miete": 16.5, "trend": "+1,5%", "faktor": "24-29"},
+    "koeln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-28"},
+    "köln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-28"},
+    "stuttgart": {"kauf_von": 4800, "kauf_bis": 5400, "miete": 16.0, "trend": "+2,0%", "faktor": "24-29"},
+    "duesseldorf": {"kauf_von": 4500, "kauf_bis": 5100, "miete": 13.5, "trend": "+2,5%", "faktor": "23-28"},
+    "düsseldorf": {"kauf_von": 4500, "kauf_bis": 5100, "miete": 13.5, "trend": "+2,5%", "faktor": "23-28"},
+    "leipzig": {"kauf_von": 2800, "kauf_bis": 3300, "miete": 10.0, "trend": "+4,0%", "faktor": "18-23"},
+    "dresden": {"kauf_von": 2600, "kauf_bis": 3100, "miete": 9.5, "trend": "+3,5%", "faktor": "17-22"},
+    "hannover": {"kauf_von": 3200, "kauf_bis": 3700, "miete": 11.5, "trend": "+2,5%", "faktor": "20-25"},
+    "nuernberg": {"kauf_von": 3500, "kauf_bis": 4000, "miete": 12.5, "trend": "+3,0%", "faktor": "21-26"},
+    "nürnberg": {"kauf_von": 3500, "kauf_bis": 4000, "miete": 12.5, "trend": "+3,0%", "faktor": "21-26"},
+    "bremen": {"kauf_von": 2800, "kauf_bis": 3300, "miete": 10.5, "trend": "+2,5%", "faktor": "19-24"},
+    "essen": {"kauf_von": 2200, "kauf_bis": 2800, "miete": 9.5, "trend": "+3,0%", "faktor": "16-21"},
+    "dortmund": {"kauf_von": 2100, "kauf_bis": 2700, "miete": 9.5, "trend": "+3,5%", "faktor": "16-21"},
+    "chemnitz": {"kauf_von": 1000, "kauf_bis": 1600, "miete": 7.0, "trend": "+5,0%", "faktor": "12-16"},
 }
 
 def quick_market_lookup(stadt: str) -> Optional[dict]:
@@ -1173,7 +1179,7 @@ async def extract_url_data(data: dict = Body(...)):
                 [{"role": "user", "content": f"""Extrahiere alle Immobiliendaten aus folgendem Expose-Text.
 
 Gib die Daten als JSON zurueck:
-{{"kaufpreis": null, "wohnflaeche": null, "zimmer": null, "baujahr": null, "stadt": null, "stadtteil": null, "objekttyp": null, "aktuelle_miete": null, "hausgeld": null, "energieklasse": null, "heizungsart": null, "zustand": null, "balkon_terrasse": null, "keller": null, "stellplatz": null, "vermietet": null, "provision": null, "beschreibung": null}}
+{{"kaufpreis": null, "wohnflaeche": null, "zimmer": null, "baujahr": null, "stadt": null, "stadtteil": null, "objekttyp": null, "aktuelle_miete": null, "hausgeld": null, "hausgeld_nicht_umlagefaehig": null, "energieklasse": null, "heizungsart": null, "zustand": null, "balkon_terrasse": null, "keller": null, "stellplatz": null, "vermietet": null, "provision": null, "beschreibung": null}}
 
 Expose-Text:
 {url[:5000]}"""}],
@@ -1252,6 +1258,7 @@ Gib die Daten als JSON zurueck mit genau diesen Feldern (null wenn nicht gefunde
     "etage": "<z.B. 2. OG>",
     "nebenkosten": <monatlich in Euro>,
     "hausgeld": <monatlich in Euro>,
+    "hausgeld_nicht_umlagefaehig": <nicht umlagefähiger Anteil in Euro, null wenn nicht angegeben>,
     "energieausweis": "<Verbrauch oder Bedarf>",
     "energieklasse": "<A+ bis H>",
     "heizungsart": "<z.B. Gas-Zentralheizung>",
@@ -1537,20 +1544,21 @@ def calculate_cashflow(
     else:
         eigenkapitalrendite = None  # Nicht berechenbar bei 100% Finanzierung
 
-    # Bewertung (positivere Schwellen)
-    if monatlicher_cashflow > 150:
+    # Bewertung relativ zum Kaufpreis (monatliche Prozentsätze)
+    cashflow_ratio = (monatlicher_cashflow / kaufpreis) * 100 if kaufpreis > 0 else 0
+    if cashflow_ratio > 0.05:
         cashflow_bewertung = "Exzellent"
         cashflow_score = 95
-    elif monatlicher_cashflow > 50:
+    elif cashflow_ratio > 0.02:
         cashflow_bewertung = "Sehr gut"
         cashflow_score = 85
-    elif monatlicher_cashflow > 0:
+    elif cashflow_ratio >= 0:
         cashflow_bewertung = "Gut (cashflow-positiv)"
         cashflow_score = 75
-    elif monatlicher_cashflow >= -100:
+    elif cashflow_ratio >= -0.05:
         cashflow_bewertung = "Akzeptabel (fast selbsttragend)"
         cashflow_score = 60
-    elif monatlicher_cashflow >= -200:
+    elif cashflow_ratio >= -0.15:
         cashflow_bewertung = "Mäßig (überschaubare Zuzahlung)"
         cashflow_score = 45
     else:
@@ -2097,7 +2105,9 @@ def calculate_key_milestones(
         if meilensteine["erster_positiver_cashflow"] is None and jahr_daten["monatlicher_cashflow"] > 0:
             meilensteine["erster_positiver_cashflow"] = jahr
 
-        if meilensteine["eigenkapital_verdoppelt"] is None and jahr_daten["eigenkapital_aufbau"] >= eigenkapital * 2:
+        # Eigenkapital = tatsaechlich eingesetztes Geld (EK + Kaufnebenkosten)
+        tatsaechliches_ek = eigenkapital + (kaufpreis * 0.12) if eigenkapital > 0 else kaufpreis * 0.12
+        if meilensteine["eigenkapital_verdoppelt"] is None and tatsaechliches_ek > 0 and jahr_daten["eigenkapital_aufbau"] >= tatsaechliches_ek * 2:
             meilensteine["eigenkapital_verdoppelt"] = jahr
 
         if meilensteine["vermögen_100k_erreicht"] is None and jahr_daten["gesamtvermoegen"] >= 100000:
@@ -2281,7 +2291,7 @@ async def analyze_property(
             miete = data.wohnflaeche * geschaetzte_miete_qm
             ist_geschaetzte_miete = True
 
-            # Erstelle Info-Objekt für geschätzte Miete
+            # Erstelle Info-Objekt für geschätzte Miete (Neuvermietung)
             mietschaetzung_info = {
                 "ist_geschaetzt": True,
                 "geschaetzte_miete_monat": round(miete, 2),
@@ -2289,8 +2299,8 @@ async def analyze_property(
                 "wohnflaeche": data.wohnflaeche,
                 "marktdaten_quelle": marktdaten.get("recherche_methode", "unbekannt"),
                 "standort": marktdaten.get("standort", data.stadt),
-                "hinweis": f"Die Immobilie ist frei/nicht vermietet. Die Miete wurde auf Basis aktueller Marktdaten für {data.stadt} geschätzt: {round(geschaetzte_miete_qm, 2)} €/m² × {data.wohnflaeche} m² = {round(miete, 2)} €/Monat",
-                "empfehlung": "Prüfen Sie die ortsübliche Vergleichsmiete und passen Sie ggf. die Schätzung an."
+                "hinweis": f"Geschätzt auf Basis aktueller Neuvermietungspreise für {data.stadt}: {round(geschaetzte_miete_qm, 2)} €/m² × {data.wohnflaeche} m² = {round(miete, 2)} €/Monat",
+                "empfehlung": "Basiert auf aktuellen Angebotsmieten, nicht auf Bestandsmietverträgen."
             }
             print(f"[INFO] Miete geschaetzt fuer freie Immobilie: {round(miete, 2)} EUR/Monat ({round(geschaetzte_miete_qm, 2)} EUR/m2)")
 
@@ -2303,8 +2313,14 @@ async def analyze_property(
                 wohnflaeche=data.wohnflaeche
             )
 
-        # Cashflow-Berechnung mit neuen Standardwerten
-        nebenkosten = data.hausgeld or data.nebenkosten or 0
+        # Cashflow-Berechnung: nur nicht-umlagefähige NK abziehen
+        hausgeld_gesamt = data.hausgeld or data.nebenkosten or 0
+        if data.hausgeld_nicht_umlagefaehig and data.hausgeld_nicht_umlagefaehig > 0:
+            # User hat den nicht-umlagefähigen Anteil angegeben
+            nebenkosten = data.hausgeld_nicht_umlagefaehig
+        else:
+            # Schätzung: ca. 30% des Hausgelds ist nicht umlagefähig
+            nebenkosten = hausgeld_gesamt * 0.30
         ek = request.eigenkapital or 0
         zins = request.zinssatz or 3.75
         tilg = request.tilgung or 1.25
@@ -2317,6 +2333,86 @@ async def analyze_property(
             zinssatz=zins,
             tilgung=tilg
         )
+
+    # 4a-2. Steuereffekt berechnen (vereinfacht)
+    if cashflow_analyse and data.kaufpreis and zweck == "kapitalanlage":
+        # Gebäudewert ca. 75% (25% Grundstück)
+        gebaeudewert = data.kaufpreis * 0.75
+        # AfA nach Baujahr
+        if data.baujahr and data.baujahr >= 2023:
+            afa_satz = 0.03
+        elif data.baujahr and data.baujahr < 1925:
+            afa_satz = 0.025
+        else:
+            afa_satz = 0.02
+        jaehrliche_afa = gebaeudewert * afa_satz
+
+        # Jährliche Zinsen (Finanzierungssumme * Zinssatz)
+        finanzierungssumme = data.kaufpreis - (ek or 0)
+        jaehrliche_zinsen = finanzierungssumme * ((zins or 3.75) / 100)
+
+        # Absetzbare Kosten = AfA + Zinsen + nicht-umlagefähige NK
+        absetzbar_jahr = jaehrliche_afa + jaehrliche_zinsen + (nebenkosten * 12)
+
+        # Steuerersparnis bei 42% Grenzsteuersatz
+        steuerersparnis_42 = round(absetzbar_jahr * 0.42 / 12, 2)
+        steuerersparnis_35 = round(absetzbar_jahr * 0.35 / 12, 2)
+
+        cashflow_analyse["steuereffekt"] = {
+            "jaehrliche_afa": round(jaehrliche_afa, 2),
+            "jaehrliche_zinsen": round(jaehrliche_zinsen, 2),
+            "absetzbar_gesamt_jahr": round(absetzbar_jahr, 2),
+            "steuerersparnis_monat_42": steuerersparnis_42,
+            "steuerersparnis_monat_35": steuerersparnis_35,
+            "cashflow_nach_steuer_42": round(cashflow_analyse["monatlicher_cashflow"] + steuerersparnis_42, 2),
+            "cashflow_nach_steuer_35": round(cashflow_analyse["monatlicher_cashflow"] + steuerersparnis_35, 2),
+        }
+
+    # 4b. NEUVERMIETUNGS-POTENZIAL (bei vermieteten Immobilien)
+    neuvermietung_potenzial = None
+    if zweck == "kapitalanlage" and data.kaufpreis and data.wohnflaeche and marktdaten:
+        neuvermietung_miete_qm = marktdaten.get("miete_qm_durchschnitt", 0)
+        neuvermietung_miete_monat = data.wohnflaeche * neuvermietung_miete_qm
+
+        # WG-Vermietung: typisch 20-40% mehr
+        wg_aufschlag = 0.25  # 25% konservativ
+        wg_miete_monat = neuvermietung_miete_monat * (1 + wg_aufschlag)
+
+        # Moebliert: typisch 15-30% mehr
+        moebliert_aufschlag = 0.20
+        moebliert_miete_monat = neuvermietung_miete_monat * (1 + moebliert_aufschlag)
+
+        # Nur anzeigen wenn es einen echten Uplift gibt
+        aktuelle_miete = data.aktuelle_miete or 0
+        if aktuelle_miete > 0 and neuvermietung_miete_monat > aktuelle_miete * 1.05:
+            # Vermietet, aber unter Markt
+            uplift_prozent = round(((neuvermietung_miete_monat - aktuelle_miete) / aktuelle_miete) * 100, 1)
+            neuvermietung_potenzial = {
+                "aktuell": round(aktuelle_miete, 2),
+                "neuvermietung": round(neuvermietung_miete_monat, 2),
+                "neuvermietung_qm": round(neuvermietung_miete_qm, 2),
+                "uplift_prozent": uplift_prozent,
+                "uplift_monat": round(neuvermietung_miete_monat - aktuelle_miete, 2),
+                "uplift_jahr": round((neuvermietung_miete_monat - aktuelle_miete) * 12, 2),
+                "wg_miete": round(wg_miete_monat, 2),
+                "wg_uplift_prozent": round(((wg_miete_monat - aktuelle_miete) / aktuelle_miete) * 100, 1),
+                "moebliert_miete": round(moebliert_miete_monat, 2),
+                "moebliert_uplift_prozent": round(((moebliert_miete_monat - aktuelle_miete) / aktuelle_miete) * 100, 1),
+                "hinweis": "Bei Neuvermietung gilt die Mietpreisbremse: max. 10% über ortsüblicher Vergleichsmiete. WG und möblierte Vermietung unterliegen teilweise anderen Regeln."
+            }
+        elif aktuelle_miete == 0:
+            # Frei/nicht vermietet - zeige alternative Strategien
+            neuvermietung_potenzial = {
+                "aktuell": 0,
+                "neuvermietung": round(neuvermietung_miete_monat, 2),
+                "neuvermietung_qm": round(neuvermietung_miete_qm, 2),
+                "uplift_prozent": 0,
+                "wg_miete": round(wg_miete_monat, 2),
+                "wg_uplift_prozent": round(wg_aufschlag * 100, 1),
+                "moebliert_miete": round(moebliert_miete_monat, 2),
+                "moebliert_uplift_prozent": round(moebliert_aufschlag * 100, 1),
+                "hinweis": "Bei WG-Vermietung und möblierter Vermietung gelten teilweise andere Regeln als bei normaler Vermietung. Kurzfristige Vermietung (Airbnb) ist in vielen Städten stark reguliert."
+            }
 
     # 5. ERWEITERTE BERECHNUNGEN (nur bei Kapitalanlage mit gültigen Daten)
     tilgungsplan = None
@@ -2457,9 +2553,12 @@ async def analyze_property(
             cashflow_monat = cashflow_analyse.get("monatlicher_cashflow", 0) if cashflow_analyse else 0
 
             # Fairer Preis berechnen
+            markt_qm = marktdaten.get("kaufpreis_qm_durchschnitt") if marktdaten else None
             fairer_preis_result = berechne_fairen_preis(
                 kaufpreis=data.kaufpreis,
-                jahresmiete=jahresmiete
+                jahresmiete=jahresmiete,
+                wohnflaeche=data.wohnflaeche,
+                markt_qm_preis=markt_qm
             )
 
             # Verbesserungsvorschläge generieren (NIEMALS nur Nein sagen!)
@@ -2542,6 +2641,10 @@ Vergleiche den Kaufpreis IMMER mit den aktuellen €/m²-Preisen für diesen KON
 === VERWENDUNGSZWECK ===
 {zweck}
 
+=== BESICHTIGUNG ===
+{"Der Käufer war BEREITS bei der Besichtigung." if request.besichtigt else "Der Käufer war NOCH NICHT bei der Besichtigung."}
+{f"Notizen des Käufers von der Besichtigung: {request.besichtigungs_notizen}" if request.besichtigungs_notizen else ""}
+
 === [WICHTIG] LIVE-MARKTDATEN FÜR DIESEN STANDORT ({marktdaten_hinweis}) ===
 {json.dumps(marktdaten, indent=2, ensure_ascii=False) if marktdaten else "FEHLER: Keine Marktdaten!"}
 
@@ -2579,7 +2682,11 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 1. **cashflow_rendite** (Gewichtung: {weights['cashflow_rendite']}%)
    - Kaufpreisfaktor: <20 sehr gut, 20-25 gut, >25 kritisch
    - Bruttorendite: >5% sehr gut, 4-5% gut, <3% kritisch
-   - Cashflow > 0 = gut, < 0 = schlecht
+   - Cashflow-Bewertung RELATIV zum Kaufpreis:
+     * Negativer Cashflow bis -0.15% des Kaufpreises pro Monat ist AKZEPTABEL (z.B. -450€ bei 300k, -1.500€ bei 1M)
+     * Darüber hinaus = problematisch
+     * Berücksichtige: steuerliche Vorteile (AfA, Zinsabzug) können negativen Cashflow um 30-42% reduzieren
+     * Berücksichtige: Neuvermietungspotenzial kann Cashflow verbessern
 
 2. **lage** (Gewichtung: {weights['lage']}%)
    - Stadtteil-Bewertung aus LIVE-Marktdaten
@@ -2610,16 +2717,38 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 9. **verkäufertyp** (Gewichtung: {weights['verkäufertyp']}%)
    - Privat vs. Makler, Provision
 
-WICHTIG - V4.0 PHILOSOPHIE (EHRLICH & DIREKT):
+WICHTIG - V6.0 PHILOSOPHIE (PROFESSIONELL, REALISTISCH, GESAMTBILD):
 - IMMER Live-Marktdaten in der Begründung zitieren!
-- Bei überhöhtem Preis: "Markt-Durchschnitt ist X€/m², Objekt liegt bei Y€/m² = Z% über Markt"
-- SEI EHRLICH UND DIREKT. Kein Schönreden. Kein Diplomatentum.
-- Wenn ein Deal schlecht ist, sag klar: "Dieses Objekt lohnt sich nicht" oder "Finger weg"
-- Wenn ein Deal gut ist, sag klar: "Zuschlagen" oder "Starkes Investment"
-- KEINE widersprüchlichen Aussagen! Wenn der Score niedrig ist, schreib NICHT "gutes Potenzial" oder "passt zu deinem Profil"
-- Die Zusammenfassung MUSS eine klare Handlungsempfehlung enthalten - JA oder NEIN
-- Stärken und Schwächen müssen zum Score PASSEN. Bei Score <50 dürfen Stärken nicht überwiegen.
-- Bei schlechtem Score: Sag klar was falsch ist. Du kannst trotzdem einen fairen Preis nennen, bei dem es sich lohnen WÜRDE.
+- Du bist ein professioneller Immobilienberater. Sprich wie ein seriöser Berater.
+- NIEMALS absolute Kaufempfehlungen oder Kaufwarnungen. Du gibst EINSCHÄTZUNGEN.
+- Formuliere als Einschätzung: "aus unserer Sicht", "nach unserer Analyse"
+- KEINE widersprüchlichen Aussagen! Score und Text MÜSSEN zusammenpassen:
+  * Score <40 = NICHT "gemischtes Bild" sagen! Das ist klar negativ.
+  * Score 40-55 = "gemischt" oder "prüfenswert" ist OK
+  * Score >55 = positiv formulieren
+
+PREIS-BEWERTUNG (WICHTIG - REALISTISCHE EINORDNUNG):
+- Bis 10% über Markt = "leicht über Marktdurchschnitt" (NICHT "deutlich überteuert"!)
+- 10-20% über Markt = "über Marktdurchschnitt"
+- 20-30% über Markt = "deutlich über Markt"
+- Über 30% über Markt = "stark überteuert"
+- Unter Markt = IMMER positiv hervorheben!
+
+FAIRER PREIS (WICHTIG - REALISTISCH BLEIBEN):
+- Der faire Preis darf MAXIMAL 25% unter dem Kaufpreis liegen! Mehr als 25% Rabatt ist unrealistisch.
+- Wenn die Berechnung einen fairen Preis ergibt der >25% unter Kaufpreis liegt, setze ihn auf Kaufpreis minus 25%.
+- Begründe den fairen Preis mit Marktdaten und konkreten Mängeln.
+
+GESAMTBILD BEWERTEN (nicht nur Cashflow!):
+- Negativer Cashflow allein ist KEIN Ausschlusskriterium. Bewerte das GESAMTBILD:
+  1) Kaufpreis relativ zum Markt (unter Markt = stark positiv)
+  2) Cashflow relativ zum Kaufpreis (nicht absolut betrachten!)
+  3) Neuvermietungspotenzial (kann Cashflow verbessern)
+  4) Steuerliche Vorteile (AfA + Zinsabzug reduzieren negativen Cashflow um 30-42%)
+  5) Wertsteigerungspotenzial (Lage, Trend)
+  6) Vermögensaufbau durch Tilgung
+- Ein Objekt das unter Markt liegt mit leicht negativem Cashflow kann EMPFEHLENSWERT sein!
+- Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat ist akzeptabel.
 
 Antworte als JSON:
 {{
@@ -2633,7 +2762,7 @@ Antworte als JSON:
     ],
     "stärken": ["<konkrete Stärke mit Zahlen>", ...],
     "schwächen": ["<konkrete Schwäche mit Zahlen>", ...],
-    "zusammenfassung": "<3-4 Sätze: 1) KLARE Empfehlung (Kaufen/Nicht kaufen/Nur mit Verhandlung), 2) Wichtigster Grund dafür, 3) Fairer Preis oder Verhandlungsziel wenn überteuert>"
+    "zusammenfassung": "<3-4 Sätze: 1) Klare Einschätzung mit Gesamtbild, 2) Preisvergleich IMMER in PROZENT angeben (z.B. '13% unter Markt' statt '32.500€ unter Markt'), 3) Steuereffekt verständlich erklären wenn erwähnt (z.B. 'Durch AfA und Zinsabzug reduziert sich die monatliche Belastung nach Steuer auf X€'), 4) Bei Baujahr/Energie-Warnung kurz erklären WARUM (z.B. 'Baujahr 1975 bedeutet dass Elektrik und Sanitär in den nächsten Jahren erneuert werden müssen')>"
 }}
 
 Antworte NUR mit dem JSON."""
@@ -2642,7 +2771,11 @@ Antworte NUR mit dem JSON."""
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=2500,
-            system=system_prompt,
+            system=[{
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"}
+            }],
             messages=[{"role": "user", "content": analyse_prompt}]
         )
 
@@ -2686,21 +2819,21 @@ Antworte NUR mit dem JSON."""
         # Gesamtscore (auf 100 normalisiert) - kein künstlicher Bonus
         gesamtscore = min(100, round(total_weighted, 1))
 
-        # EMPFEHLUNG basierend auf No-Gos, Score und Warnsignalen (ehrliche Schwellen)
+        # EMPFEHLUNG basierend auf No-Gos, Score und Warnsignalen (professionell formuliert)
         if no_go_check["no_go"]:
-            empfehlung = "ABLEHNEN"
-            empfehlung_text = f"NICHT INVESTIEREN - No-Go-Kriterien: {', '.join(no_go_check['gründe'])}"
+            empfehlung = "NICHT EMPFEHLENSWERT"
+            empfehlung_text = f"Aus unserer Sicht nicht empfehlenswert - Ausschlusskriterien: {', '.join(no_go_check['gründe'])}"
         elif gesamtscore >= 70:
             if warnsignale["kritisch"]:
-                empfehlung = "PRÜFEN"
+                empfehlung = "PRÜFENSWERT"
             else:
-                empfehlung = "INVESTIEREN"
+                empfehlung = "EMPFEHLENSWERT"
         elif gesamtscore >= 55:
-            empfehlung = "PRÜFEN"
+            empfehlung = "PRÜFENSWERT"
         elif gesamtscore >= 40:
-            empfehlung = "VORSICHT"
+            empfehlung = "EHER NICHT EMPFEHLENSWERT"
         else:
-            empfehlung = "ABLEHNEN"
+            empfehlung = "NICHT EMPFEHLENSWERT"
 
         # Zusammenfassung direkt von der KI (ohne doppelten Score)
         zusammenfassung_erweitert = ai_analysis['zusammenfassung']
@@ -2767,7 +2900,8 @@ Antworte NUR mit dem JSON."""
             # NEU: Mietschätzung-Info bei freien Immobilien
             mietschaetzung=mietschaetzung_info,
             # NEU: Kaufnebenkosten
-            kaufnebenkosten=kaufnebenkosten_result
+            kaufnebenkosten=kaufnebenkosten_result,
+            neuvermietung_potenzial=neuvermietung_potenzial
         )
 
         # Verhandlungsmail generieren (nur Premium)
@@ -3524,9 +3658,9 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "https://amlaki.de")
 
 # Produkt-Preise (Stripe Price IDs werden in Env Vars gesetzt)
 CREDIT_PACKAGES = {
-    "single": {"credits": 1, "price_cents": 499, "label": "1 Analyse", "price_label": "4,99"},
-    "pack5": {"credits": 5, "price_cents": 1999, "label": "5 Analysen", "price_label": "19,99"},
-    "pack10": {"credits": 10, "price_cents": 2999, "label": "10 Analysen", "price_label": "29,99"},
+    "single": {"credits": 1, "price_cents": 900, "label": "1 Analyse", "price_label": "9"},
+    "pack5": {"credits": 5, "price_cents": 3500, "label": "5 Analysen", "price_label": "35"},
+    "pack10": {"credits": 10, "price_cents": 5000, "label": "10 Analysen", "price_label": "50"},
 }
 
 

@@ -12,7 +12,7 @@ function CreditsBadge({ credits }) {
   if (credits === null || credits === undefined) return null;
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full text-[13px] font-medium text-[#7C8B6F]">
-      {credits} {credits === 1 ? 'Analyse' : 'Analysen'}
+      {credits} {credits === 1 ? 'Credit' : 'Credits'}
     </div>
   );
 }
@@ -21,9 +21,9 @@ function PaywallModal({ onClose, token }) {
   const [loading, setLoading] = useState(null);
 
   const packages = [
-    { id: 'single', credits: 1, price: '4,99', perUnit: '4,99', popular: false },
-    { id: 'pack5', credits: 5, price: '19,99', perUnit: '3,99', popular: true },
-    { id: 'pack10', credits: 10, price: '29,99', perUnit: '2,99', popular: false },
+    { id: 'single', credits: 1, price: '9', perUnit: '9', popular: false },
+    { id: 'pack5', credits: 5, price: '35', perUnit: '7', popular: true },
+    { id: 'pack10', credits: 10, price: '50', perUnit: '5', popular: false },
   ];
 
   const handlePurchase = async (packageId) => {

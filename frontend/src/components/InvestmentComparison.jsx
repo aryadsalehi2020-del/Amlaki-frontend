@@ -28,17 +28,19 @@ function InvestmentComparison({ vergleich }) {
     }).format(value);
   };
 
+  const hasEigenkapital = vergleich.etf_nur_eigenkapital.eingesetztes_kapital > 0;
+
   const chartData = [
     {
       name: 'Immobilie',
       endvermoegen: vergleich.immobilie.endvermoegen,
       color: '#10b981'
     },
-    {
+    ...(hasEigenkapital ? [{
       name: 'ETF (nur EK)',
       endvermoegen: vergleich.etf_nur_eigenkapital.endvermoegen,
       color: '#3b82f6'
-    },
+    }] : []),
     {
       name: 'ETF (mit Sparrate)',
       endvermoegen: vergleich.etf_mit_sparrate.endvermoegen,
@@ -107,7 +109,7 @@ function InvestmentComparison({ vergleich }) {
       </div>
 
       {/* Details Grid */}
-      <div className="grid md:grid-cols-3 gap-4 mt-6">
+      <div className={`grid ${hasEigenkapital ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 mt-6`}>
         {/* Immobilie */}
         <div className="p-4 bg-green-50 rounded-xl border border-green-200">
           <div className="flex items-center gap-2 mb-3">
@@ -134,7 +136,8 @@ function InvestmentComparison({ vergleich }) {
           </div>
         </div>
 
-        {/* ETF nur EK */}
+        {/* ETF nur EK - only show when eigenkapital > 0 */}
+        {hasEigenkapital && (
         <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl"></span>
@@ -155,6 +158,7 @@ function InvestmentComparison({ vergleich }) {
             </div>
           </div>
         </div>
+        )}
 
         {/* ETF mit Sparrate */}
         <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">

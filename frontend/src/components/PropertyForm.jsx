@@ -7,7 +7,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
   const [formData, setFormData] = useState({
     kaufpreis: initialData?.kaufpreis || '', wohnflaeche: initialData?.wohnflaeche || '', zimmer: initialData?.zimmer || '',
     baujahr: initialData?.baujahr || '', etage: initialData?.etage || '', nebenkosten: initialData?.nebenkosten || '',
-    hausgeld: initialData?.hausgeld || '', energieklasse: initialData?.energieklasse || '', heizungsart: initialData?.heizungsart || '',
+    hausgeld: initialData?.hausgeld || '', hausgeld_nicht_umlagefaehig: initialData?.hausgeld_nicht_umlagefaehig || '', energieklasse: initialData?.energieklasse || '', heizungsart: initialData?.heizungsart || '',
     adresse: initialData?.adresse || '', stadt: initialData?.stadt || '', stadtteil: initialData?.stadtteil || '',
     objekttyp: initialData?.objekttyp || '', zustand: initialData?.zustand || '', ausstattung: initialData?.ausstattung || '',
     balkon_terrasse: initialData?.balkon_terrasse || false, keller: initialData?.keller || false,
@@ -58,7 +58,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     const wohnflaeche = formData.wohnflaeche ? parseFloat(formData.wohnflaeche) : 0;
     if (!kaufpreis || kaufpreis < 1000) { setValidationError('Bitte geben Sie einen gultigen Kaufpreis ein (min. 1.000)'); return; }
     if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte geben Sie eine gultige Wohnflache ein (min. 5 m2)'); return; }
-    const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
+    const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, hausgeld_nicht_umlagefaehig: formData.hausgeld_nicht_umlagefaehig ? parseFloat(formData.hausgeld_nicht_umlagefaehig) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
     const activeProfile = verwendungszweck === 'kapitalanlage' ? getActiveProfile() : null;
     onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile, besichtigt, besichtigungsNotizen);
   }, [formData, verwendungszweck, finanzierung, onAnalyze, getActiveProfile]);
@@ -340,9 +340,12 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
           </div>
 
           {sectionTitle('Kosten')}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 gap-6 mb-4">
             <div><label className={labelClass}>Hausgeld / Monat (EUR)</label><input type="number" name="hausgeld" value={formData.hausgeld} onChange={handleChange} placeholder="z.B. 250" className={inputClass} /></div>
-            <div><label className={labelClass}>Verkaufertyp</label><select name="verkaufertyp" value={formData.verkaufertyp} onChange={handleChange} className={selectClass}><option value="">Bitte wahlen</option><option value="Privat">Privat</option><option value="Makler">Makler</option></select></div>
+            <div><label className={labelClass}>Davon nicht umlagefähig (EUR)</label><input type="number" name="hausgeld_nicht_umlagefaehig" value={formData.hausgeld_nicht_umlagefaehig} onChange={handleChange} placeholder="Steht oft im Exposé, sonst leer" className={inputClass} /><p className="text-[11px] text-[#B5A68C] mt-1">Wenn nicht bekannt, schätzen wir ca. 30% des Hausgelds</p></div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div><label className={labelClass}>Verkäufertyp</label><select name="verkaufertyp" value={formData.verkaufertyp} onChange={handleChange} className={selectClass}><option value="">Bitte wählen</option><option value="Privat">Privat</option><option value="Makler">Makler</option></select></div>
             <div><label className={labelClass}>Provision</label><input type="text" name="provision" value={formData.provision} onChange={handleChange} placeholder="z.B. 3,57% oder provisionsfrei" className={inputClass} /></div>
           </div>
 
@@ -363,7 +366,26 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
 
               {sectionTitle('Finanzierung')}
               <div className="grid md:grid-cols-3 gap-6 mb-8">
-                <div><label className={labelClass}>Eigenkapital (EUR)</label><input type="number" name="eigenkapital" value={finanzierung.eigenkapital} onChange={handleFinanzierungChange} placeholder="0 = 100% Finanzierung" className={inputClass} /></div>
+                <div>
+                  <label className={labelClass}>Eigenkapital (EUR)</label>
+                  <input type="number" name="eigenkapital" value={finanzierung.eigenkapital} onChange={handleFinanzierungChange} placeholder="0 = 100% Finanzierung" className={inputClass} />
+                  {formData.kaufpreis > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {[
+                        { label: 'Nur NK', value: Math.round(formData.kaufpreis * 0.12) },
+                        { label: '10% + NK', value: Math.round(formData.kaufpreis * 0.22) },
+                        { label: '20% + NK', value: Math.round(formData.kaufpreis * 0.32) },
+                        { label: '30% + NK', value: Math.round(formData.kaufpreis * 0.42) },
+                      ].map((opt) => (
+                        <button key={opt.label} type="button"
+                          onClick={() => setFinanzierung(prev => ({ ...prev, eigenkapital: opt.value }))}
+                          className={`px-2.5 py-1 text-[11px] rounded-lg border transition-all ${finanzierung.eigenkapital === opt.value ? 'bg-[#7C8B6F] text-white border-[#7C8B6F]' : 'border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'}`}>
+                          {opt.label} ({(opt.value / 1000).toFixed(0)}k)
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div><label className={labelClass}>Zinssatz (%)</label><input type="number" step="0.1" name="zinssatz" value={finanzierung.zinssatz} onChange={handleFinanzierungChange} className={inputClass} /></div>
                 <div><label className={labelClass}>Tilgung (%)</label><input type="number" step="0.1" name="tilgung" value={finanzierung.tilgung} onChange={handleFinanzierungChange} className={inputClass} /></div>
               </div>

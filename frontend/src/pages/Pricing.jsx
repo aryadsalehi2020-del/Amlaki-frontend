@@ -67,7 +67,7 @@ function Pricing() {
     {
       id: 'single',
       name: 'Basic',
-      price: '4,99',
+      price: '9',
       period: '1 Analyse',
       description: '1 vollständige Analyse',
       icon: TrendingUp,
@@ -87,16 +87,16 @@ function Pricing() {
     {
       id: 'pack5',
       name: 'Plus',
-      price: '19,99',
+      price: '35',
       period: '5 Analysen',
-      pricePerUnit: '3,99 pro Analyse',
+      pricePerUnit: '7 pro Analyse',
       description: 'Mehrere Objekte vergleichen',
       icon: Crown,
       badge: 'Beliebt',
       features: [
         'Alles aus Basic',
         '5 vollständige Analysen',
-        '20% Mengenrabatt',
+        '22% Mengenrabatt',
         'Ideal zum Vergleichen',
         'Objekte gegeneinander abwägen',
       ],
@@ -107,9 +107,9 @@ function Pricing() {
     {
       id: 'pack10',
       name: 'Pro',
-      price: '29,99',
+      price: '50',
       period: '10 Analysen',
-      pricePerUnit: '2,99 pro Analyse',
+      pricePerUnit: '5 pro Analyse',
       description: 'Für aktive Immobilienkäufer',
       icon: Crown,
       features: [
@@ -223,9 +223,6 @@ function Pricing() {
           <span>Keine versteckten Kosten</span>
           <span>Sofort verfügbar</span>
         </div>
-        <p className="text-[10px] text-[#B5A68C] mt-1">
-          Zum Vergleich: Ein Immobiliengutachter kostet 500-2.000 EUR pro Bewertung.
-        </p>
       </div>
     </div>
   );
