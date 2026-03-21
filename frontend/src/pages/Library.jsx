@@ -170,8 +170,8 @@ function Library() {
       )}
 
       <ConfirmDialog isOpen={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, id: null, title: '' })}
-        onConfirm={() => deleteAnalysis(deleteDialog.id)} title="Analyse loeschen?"
-        message={`"${deleteDialog.title}" wirklich loeschen?`} confirmText="Loeschen" cancelText="Abbrechen" variant="danger" />
+        onConfirm={() => deleteAnalysis(deleteDialog.id)} title="Analyse löschen?"
+        message={`"${deleteDialog.title}" wirklich löschen?`} confirmText="Löschen" cancelText="Abbrechen" variant="danger" />
     </div>
   );
 }

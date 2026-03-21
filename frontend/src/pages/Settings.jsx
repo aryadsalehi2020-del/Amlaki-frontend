@@ -429,15 +429,15 @@ function Settings() {
         </div>
       </form>
 
-      {/* Account loeschen */}
+      {/* Account löschen */}
       <div className="mt-12 pt-8 border-t border-[#E8E0D4]">
-        <h3 className="text-[16px] font-semibold text-[#B85C5C] mb-2">Account loeschen</h3>
+        <h3 className="text-[16px] font-semibold text-[#B85C5C] mb-2">Account löschen</h3>
         <p className="text-[13px] text-[#8C7E6A] mb-4">
-          Dein Account und alle gespeicherten Analysen werden unwiderruflich geloescht. Diese Aktion kann nicht rueckgaengig gemacht werden.
+          Dein Account und alle gespeicherten Analysen werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
         </p>
         <button
           onClick={async () => {
-            if (!confirm('Bist du sicher? Dein Account und ALLE Daten werden unwiderruflich geloescht.')) return;
+            if (!confirm('Bist du sicher? Dein Account und ALLE Daten werden unwiderruflich gelöscht.')) return;
             if (!confirm('Letzte Warnung: Alle Analysen, Chats und Daten gehen verloren. Fortfahren?')) return;
             try {
               const res = await fetch(`${API_BASE}/auth/delete-account`, {
@@ -446,7 +446,7 @@ function Settings() {
               });
               if (!res.ok) {
                 const d = await res.json();
-                alert(d.detail || 'Fehler beim Loeschen');
+                alert(d.detail || 'Fehler beim Löschen');
                 return;
               }
               logout();
@@ -457,7 +457,7 @@ function Settings() {
           }}
           className="px-5 py-2.5 border-2 border-[#B85C5C]/30 text-[#B85C5C] text-[13px] font-medium rounded-[10px] hover:bg-[#B85C5C]/5 transition-all"
         >
-          Account endgueltig loeschen
+          Account endgültig löschen
         </button>
       </div>
     </div>

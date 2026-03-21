@@ -186,7 +186,7 @@ function ConversationItem({ conv, isActive, onClick, onDelete }) {
             onDelete(conv.id);
           }}
           className="absolute right-2 top-2.5 text-[#B5A68C] hover:text-[#5C4F3D] transition-colors"
-          title="Loeschen"
+          title="Löschen"
         >
           <svg
             className="w-3.5 h-3.5"
