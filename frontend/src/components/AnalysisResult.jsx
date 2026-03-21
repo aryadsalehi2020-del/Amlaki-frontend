@@ -356,8 +356,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           </div>
         </div>
 
-        {/* Personalized Toggle */}
-        {isProfileComplete && dynamicData.adjustedScore !== null && (
+        {/* Personalized Toggle - nur bei Kapitalanlage sinnvoll */}
+        {isProfileComplete && dynamicData.adjustedScore !== null && result.verwendungszweck === 'kapitalanlage' && (
           <div className="mt-6 pt-6 border-t border-slate/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
