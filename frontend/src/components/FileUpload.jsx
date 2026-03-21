@@ -56,14 +56,14 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
         <p className="text-[#8C7E6A] text-center text-[13px] mb-5">Expose hochladen, Link einfuegen oder manuell eingeben</p>
 
         {/* URL Import */}
-        <div className="mb-6">
-          <label className="text-[13px] font-medium text-[#5C4F3D] mb-2 block">ImmoScout24 / Immowelt Link einfuegen</label>
+        <div className="mb-5">
+          <label className="text-[13px] font-medium text-[#5C4F3D] mb-2 block">Inserat-Link oder Expose-Text einfügen</label>
           <div className="flex gap-2">
             <input
-              type="url"
+              type="text"
               value={url}
               onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
-              placeholder="https://www.immobilienscout24.de/expose/..."
+              placeholder="https://www.immobilienscout24.de/expose/... oder Text einfügen"
               className="flex-1 px-4 py-3 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[12px] text-[14px] text-[#2C2418] placeholder-[#B5A68C] focus:border-[#7C8B6F] focus:outline-none focus:ring-2 focus:ring-[#7C8B6F]/10"
               onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
             />
@@ -76,7 +76,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
             </button>
           </div>
           {urlError && <p className="text-[12px] text-[#B85C5C] mt-2">{urlError}</p>}
-          <p className="text-[11px] text-[#B5A68C] mt-1.5">ImmoScout24, Immowelt, Immonet, Kleinanzeigen</p>
+          <p className="text-[11px] text-[#B5A68C] mt-1.5">Kleinanzeigen Links funktionieren direkt. Bei ImmoScout24/Immowelt: Expose-Text kopieren und einfügen.</p>
         </div>
 
         <div className="flex items-center my-4">

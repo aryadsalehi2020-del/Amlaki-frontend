@@ -37,7 +37,7 @@ def safe_print(*args, **kwargs):
 import builtins
 builtins.print = safe_print
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, status, Body
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, status, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse
@@ -93,6 +93,39 @@ from schemas import (
 
 load_dotenv()
 
+# Emoji-Filter: entfernt alle Emojis und Unicode-Symbole aus KI-Antworten
+EMOJI_PATTERN = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"  # Emoticons
+    "\U0001F300-\U0001F5FF"  # Symbole & Piktogramme
+    "\U0001F680-\U0001F6FF"  # Transport & Karten
+    "\U0001F1E0-\U0001F1FF"  # Flaggen
+    "\U0001F900-\U0001F9FF"  # Ergaenzende Symbole
+    "\U0001FA00-\U0001FA6F"  # Schach-Symbole
+    "\U0001FA70-\U0001FAFF"  # Erweiterte Symbole
+    "\U00002702-\U000027B0"  # Dingbats
+    "\U0000FE00-\U0000FE0F"  # Variation Selectors
+    "\U0000200D"             # Zero Width Joiner
+    "\U000020E3"             # Combining Enclosing Keycap
+    "\U00002600-\U000026FF"  # Misc Symbole
+    "\U00002700-\U000027BF"  # Dingbats
+    "\U00002B50"             # Stern
+    "\U00002B05-\U00002B07"  # Pfeile
+    "\U00002934-\U00002935"  # Pfeile
+    "\U000025AA-\U000025AB"  # Quadrate
+    "\U000025FB-\U000025FE"  # Quadrate
+    "\U00002328"             # Tastatur
+    "\U000023CF"             # Eject
+    "\U000023E9-\U000023F3"  # Media Controls
+    "\U000023F8-\U000023FA"  # Media Controls
+    "]+",
+    flags=re.UNICODE
+)
+
+def strip_emojis(text: str) -> str:
+    """Entfernt alle Emojis aus dem Text"""
+    return EMOJI_PATTERN.sub("", text)
+
 app = FastAPI(title="AmlakI API", version="3.0.0")
 
 # Initialisiere Datenbank beim Start
@@ -100,10 +133,12 @@ app = FastAPI(title="AmlakI API", version="3.0.0")
 def startup_event():
     init_db()
 
-# CORS - Erlaubt alle Origins (JWT wird über Header gesendet, nicht Cookies)
+# CORS - Erlaubte Origins + Vercel Preview URLs
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://amlaki.de,https://www.amlaki.de,http://localhost:5173,http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://amlaki.*\.vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -169,8 +204,8 @@ def log_usage(db: Session, user_id: int, action_type: str, input_tokens: int, ou
 @app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Registriert einen neuen User"""
-    # Prüfe ob E-Mail bereits existiert
-    if db.query(User).filter(User.email == user.email).first():
+    # Prüfe ob E-Mail bereits existiert (case-insensitive)
+    if db.query(User).filter(User.email == user.email.lower()).first():
         raise HTTPException(status_code=400, detail="E-Mail bereits registriert")
 
     # Prüfe ob Username bereits existiert
@@ -182,7 +217,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
     # Erstelle neuen User
     db_user = User(
-        email=user.email,
+        email=user.email.lower(),
         username=user.username,
         full_name=user.full_name,
         hashed_password=get_password_hash(user.password),
@@ -195,14 +230,38 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 
+# Simple in-memory rate limiter for login
+_login_attempts = {}  # {email: [(timestamp, ...], ...}
+
+def check_login_rate_limit(email: str, max_attempts: int = 5, window_seconds: int = 300):
+    """Max 5 Login-Versuche pro 5 Minuten pro Email"""
+    import time
+    now = time.time()
+    key = email.lower()
+    if key not in _login_attempts:
+        _login_attempts[key] = []
+    # Alte Eintraege entfernen
+    _login_attempts[key] = [t for t in _login_attempts[key] if now - t < window_seconds]
+    if len(_login_attempts[key]) >= max_attempts:
+        return False
+    _login_attempts[key].append(now)
+    return True
+
+
 @app.post("/auth/login", response_model=Token)
 def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     """Login mit E-Mail und Passwort"""
+    if not check_login_rate_limit(login_data.email):
+        raise HTTPException(
+            status_code=429,
+            detail="Zu viele Login-Versuche. Bitte warte 5 Minuten."
+        )
+
     user = authenticate_user(db, login_data.email, login_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="E-Mail oder Passwort falsch",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -212,6 +271,139 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+# ========================================
+# PASSWORT RESET
+# ========================================
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import secrets as _secrets
+
+_reset_tokens = {}  # {token: {email, expires}}
+
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.ionos.de")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "support@amlaki.de")
+SMTP_PASS = os.getenv("SMTP_PASS", "")
+
+
+def send_reset_email(to_email: str, reset_token: str):
+    """Sendet Passwort-Reset Email via IONOS SMTP"""
+    if not SMTP_PASS:
+        print("WARNUNG: SMTP_PASS nicht gesetzt, kann keine Emails senden")
+        return False
+
+    frontend_url = os.getenv("FRONTEND_URL", "https://amlaki.de")
+    reset_link = f"{frontend_url}/reset-password?token={reset_token}"
+
+    msg = MIMEMultipart()
+    msg["From"] = f"AmlakiAI <{SMTP_USER}>"
+    msg["To"] = to_email
+    msg["Subject"] = "Passwort zuruecksetzen - AmlakiAI"
+
+    body = f"""Hallo,
+
+du hast angefordert, dein Passwort bei AmlakiAI zurueckzusetzen.
+
+Klicke auf folgenden Link um ein neues Passwort zu setzen:
+{reset_link}
+
+Der Link ist 1 Stunde gueltig.
+
+Falls du diese Anfrage nicht gestellt hast, ignoriere diese E-Mail.
+
+Viele Gruesse,
+Dein AmlakiAI Team
+"""
+
+    msg.attach(MIMEText(body, "plain", "utf-8"))
+
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+        return True
+    except Exception as e:
+        print(f"Email-Versand fehlgeschlagen: {e}")
+        return False
+
+
+@app.post("/auth/forgot-password")
+def forgot_password(data: dict = Body(...), db: Session = Depends(get_db)):
+    """Sendet Passwort-Reset Link per Email"""
+    email = data.get("email", "").lower().strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="E-Mail erforderlich")
+
+    # Immer 200 zurueckgeben (verhindert Email-Enumeration)
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        token = _secrets.token_urlsafe(32)
+        _reset_tokens[token] = {
+            "email": email,
+            "expires": datetime.utcnow() + timedelta(hours=1)
+        }
+        send_reset_email(email, token)
+
+    return {"status": "ok", "message": "Falls ein Account mit dieser E-Mail existiert, wurde ein Reset-Link gesendet."}
+
+
+@app.post("/auth/reset-password")
+def reset_password(data: dict = Body(...), db: Session = Depends(get_db)):
+    """Setzt Passwort mit Reset-Token zurueck"""
+    token = data.get("token", "")
+    new_password = data.get("password", "")
+
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token und neues Passwort erforderlich")
+
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Passwort muss mindestens 8 Zeichen lang sein")
+
+    if not re.search(r'[0-9]', new_password):
+        raise HTTPException(status_code=400, detail="Passwort muss mindestens eine Zahl enthalten")
+
+    reset_data = _reset_tokens.get(token)
+    if not reset_data:
+        raise HTTPException(status_code=400, detail="Ungueltiger oder abgelaufener Reset-Link")
+
+    if datetime.utcnow() > reset_data["expires"]:
+        del _reset_tokens[token]
+        raise HTTPException(status_code=400, detail="Reset-Link ist abgelaufen")
+
+    user = db.query(User).filter(User.email == reset_data["email"]).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="User nicht gefunden")
+
+    user.hashed_password = get_password_hash(new_password)
+    db.commit()
+
+    # Token einmalig verwenden
+    del _reset_tokens[token]
+
+    return {"status": "ok", "message": "Passwort wurde erfolgreich zurueckgesetzt"}
+
+
+@app.delete("/auth/delete-account")
+def delete_own_account(current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    """DSGVO: User kann seinen eigenen Account loeschen"""
+    if current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Admin-Account kann nicht selbst geloescht werden")
+
+    # Loesche alle Conversations und Messages
+    conversations = db.query(Conversation).filter(Conversation.user_id == current_user.id).all()
+    for conv in conversations:
+        db.query(ChatMessage).filter(ChatMessage.conversation_id == conv.id).delete()
+        db.delete(conv)
+
+    # Loesche alle Analysen, UsageLogs (cascaded durch relationship)
+    db.delete(current_user)
+    db.commit()
+
+    return {"status": "ok", "message": "Account und alle Daten wurden geloescht"}
 
 
 @app.get("/auth/me", response_model=UserResponse)
@@ -613,6 +805,10 @@ class AnalysisResult(BaseModel):
     kaufnebenkosten: Optional[dict] = None  # Aufschlüsselung der Kaufnebenkosten
     # NEU: Analysis-ID nach Speicherung
     analysis_id: Optional[int] = None  # ID der gespeicherten Analyse
+    # Verhandlungsnachricht
+    verhandlungsmail: Optional[str] = None  # Fertige Nachricht an Verkaeufer/Makler
+    # Premium Status
+    is_premium: bool = False  # True = alle Features sichtbar
 
 
 def get_anthropic_client():
@@ -898,13 +1094,221 @@ Antworte NUR mit dem JSON, kein anderer Text."""
         raise HTTPException(status_code=500, detail=f"Fehler bei der PDF-Extraktion: {str(e)}")
 
 
+# Schnelle Marktdaten-Lookup aus Knowledge Base
+KNOWN_CITIES = {
+    "muenchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 19.5, "trend": "+2,5%", "faktor": "32-38"},
+    "münchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 19.5, "trend": "+2,5%", "faktor": "32-38"},
+    "berlin": {"kauf_von": 5600, "kauf_bis": 6200, "miete": 14.0, "trend": "+3,0%", "faktor": "26-32"},
+    "hamburg": {"kauf_von": 5300, "kauf_bis": 5800, "miete": 13.5, "trend": "+2,0%", "faktor": "25-30"},
+    "frankfurt": {"kauf_von": 5000, "kauf_bis": 5500, "miete": 14.0, "trend": "+1,5%", "faktor": "24-29"},
+    "koeln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 12.5, "trend": "+2,5%", "faktor": "23-28"},
+    "köln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 12.5, "trend": "+2,5%", "faktor": "23-28"},
+    "stuttgart": {"kauf_von": 4800, "kauf_bis": 5400, "miete": 14.0, "trend": "+2,0%", "faktor": "24-29"},
+    "duesseldorf": {"kauf_von": 4500, "kauf_bis": 5100, "miete": 12.0, "trend": "+2,5%", "faktor": "23-28"},
+    "düsseldorf": {"kauf_von": 4500, "kauf_bis": 5100, "miete": 12.0, "trend": "+2,5%", "faktor": "23-28"},
+    "leipzig": {"kauf_von": 2800, "kauf_bis": 3300, "miete": 8.5, "trend": "+4,0%", "faktor": "18-23"},
+    "dresden": {"kauf_von": 2600, "kauf_bis": 3100, "miete": 8.0, "trend": "+3,5%", "faktor": "17-22"},
+    "hannover": {"kauf_von": 3200, "kauf_bis": 3700, "miete": 10.0, "trend": "+2,5%", "faktor": "20-25"},
+    "nuernberg": {"kauf_von": 3500, "kauf_bis": 4000, "miete": 11.0, "trend": "+3,0%", "faktor": "21-26"},
+    "nürnberg": {"kauf_von": 3500, "kauf_bis": 4000, "miete": 11.0, "trend": "+3,0%", "faktor": "21-26"},
+    "bremen": {"kauf_von": 2800, "kauf_bis": 3300, "miete": 9.0, "trend": "+2,5%", "faktor": "19-24"},
+    "essen": {"kauf_von": 2200, "kauf_bis": 2800, "miete": 8.0, "trend": "+3,0%", "faktor": "16-21"},
+    "dortmund": {"kauf_von": 2100, "kauf_bis": 2700, "miete": 8.0, "trend": "+3,5%", "faktor": "16-21"},
+    "chemnitz": {"kauf_von": 1000, "kauf_bis": 1600, "miete": 6.0, "trend": "+5,0%", "faktor": "12-16"},
+}
+
+def quick_market_lookup(stadt: str) -> Optional[dict]:
+    """Schneller Lookup aus Knowledge Base - kein API Call noetig"""
+    key = stadt.lower().strip()
+    if key in KNOWN_CITIES:
+        d = KNOWN_CITIES[key]
+        return {
+            "standort": stadt,
+            "kaufpreis_qm_von": d["kauf_von"],
+            "kaufpreis_qm_bis": d["kauf_bis"],
+            "kaufpreis_qm_durchschnitt": (d["kauf_von"] + d["kauf_bis"]) // 2,
+            "miete_qm_durchschnitt": d["miete"],
+            "miete_qm_von": d["miete"] * 0.8,
+            "miete_qm_bis": d["miete"] * 1.2,
+            "tendenz": "steigend",
+            "preisentwicklung_5_jahre": d["trend"],
+            "kaufpreisfaktor_bereich": d["faktor"],
+            "recherche_methode": "knowledge_base_fast",
+            "datenqualität": f"Knowledge Base Daten fuer {stadt} (Stand: Maerz 2026)"
+        }
+    return None
+
+
+@app.post("/extract-url")
+async def extract_url_data(data: dict = Body(...)):
+    """
+    Extrahiert Immobiliendaten aus einer ImmoScout24/Immowelt URL
+    """
+    url = data.get("url", "").strip()
+    if not url:
+        raise HTTPException(status_code=400, detail="URL oder Text ist erforderlich")
+
+    # Prüfe ob es eine URL ist oder reiner Text
+    is_url = url.startswith("http://") or url.startswith("https://")
+
+    if is_url:
+        # Validiere URL
+        allowed_domains = ["immobilienscout24.de", "immowelt.de", "immonet.de", "kleinanzeigen.de"]
+        is_valid = any(domain in url.lower() for domain in allowed_domains)
+        if not is_valid:
+            raise HTTPException(status_code=400, detail="Nur ImmoScout24, Immowelt, Immonet und Kleinanzeigen URLs werden unterstuetzt")
+    else:
+        # Reiner Text - direkt an Claude senden zur Extraktion
+        if len(url) < 50:
+            raise HTTPException(status_code=400, detail="Bitte fuege mehr Text aus dem Expose ein (mindestens 50 Zeichen)")
+
+        try:
+            result = call_claude_direct(
+                "Du extrahierst Immobiliendaten aus Expose-Text. Antworte NUR als JSON.",
+                [{"role": "user", "content": f"""Extrahiere alle Immobiliendaten aus folgendem Expose-Text.
+
+Gib die Daten als JSON zurueck:
+{{"kaufpreis": null, "wohnflaeche": null, "zimmer": null, "baujahr": null, "stadt": null, "stadtteil": null, "objekttyp": null, "aktuelle_miete": null, "hausgeld": null, "energieklasse": null, "heizungsart": null, "zustand": null, "balkon_terrasse": null, "keller": null, "stellplatz": null, "vermietet": null, "provision": null, "beschreibung": null}}
+
+Expose-Text:
+{url[:5000]}"""}],
+                max_tokens=1500,
+                model="claude-haiku-4-5-20251001"
+            )
+            json_text = result["content"][0]["text"].strip()
+            if json_text.startswith("```"):
+                json_text = json_text.split("```")[1]
+                if json_text.startswith("json"):
+                    json_text = json_text[4:]
+            return json.loads(json_text.strip())
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Fehler bei der Extraktion: {str(e)}")
+        return  # Beende hier fuer Text-Input
+
+    # Scrape die Seite (mit verschiedenen Header-Kombinationen)
+    html_content = None
+    headers_options = [
+        {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+            "Referer": "https://www.google.de/",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "cross-site",
+        },
+        {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            "Accept": "text/html",
+            "Accept-Language": "de",
+        },
+    ]
+
+    # URL bereinigen (Query-Parameter entfernen)
+    clean_url = url.split("?")[0].split("#")[0]
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as http_client:
+            for headers in headers_options:
+                try:
+                    response = await http_client.get(clean_url, headers=headers)
+                    if response.status_code == 200 and len(response.text) > 500:
+                        html_content = response.text
+                        break
+                except Exception:
+                    continue
+
+        if not html_content:
+            raise HTTPException(
+                status_code=400,
+                detail="Diese Seite blockiert automatisches Laden. Bitte kopiere die Objektdaten und nutze die manuelle Eingabe."
+            )
+    except HTTPException:
+        raise
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=400, detail="Timeout beim Laden der Seite. Bitte nutze die manuelle Eingabe.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Fehler beim Laden. Bitte nutze die manuelle Eingabe.")
+
+    if len(html_content) < 500:
+        raise HTTPException(status_code=400, detail="Seite konnte nicht geladen werden (zu wenig Inhalt)")
+
+    # Claude extrahiert die Daten aus dem HTML (Haiku fuer Speed)
+    extraction_prompt = f"""Extrahiere alle Immobiliendaten aus diesem HTML einer Immobilienanzeige.
+
+URL: {url}
+
+Gib die Daten als JSON zurueck mit genau diesen Feldern (null wenn nicht gefunden):
+{{
+    "kaufpreis": <Zahl in Euro>,
+    "wohnflaeche": <Zahl in qm>,
+    "zimmer": <Anzahl>,
+    "baujahr": <Jahr>,
+    "etage": "<z.B. 2. OG>",
+    "nebenkosten": <monatlich in Euro>,
+    "hausgeld": <monatlich in Euro>,
+    "energieausweis": "<Verbrauch oder Bedarf>",
+    "energieklasse": "<A+ bis H>",
+    "heizungsart": "<z.B. Gas-Zentralheizung>",
+    "adresse": "<Strasse und Hausnummer>",
+    "stadt": "<Stadt>",
+    "stadtteil": "<Stadtteil/Bezirk>",
+    "objekttyp": "<z.B. Eigentumswohnung, Einfamilienhaus>",
+    "zustand": "<z.B. gepflegt, renovierungsbeduerftig, Neubau>",
+    "ausstattung": "<z.B. gehoben, normal, einfach>",
+    "balkon_terrasse": <true/false>,
+    "keller": <true/false>,
+    "stellplatz": "<z.B. Tiefgarage, Aussenstellplatz, keiner>",
+    "vermietet": <true/false>,
+    "aktuelle_miete": <monatliche Kaltmiete in Euro falls vermietet>,
+    "verkaeufertyp": "<privat oder Makler>",
+    "provision": "<z.B. 3,57% oder provisionsfrei>",
+    "beschreibung": "<Kurze Zusammenfassung des Objekts in 2-3 Saetzen>"
+}}
+
+Antworte NUR mit dem JSON, kein anderer Text.
+
+HTML (gekuerzt):
+{html_content[:12000]}"""
+
+    try:
+        result = call_claude_direct(
+            "Du extrahierst Immobiliendaten aus HTML. Antworte NUR als JSON.",
+            [{"role": "user", "content": extraction_prompt}],
+            max_tokens=2000,
+            model="claude-haiku-4-5-20251001"
+        )
+
+        json_text = result["content"][0]["text"].strip()
+        if json_text.startswith("```"):
+            json_text = json_text.split("```")[1]
+            if json_text.startswith("json"):
+                json_text = json_text[4:]
+        json_text = json_text.strip()
+
+        property_data = json.loads(json_text)
+        return property_data
+
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"Fehler beim Parsen: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Fehler bei der Extraktion: {str(e)}")
+
+
 async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp: str = "Eigentumswohnung") -> dict:
     """
-    V3.0 - LIVE MARKTDATEN RECHERCHE
-    Sucht aktuelle Immobilienpreise über Web-Suche
-    KEINE statischen Werte mehr!
+    V3.1 - MARKTDATEN mit Fast-Path
+    1. Erst Knowledge Base Lookup (instant)
+    2. Nur bei unbekannten Staedten: Web-Suche + Claude
     """
-    client = get_anthropic_client()
+    # Fast-Path: Knowledge Base Lookup
+    fast_result = quick_market_lookup(stadt)
+    if fast_result:
+        if stadtteil:
+            fast_result["standort"] = f"{stadtteil}, {stadt}"
+        return fast_result
+
+    # Slow-Path: Web-Recherche fuer unbekannte Staedte
     location = f"{stadtteil}, {stadt}" if stadtteil else stadt
 
     # Schritt 1: Web-Suche durchführen für aktuelle Preise
@@ -918,8 +1322,8 @@ async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp
     # Versuche Daten von bekannten Immobilienportalen zu holen
     search_results = []
 
-    async with httpx.AsyncClient(timeout=15.0) as http_client:
-        for query in search_queries[:2]:  # Erste 2 Queries
+    async with httpx.AsyncClient(timeout=10.0) as http_client:
+        for query in search_queries[:1]:  # Nur 1 Query fuer Speed
             try:
                 # DuckDuckGo HTML-Suche (kein API-Key nötig)
                 encoded_query = query.replace(' ', '+')
@@ -941,7 +1345,7 @@ async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp
             except Exception as e:
                 search_results.append({"query": query, "error": str(e)})
 
-    # Schritt 2: Claude analysiert die Suchergebnisse UND recherchiert selbst
+    # Schritt 2: Claude analysiert die Suchergebnisse UND recherchiert selbst (Haiku fuer Speed)
     research_prompt = f"""WICHTIG: Du musst LIVE-MARKTDATEN für diese Immobilienbewertung recherchieren!
 
 === STANDORT ===
@@ -987,13 +1391,15 @@ Antworte als JSON:
 WICHTIG: Gib KONKRETE Zahlen für DIESEN Standort an, keine Platzhalter!"""
 
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2000,
-            messages=[{"role": "user", "content": research_prompt}]
+        # Haiku fuer Speed (3x schneller als Sonnet, reicht fuer Marktdaten)
+        data_result = call_claude_direct(
+            "Du extrahierst Immobilien-Marktdaten. Antworte NUR als JSON, kein anderer Text.",
+            [{"role": "user", "content": research_prompt}],
+            max_tokens=1500,
+            model="claude-haiku-4-5-20251001"
         )
 
-        json_text = response.content[0].text.strip()
+        json_text = data_result["content"][0]["text"].strip()
         if json_text.startswith("```"):
             json_text = json_text.split("```")[1]
             if json_text.startswith("json"):
@@ -1800,13 +2206,20 @@ async def analyze_property(
     - Warnsignal-Erkennung
     - Gewichtete Score-Berechnung
     """
-    # Prüfe Usage-Limit
-    if not check_usage_limit(db, current_user):
-        usage = get_user_total_usage(db, current_user.id)
-        raise HTTPException(
-            status_code=429,
-            detail=f"Nutzungslimit erreicht! Du hast ${usage['total_cost_usd']:.2f} von ${current_user.usage_limit_usd:.2f} verbraucht. Kontaktiere den Admin für mehr."
-        )
+    # Prüfe Credits
+    credits = current_user.analysis_credits if current_user.analysis_credits is not None else 1
+    is_premium = credits > 0 or current_user.is_superuser
+
+    if not is_premium:
+        # Kein Credit - prüfe ob User schon eine Gratis-Analyse hatte
+        existing_analyses = db.query(Analysis).filter(Analysis.user_id == current_user.id).count()
+        if existing_analyses > 0:
+            raise HTTPException(
+                status_code=402,
+                detail="Keine Analyse-Credits mehr. Kaufe Credits um weitere Analysen durchzufuehren."
+            )
+        # Erste Analyse gratis (aber eingeschränkt)
+        is_premium = False
 
     data = request.property_data
     zweck = request.verwendungszweck
@@ -2295,7 +2708,7 @@ Antworte NUR mit dem JSON."""
         kaufnebenkosten_result = None
         if data.kaufpreis:
             # Prüfe ob Makler involviert (aus Provision oder Verkäufertyp)
-            mit_makler = bool(data.provision) or (data.verkaufertyp and data.verkaufertyp.lower() == "makler")
+            mit_makler = bool(data.provision) or (data.verkäufertyp and data.verkäufertyp.lower() == "makler")
             kaufnebenkosten_result = calculate_kaufnebenkosten(
                 kaufpreis=data.kaufpreis,
                 bundesland=None,  # TODO: aus Stadt ableiten
@@ -2356,6 +2769,75 @@ Antworte NUR mit dem JSON."""
             kaufnebenkosten=kaufnebenkosten_result
         )
 
+        # Verhandlungsmail generieren (nur Premium)
+        if is_premium and data.kaufpreis:
+            try:
+                preis_qm = round(data.kaufpreis / data.wohnflaeche, 2) if data.wohnflaeche else None
+                markt_qm = marktdaten.get("kaufpreis_qm_durchschnitt") if marktdaten else None
+                fairer_p = fairer_preis_result.get("fairer_preis") if fairer_preis_result else None
+
+                verhandlungs_prompt = f"""Erstelle eine professionelle, hoefliche Verhandlungsnachricht die ein Immobilienkaeufer an den Verkaeufer/Makler senden kann.
+
+OBJEKTDATEN:
+- Kaufpreis: {data.kaufpreis:,.0f} EUR
+- Wohnflaeche: {data.wohnflaeche or '?'} m2
+- Preis/m2: {preis_qm or '?'} EUR
+- Markt-Durchschnitt/m2: {markt_qm or '?'} EUR
+- Stadt: {data.stadt or '?'}, {data.stadtteil or ''}
+- Baujahr: {data.baujahr or '?'}
+- Energieklasse: {data.energieklasse or '?'}
+- Zustand: {data.zustand or '?'}
+- Fairer Preis laut Analyse: {f'{fairer_p:,.0f} EUR' if fairer_p else 'nicht berechnet'}
+
+ANALYSE-ERGEBNIS:
+- Score: {gesamtscore}/100
+- Schwaechen: {', '.join(ai_analysis.get('schwächen', [])[:3])}
+- Cashflow/Monat: {cashflow_analyse.get('monatlicher_cashflow', '?') if cashflow_analyse else '?'} EUR
+
+REGELN:
+1. Hoeflich und professionell, nicht aggressiv
+2. Konkretes Preisangebot machen (zwischen fairem Preis und Kaufpreis)
+3. Argumente mit Zahlen belegen (Marktdaten, Energiekosten, Sanierungsbedarf)
+4. Interesse am Objekt zeigen, aber sachlich bleiben
+5. Auf Deutsch, duzen vermeiden, Sie-Form
+6. Keine Emojis
+7. Format: Betreff + Nachricht
+8. Max 200 Woerter
+
+Antworte NUR mit der fertigen Nachricht, kein anderer Text."""
+
+                mail_result = call_claude_direct(
+                    "Du schreibst professionelle Verhandlungsnachrichten fuer Immobilienkaeufer.",
+                    [{"role": "user", "content": verhandlungs_prompt}],
+                    max_tokens=800,
+                    model="claude-haiku-4-5-20251001"
+                )
+                result.verhandlungsmail = strip_emojis(mail_result["content"][0]["text"].strip())
+            except Exception as e:
+                print(f"Verhandlungsmail-Generierung fehlgeschlagen: {e}")
+                result.verhandlungsmail = None
+
+        # Credit abziehen (nur wenn Premium und nicht Superuser)
+        if is_premium and not current_user.is_superuser and credits > 0:
+            current_user.analysis_credits = credits - 1
+            db.commit()
+
+        # Bei Gratis-Analyse: Premium-Features ausblenden
+        if not is_premium:
+            result.szenarien = None
+            result.sensitivity_analyse = None
+            result.fairer_preis = None
+            result.foerderungen = None
+            result.verbesserungsvorschlaege = None
+            result.leverage_effekt = None
+            result.finanzierungsoptionen = None
+            result.breakeven_eigenkapital = None
+            result.investment_vergleich = None
+            result.afa_berechnung = None
+            result.verhandlungsmail = None
+
+        result.is_premium = is_premium
+
         # Speichere Analyse in Datenbank
         db_analysis = Analysis(
             user_id=current_user.id,
@@ -2370,6 +2852,7 @@ Antworte NUR mit dem JSON."""
             stadt=data.stadt,
             stadtteil=data.stadtteil,
             gesamtscore=gesamtscore,
+            is_premium=is_premium,
             title=f"{data.stadt or 'Unbekannt'} - {data.objekttyp or 'Immobilie'}"
         )
         db.add(db_analysis)
@@ -2523,11 +3006,13 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
 
     # System Prompt für Chat
     chat_system = f"""STRIKTE FORMATIERUNGSREGELN (IMMER EINHALTEN):
-1. KEINE Emojis, Symbole oder Unicode-Sonderzeichen verwenden. Niemals. Keine Ausnahmen.
-2. Keine Hashtags (#, ##, ###) fuer Ueberschriften. Verwende stattdessen **Fettschrift** fuer Ueberschriften.
+1. ABSOLUT KEINE Emojis. Kein einziges Emoji-Zeichen in deiner gesamten Antwort. Keine Ausnahmen. Auch keine Unicode-Symbole wie Pfeile, Haekchen oder Sterne.
+2. Verwende ## und ### fuer Ueberschriften. Nutze **Fettschrift** fuer wichtige Begriffe innerhalb von Absaetzen.
 3. Verwende Aufzaehlungszeichen (-) fuer Listen.
 4. Halte den Ton professionell, sachlich und kompetent.
-5. Strukturiere Antworten klar mit Absaetzen und fetten Zwischenueberschriften.
+5. Strukturiere Antworten klar mit Absaetzen und Zwischenueberschriften.
+
+Antworte in einfacher, verstaendlicher Sprache. Vermeide Fachjargon wo moeglich - erklaere komplexe Begriffe kurz in Klammern wenn noetig. Strukturiere Antworten mit kurzen Absaetzen und Aufzaehlungen. Jede Antwort soll so klar sein, dass auch jemand ohne Vorwissen sie versteht.
 
 Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt (Deutschland, Oesterreich, Schweiz).
 Du verfuegst ueber Expertenwissen in: Immobilienbewertung, Finanzierung, Steueroptimierung, Foerderprogramme, Mietrecht, WEG-Recht, Due Diligence und Verhandlungsfuehrung.
@@ -2560,7 +3045,7 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
         # Use direct HTTP call to avoid Anthropic SDK unicode issues
         data = call_claude_direct(chat_system, messages_for_claude, max_tokens=4096)
 
-        assistant_text = data["content"][0]["text"]
+        assistant_text = strip_emojis(data["content"][0]["text"])
         input_tokens = data.get("usage", {}).get("input_tokens", 0)
         output_tokens = data.get("usage", {}).get("output_tokens", 0)
 
@@ -2779,11 +3264,13 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
 
     # System Prompt
     system_prompt = f"""STRIKTE FORMATIERUNGSREGELN (IMMER EINHALTEN):
-1. KEINE Emojis, Symbole oder Unicode-Sonderzeichen verwenden. Niemals. Keine Ausnahmen.
-2. Keine Hashtags (#, ##, ###) fuer Ueberschriften. Verwende stattdessen **Fettschrift** fuer Ueberschriften.
+1. ABSOLUT KEINE Emojis. Kein einziges Emoji-Zeichen in deiner gesamten Antwort. Keine Ausnahmen. Auch keine Unicode-Symbole wie Pfeile, Haekchen oder Sterne.
+2. Verwende ## und ### fuer Ueberschriften. Nutze **Fettschrift** fuer wichtige Begriffe innerhalb von Absaetzen.
 3. Verwende Aufzaehlungszeichen (-) fuer Listen.
 4. Halte den Ton professionell, sachlich und kompetent.
-5. Strukturiere Antworten klar mit Absaetzen und fetten Zwischenueberschriften.
+5. Strukturiere Antworten klar mit Absaetzen und Zwischenueberschriften.
+
+Antworte in einfacher, verstaendlicher Sprache. Vermeide Fachjargon wo moeglich - erklaere komplexe Begriffe kurz in Klammern wenn noetig. Strukturiere Antworten mit kurzen Absaetzen und Aufzaehlungen. Jede Antwort soll so klar sein, dass auch jemand ohne Vorwissen sie versteht.
 
 Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt (Deutschland, Oesterreich, Schweiz).
 Du verfuegst ueber Expertenwissen in: Immobilienbewertung, Finanzierung, Steueroptimierung, Foerderprogramme, Mietrecht, WEG-Recht, Due Diligence und Verhandlungsfuehrung.
@@ -2841,8 +3328,10 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
                                 if chunk.get("type") == "content_block_delta":
                                     text = chunk.get("delta", {}).get("text", "")
                                     if text:
-                                        full_response += text
-                                        yield f"data: {json.dumps({'text': text})}\n\n"
+                                        text = strip_emojis(text)
+                                        if text:
+                                            full_response += text
+                                            yield f"data: {json.dumps({'text': text})}\n\n"
                                 elif chunk.get("type") == "message_stop":
                                     pass
                             except json.JSONDecodeError:
@@ -2897,6 +3386,120 @@ async def make_first_admin(
     db.refresh(current_user)
 
     return {"message": "Du bist jetzt Admin!", "is_superuser": True}
+
+
+# ========================================
+# PAYMENT / STRIPE ENDPOINTS
+# ========================================
+
+try:
+    import stripe
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+except ImportError:
+    stripe = None
+    print("WARNING: stripe package not installed. Payment endpoints will not work.")
+
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://amlaki.de")
+
+# Produkt-Preise (Stripe Price IDs werden in Env Vars gesetzt)
+CREDIT_PACKAGES = {
+    "single": {"credits": 1, "price_cents": 499, "label": "1 Analyse", "price_label": "4,99"},
+    "pack5": {"credits": 5, "price_cents": 1999, "label": "5 Analysen", "price_label": "19,99"},
+    "pack10": {"credits": 10, "price_cents": 2999, "label": "10 Analysen", "price_label": "29,99"},
+}
+
+
+@app.get("/payments/credits")
+def get_credits(current_user: User = Depends(get_current_active_user)):
+    """Gibt aktuelle Credits des Users zurück"""
+    credits = current_user.analysis_credits if current_user.analysis_credits is not None else 1
+    return {
+        "credits": credits,
+        "is_superuser": current_user.is_superuser,
+        "packages": CREDIT_PACKAGES
+    }
+
+
+@app.post("/payments/create-checkout")
+def create_checkout_session(
+    data: dict = Body(...),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Erstellt eine Stripe Checkout Session"""
+    if not stripe.api_key:
+        raise HTTPException(status_code=500, detail="Stripe ist noch nicht konfiguriert.")
+
+    package_id = data.get("package", "single")
+    if package_id not in CREDIT_PACKAGES:
+        raise HTTPException(status_code=400, detail="Ungueltiges Paket")
+
+    package = CREDIT_PACKAGES[package_id]
+
+    try:
+        session = stripe.checkout.Session.create(
+            customer_email=current_user.email,
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "unit_amount": package["price_cents"],
+                    "product_data": {
+                        "name": f"AmlakiAI - {package['label']}",
+                        "description": f"{package['credits']} Analyse-Credit{'s' if package['credits'] > 1 else ''}",
+                    },
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=f"{FRONTEND_URL}/analyze?payment=success&credits={package['credits']}",
+            cancel_url=f"{FRONTEND_URL}/analyze?payment=cancelled",
+            client_reference_id=str(current_user.id),
+            metadata={
+                "user_id": str(current_user.id),
+                "package": package_id,
+                "credits": str(package["credits"]),
+            },
+        )
+
+        return {"checkout_url": session.url}
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=500, detail=f"Stripe-Fehler: {str(e)}")
+
+
+@app.post("/payments/webhook")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    """Stripe Webhook - wird nach erfolgreicher Zahlung aufgerufen"""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    if not STRIPE_WEBHOOK_SECRET:
+        raise HTTPException(status_code=500, detail="Webhook Secret nicht konfiguriert")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        user_id = int(session.get("metadata", {}).get("user_id", 0))
+        credits_to_add = int(session.get("metadata", {}).get("credits", 0))
+
+        if user_id and credits_to_add:
+            user = db.query(User).filter(User.id == user_id).first()
+            if user:
+                current_credits = user.analysis_credits if user.analysis_credits is not None else 0
+                user.analysis_credits = current_credits + credits_to_add
+                db.commit()
+
+    return {"status": "ok"}
 
 
 # ========================================
@@ -3106,7 +3709,13 @@ async def delete_user_admin(
     if user.id == admin.id:
         raise HTTPException(status_code=400, detail="Du kannst dich nicht selbst löschen")
 
-    # Lösche User (Analysen werden durch cascade gelöscht)
+    # Lösche alle Conversations und Messages des Users
+    conversations = db.query(Conversation).filter(Conversation.user_id == user_id).all()
+    for conv in conversations:
+        db.query(ChatMessage).filter(ChatMessage.conversation_id == conv.id).delete()
+        db.delete(conv)
+
+    # Lösche User (Analysen + UsageLogs werden durch cascade gelöscht)
     db.delete(user)
     db.commit()
 
@@ -3126,3 +3735,121 @@ async def get_user_analyses_admin(
 
     analyses = db.query(Analysis).filter(Analysis.user_id == user_id).order_by(Analysis.created_at.desc()).all()
     return analyses
+
+
+# ========================================
+# AGENT ADMIN ENDPOINTS
+# ========================================
+
+from models import AgentConfig
+
+
+@app.get("/admin/agents")
+def list_agents(current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Liste aller Research-Agents"""
+    agents = db.query(AgentConfig).order_by(AgentConfig.id).all()
+    return [
+        {
+            "id": a.id,
+            "name": a.name,
+            "display_name": a.display_name,
+            "description": a.description,
+            "enabled": a.enabled,
+            "schedule": a.schedule,
+            "last_run": a.last_run.isoformat() if a.last_run else None,
+            "last_status": a.last_status,
+            "last_error": a.last_error,
+        }
+        for a in agents
+    ]
+
+
+@app.patch("/admin/agents/{agent_id}")
+def update_agent(agent_id: int, data: dict = Body(...), current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Agent-Konfiguration aktualisieren (enable/disable, description, schedule)"""
+    agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent nicht gefunden")
+
+    if "enabled" in data:
+        agent.enabled = data["enabled"]
+    if "display_name" in data:
+        agent.display_name = data["display_name"]
+    if "description" in data:
+        agent.description = data["description"]
+    if "schedule" in data:
+        agent.schedule = data["schedule"]
+
+    db.commit()
+    return {"status": "ok", "agent": agent.name, "enabled": agent.enabled}
+
+
+@app.post("/admin/agents/{agent_id}/run")
+async def run_agent(agent_id: int, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Agent manuell ausfuehren"""
+    agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent nicht gefunden")
+
+    agent.last_status = "running"
+    agent.last_run = datetime.utcnow()
+    db.commit()
+
+    try:
+        import importlib
+        if agent.name == "zinsen":
+            from agents.zinsen_monitor import run as agent_run
+        elif agent.name == "news":
+            from agents.news_agent import run as agent_run
+        else:
+            raise HTTPException(status_code=400, detail=f"Unbekannter Agent: {agent.name}")
+
+        success = agent_run()
+        agent.last_status = "success" if success else "error"
+        agent.last_error = None if success else "Agent hat Fehler zurueckgegeben"
+    except Exception as e:
+        agent.last_status = "error"
+        agent.last_error = str(e)[:500]
+
+    agent.last_run = datetime.utcnow()
+    db.commit()
+
+    return {"status": agent.last_status, "error": agent.last_error}
+
+
+@app.post("/admin/agents")
+def create_agent(data: dict = Body(...), current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Neuen Agent erstellen"""
+    name = data.get("name", "").strip().lower()
+    display_name = data.get("display_name", "").strip()
+
+    if not name or not display_name:
+        raise HTTPException(status_code=400, detail="Name und Display-Name erforderlich")
+
+    existing = db.query(AgentConfig).filter(AgentConfig.name == name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Agent mit diesem Namen existiert bereits")
+
+    agent = AgentConfig(
+        name=name,
+        display_name=display_name,
+        description=data.get("description", ""),
+        enabled=data.get("enabled", True),
+        schedule=data.get("schedule", "taeglich 07:00"),
+    )
+    db.add(agent)
+    db.commit()
+
+    return {"status": "ok", "id": agent.id, "name": agent.name}
+
+
+@app.delete("/admin/agents/{agent_id}")
+def delete_agent(agent_id: int, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Agent loeschen"""
+    agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent nicht gefunden")
+
+    db.delete(agent)
+    db.commit()
+    return {"status": "ok"}
