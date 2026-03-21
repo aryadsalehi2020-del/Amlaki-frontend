@@ -615,9 +615,9 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-4 sm:gap-5">
             {[
-              { name: 'Gratis', price: '0', unit: '', desc: 'Zum Kennenlernen', credits: '1 Analyse', features: ['Score und Bewertung', 'Cashflow-Berechnung', 'Grundlegende Kennzahlen', 'KI-Chat'], cta: 'Kostenlos starten', popular: false },
-              { name: 'Starter', price: '4,99', unit: '', desc: 'Einzelne Analyse', credits: '1 Analyse', features: ['Alles aus Gratis', 'Szenarien-Vergleich', 'Foerderungen und AfA', 'Fairer Preis Berechnung', 'Verbesserungsvorschlaege'], cta: 'Analyse kaufen', popular: false },
-              { name: 'Investor', price: '19,99', unit: '', desc: 'Fuer ernsthafte Kaeufer', credits: '5 Analysen (3,99/St.)', features: ['Alles aus Starter', '5 vollstaendige Analysen', 'Mengenrabatt 20%', 'Ideal zum Vergleichen'], cta: 'Paket kaufen', popular: true },
+              { name: 'Free', price: '0', unit: '', desc: 'Zum Kennenlernen', credits: '1 Analyse', features: ['Score und Bewertung', 'Cashflow-Berechnung', 'Grundlegende Kennzahlen', 'KI-Chat'], cta: 'Kostenlos starten', popular: false },
+              { name: 'Basic', price: '4,99', unit: '', desc: '1 vollständige Analyse', credits: '1 Analyse', features: ['Alles aus Free', 'Szenarien-Vergleich', 'Förderungen und AfA', 'Fairer Preis Berechnung', 'Verbesserungsvorschläge'], cta: '1 Credit kaufen', popular: false },
+              { name: 'Plus', price: '19,99', unit: '', desc: 'Mehrere Objekte vergleichen', credits: '5 Analysen (3,99/St.)', features: ['Alles aus Basic', '5 vollständige Analysen', 'Mengenrabatt 20%', 'Ideal zum Vergleichen'], cta: '5 Credits kaufen', popular: true },
             ].map((plan, i) => (
               <FadeInSection key={plan.name} delay={i * 0.1}>
                 <div
