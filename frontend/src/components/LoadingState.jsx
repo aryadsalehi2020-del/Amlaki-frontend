@@ -55,14 +55,12 @@ function LoadingState({ message }) {
           height: 9px;
           border-radius: 50%;
           background-color: #B5A68C;
-          opacity: 0.2;
-          will-change: opacity;
-          animation: loadPulseSlow 2.4s ease-in-out infinite;
+          opacity: 0.15;
+          animation: loadPulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         @keyframes loadPulseSlow {
-          0%, 100% { opacity: 0.15; }
-          40% { opacity: 0.6; }
-          60% { opacity: 0.6; }
+          0%, 100% { opacity: 0.15; transform: scale(1); }
+          50% { opacity: 0.55; transform: scale(1.1); }
         }
       `}</style>
     </div>
