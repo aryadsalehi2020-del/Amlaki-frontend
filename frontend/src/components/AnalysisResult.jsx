@@ -537,16 +537,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               </div>
 
               <div className="p-4 bg-[#B5A68C]/10 rounded-xl border border-[#B5A68C]/30">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl"></span>
-                  <div>
-                    <p className="text-[#8C7E6A] font-semibold mb-1">{result.mietschaetzung.hinweis}</p>
-                    <p className="text-[#8C7E6A] text-sm">{result.mietschaetzung.empfehlung}</p>
-                    <p className="text-xs text-[#B5A68C] mt-2">
-                      Datenquelle: {result.mietschaetzung.marktdaten_quelle === 'live_web_search_v3' ? '✓ Live-Marktdaten' : result.mietschaetzung.marktdaten_quelle} | Standort: {result.mietschaetzung.standort}
-                    </p>
-                  </div>
-                </div>
+                <p className="text-[#8C7E6A] text-[13px] leading-relaxed">
+                  Geschätzt auf Basis aktueller Neuvermietungspreise für {result.mietschaetzung.standort}. Die tatsächliche Miete kann je nach Zustand, Ausstattung und Lage innerhalb des Stadtteils abweichen.
+                </p>
               </div>
             </div>
           )}
