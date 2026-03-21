@@ -314,35 +314,33 @@ export function getProfileBasedRecommendation(score, profile) {
   const { riskProfile, goal, experience } = profile;
   const threshold = RISK_MODIFIERS[riskProfile]?.scoreThreshold || 40;
 
-  // Angepasste Empfehlungen: insgesamt positiver
-  if (score >= threshold + 15) {
+  // Ehrliche Empfehlungen basierend auf Score
+  if (score >= 70) {
     return {
       action: 'invest',
       emoji: '',
-      text: 'Sehr empfehlenswert fuer dein Profil',
+      text: 'Starkes Investment fuer dein Profil',
       color: 'zinc-200'
     };
-  } else if (score >= threshold) {
+  } else if (score >= 55) {
     return {
       action: 'consider',
       emoji: '',
-      text: 'Gutes Potenzial - passt zu deinem Profil',
+      text: 'Prüfenswert - genau hinschauen',
       color: 'zinc-400'
     };
-  } else if (score >= threshold - 10) {
+  } else if (score >= 40) {
     return {
       action: 'caution',
       emoji: '',
-      text: experience === 'anfaenger'
-        ? 'Mit Begleitung pruefenswert'
-        : 'Genauer analysieren',
+      text: 'Eher nicht empfehlenswert',
       color: 'zinc-500'
     };
   } else {
     return {
       action: 'avoid',
       emoji: '',
-      text: 'Nicht optimal fuer dein Profil',
+      text: 'Nicht empfehlenswert',
       color: 'zinc-600'
     };
   }

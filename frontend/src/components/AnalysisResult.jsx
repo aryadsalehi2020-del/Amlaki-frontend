@@ -49,21 +49,21 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (displayScore / 100) * circumference;
 
-  // Angepasste Schwellen: +10 positiver
+  // Ehrliche Farbschwellen
   const getScoreColor = (score) => {
-    if (score >= 60) return '#7C8B6F'; // olive
-    if (score >= 45) return '#B5A68C'; // khaki
-    if (score >= 30) return '#8C7E6A'; // muted
-    return '#B85C5C'; // muted red
+    if (score >= 65) return '#7C8B6F'; // olive - gut
+    if (score >= 55) return '#B5A68C'; // khaki - solide
+    if (score >= 40) return '#8C7E6A'; // muted - schwach
+    return '#B85C5C'; // muted red - schlecht
   };
 
-  // Angepasste Labels: +10 positiver
+  // Ehrliche Labels
   const getScoreLabel = (score) => {
     if (score >= 75) return 'Exzellent';
-    if (score >= 60) return 'Sehr gut';
-    if (score >= 45) return 'Gut';
-    if (score >= 30) return 'Akzeptabel';
-    return 'Kritisch';
+    if (score >= 65) return 'Gut';
+    if (score >= 55) return 'Solide';
+    if (score >= 40) return 'Schwach';
+    return 'Schlecht';
   };
 
   return (
