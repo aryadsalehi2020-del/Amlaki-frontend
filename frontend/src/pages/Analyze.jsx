@@ -196,13 +196,16 @@ function Analyze() {
     try {
       const res = await fetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ property_data: propertyData, verwendungszweck: v, eigenkapital: fin.eigenkapital, zinssatz: fin.zinssatz, tilgung: fin.tilgung }),
+        body: JSON.stringify({ property_data: propertyData, verwendungszweck: v, eigenkapital: fin.eigenkapital, zinssatz: fin.zinssatz, tilgung: fin.tilgung, analysis_id: savedAnalysisId }),
       });
       if (res.status === 402) { setShowPaywall(true); setStep('result'); return; }
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
-      setAnalysisResult(await res.json()); setStep('result');
+      const resultData = await res.json();
+      setAnalysisResult(resultData);
+      if (resultData.analysis_id) setSavedAnalysisId(resultData.analysis_id);
+      setStep('result');
     } catch (err) { setError(err.message); setStep('result'); }
-  }, [propertyData, lastFinanzierung, token]);
+  }, [propertyData, lastFinanzierung, token, savedAnalysisId]);
 
   const handleChangeEigenkapital = useCallback(async (ek) => {
     if (!propertyData || !lastVerwendungszweck) return;
@@ -211,13 +214,16 @@ function Analyze() {
     try {
       const res = await fetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ property_data: propertyData, verwendungszweck: lastVerwendungszweck, eigenkapital: ek, zinssatz: lastFinanzierung?.zinssatz || 3.75, tilgung: lastFinanzierung?.tilgung || 1.25 }),
+        body: JSON.stringify({ property_data: propertyData, verwendungszweck: lastVerwendungszweck, eigenkapital: ek, zinssatz: lastFinanzierung?.zinssatz || 3.75, tilgung: lastFinanzierung?.tilgung || 1.25, analysis_id: savedAnalysisId }),
       });
       if (res.status === 402) { setShowPaywall(true); setStep('result'); return; }
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
-      setAnalysisResult(await res.json()); setStep('result');
+      const resultData = await res.json();
+      setAnalysisResult(resultData);
+      if (resultData.analysis_id) setSavedAnalysisId(resultData.analysis_id);
+      setStep('result');
     } catch (err) { setError(err.message); }
-  }, [propertyData, lastVerwendungszweck, lastFinanzierung, token]);
+  }, [propertyData, lastVerwendungszweck, lastFinanzierung, token, savedAnalysisId]);
 
   return (
     <div className="px-6 md:px-16 lg:px-20 py-3 md:py-5">

@@ -755,6 +755,7 @@ class AnalysisRequest(BaseModel):
     tilgung: Optional[float] = 1.25   # Angepasst auf 1.25%
     marktpreis_qm: Optional[float] = None  # Falls manuell eingegeben
     besichtigt: Optional[bool] = None  # Ob User schon bei Besichtigung war
+    analysis_id: Optional[int] = None  # Wenn gesetzt: bestehende Analyse updaten statt neue erstellen
 
 
 class CriterionScore(BaseModel):
@@ -2912,26 +2913,53 @@ Antworte NUR mit dem JSON."""
 
         result.is_premium = is_premium
 
-        # Speichere Analyse in Datenbank
-        db_analysis = Analysis(
-            user_id=current_user.id,
-            property_data=data.dict(),
-            analysis_result=result.dict(),
-            verwendungszweck=zweck,
-            eigenkapital=request.eigenkapital or 0,
-            zinssatz=request.zinssatz or 3.75,
-            tilgung=request.tilgung or 1.25,
-            kaufpreis=data.kaufpreis,
-            wohnflaeche=data.wohnflaeche,
-            stadt=data.stadt,
-            stadtteil=data.stadtteil,
-            gesamtscore=gesamtscore,
-            is_premium=is_premium,
-            title=f"{data.stadt or 'Unbekannt'} - {data.objekttyp or 'Immobilie'}"
-        )
-        db.add(db_analysis)
-        db.commit()
-        db.refresh(db_analysis)
+        # Speichere oder update Analyse in Datenbank
+        db_analysis = None
+        if request.analysis_id:
+            # Update bestehende Analyse
+            db_analysis = db.query(Analysis).filter(
+                Analysis.id == request.analysis_id,
+                Analysis.user_id == current_user.id
+            ).first()
+
+        if db_analysis:
+            # Bestehende updaten
+            db_analysis.property_data = data.dict()
+            db_analysis.analysis_result = result.dict()
+            db_analysis.verwendungszweck = zweck
+            db_analysis.eigenkapital = request.eigenkapital or 0
+            db_analysis.zinssatz = request.zinssatz or 3.75
+            db_analysis.tilgung = request.tilgung or 1.25
+            db_analysis.kaufpreis = data.kaufpreis
+            db_analysis.wohnflaeche = data.wohnflaeche
+            db_analysis.stadt = data.stadt
+            db_analysis.stadtteil = data.stadtteil
+            db_analysis.gesamtscore = gesamtscore
+            db_analysis.is_premium = is_premium
+            db_analysis.title = f"{data.stadt or 'Unbekannt'} - {data.objekttyp or 'Immobilie'}"
+            db.commit()
+            db.refresh(db_analysis)
+        else:
+            # Neue Analyse erstellen
+            db_analysis = Analysis(
+                user_id=current_user.id,
+                property_data=data.dict(),
+                analysis_result=result.dict(),
+                verwendungszweck=zweck,
+                eigenkapital=request.eigenkapital or 0,
+                zinssatz=request.zinssatz or 3.75,
+                tilgung=request.tilgung or 1.25,
+                kaufpreis=data.kaufpreis,
+                wohnflaeche=data.wohnflaeche,
+                stadt=data.stadt,
+                stadtteil=data.stadtteil,
+                gesamtscore=gesamtscore,
+                is_premium=is_premium,
+                title=f"{data.stadt or 'Unbekannt'} - {data.objekttyp or 'Immobilie'}"
+            )
+            db.add(db_analysis)
+            db.commit()
+            db.refresh(db_analysis)
 
         # Include the analysis ID in the result
         result.analysis_id = db_analysis.id
