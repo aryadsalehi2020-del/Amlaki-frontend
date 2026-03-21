@@ -83,7 +83,12 @@ function LibraryDetail() {
   if (loading) return (
     <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
       <div className="bg-white rounded-[16px] p-12 text-center border border-[#E8E0D4]">
-        <div className="w-12 h-12 border-2 border-[#E8E0D4] border-t-[#7C8B6F] rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="flex items-center gap-[6px] mx-auto mb-4 justify-center">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="w-[8px] h-[8px] rounded-full bg-[#B5A68C]" style={{ animation: `typingPulse 1.4s ease-in-out ${i * 0.15}s infinite`, opacity: 0.25 }} />
+          ))}
+        </div>
+        <style>{`@keyframes typingPulse { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 0.9; } }`}</style>
         <p className="text-[#8C7E6A] text-[16px]">Lade Analyse...</p>
       </div>
     </div>
