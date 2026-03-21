@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { MessageSquare, Lock } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import PropertyForm from '../components/PropertyForm';
@@ -115,6 +115,17 @@ function Analyze() {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+
+  // Prefill from Library "Daten bearbeiten"
+  useEffect(() => {
+    if (location.state?.prefill) {
+      setPropertyData(location.state.prefill);
+      setStep('form');
+      // Clear state so it doesn't re-trigger on navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Fetch credits on mount + after payment
   useEffect(() => {
