@@ -58,6 +58,9 @@ class User(Base):
     # Usage Limits
     usage_limit_usd = Column(Float, default=5.0)  # $5 default limit
 
+    # Credits
+    analysis_credits = Column(Integer, default=1)  # 1 gratis Analyse
+
     # Relationships
     analyses = relationship("Analysis", back_populates="owner", cascade="all, delete-orphan")
     usage_logs = relationship("UsageLog", back_populates="user", cascade="all, delete-orphan")
@@ -92,6 +95,9 @@ class Analysis(Base):
     zinssatz = Column(Float, default=3.75)
     tilgung = Column(Float, default=1.25)
 
+    # Premium Status
+    is_premium = Column(Boolean, default=False)  # True wenn bezahlt oder Credit verbraucht
+
     # Quick-Access Felder für Suche/Filter
     kaufpreis = Column(Float, nullable=True)
     wohnflaeche = Column(Float, nullable=True)
@@ -101,6 +107,23 @@ class Analysis(Base):
 
     # Relationship
     owner = relationship("User", back_populates="analyses")
+
+
+class AgentConfig(Base):
+    """Konfiguration fuer Research-Agents"""
+    __tablename__ = "agent_configs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)  # z.B. 'zinsen', 'news'
+    display_name = Column(String, nullable=False)  # z.B. 'Zinsen-Monitor'
+    description = Column(String, nullable=True)
+    enabled = Column(Boolean, default=True)
+    schedule = Column(String, default="taeglich 07:00")  # Beschreibung
+    last_run = Column(DateTime, nullable=True)
+    last_status = Column(String, nullable=True)  # 'success', 'error', 'running'
+    last_error = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class UsageLog(Base):

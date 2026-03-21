@@ -1,161 +1,78 @@
-## TEIL 4: RENDITEBERECHNUNG
+## RENDITEBERECHNUNG
 
-### Alle Kennzahlen mit Formeln
+### Kennzahlen-Benchmarks
 
-```javascript
-// 1. Bruttorendite (Schnellcheck)
-const bruttorendite = (jahreskaltmiete / kaufpreis) * 100;
-// Benchmark: >5% gut, 3-5% mittel, <3% kritisch
+| Kennzahl | Schlecht | Akzeptabel | Gut | Sehr gut |
+|----------|---------|------------|-----|----------|
+| Bruttorendite | <3,0% | 3,0-4,0% | 4,0-5,5% | >5,5% |
+| Nettomietrendite | <2,0% | 2,0-3,0% | 3,0-4,0% | >4,0% |
+| Kaufpreisfaktor | >30 | 25-30 | 20-25 | <20 |
+| Cashflow/Monat | <-200 EUR | -200 bis 0 | 0 bis +200 | >+200 EUR |
+| EK-Rendite (mit Hebel) | <3% | 3-6% | 6-10% | >10% |
 
-// 2. Kaufpreisfaktor
-const kaufpreisfaktor = kaufpreis / jahreskaltmiete;
-// Benchmark: <20 gut, 20-25 okay, >25 teuer, >30 kritisch
+### Formeln (Kurzreferenz)
 
-// 3. Nettomietrendite (aussagekräftiger)
-const nettomietrendite = (jahreskaltmiete - nichtUmlagefaehigeKosten) / (kaufpreis + kaufnebenkosten) * 100;
-// Benchmark: >3,5% gut
+- **Bruttorendite** = Jahreskaltmiete / Kaufpreis x 100
+- **Kaufpreisfaktor** = Kaufpreis / Jahreskaltmiete (je niedriger, desto besser)
+- **Nettomietrendite** = (Jahreskaltmiete - nicht umlagefaehige Kosten) / (Kaufpreis + Kaufnebenkosten) x 100
+- **EK-Rendite** = Objektrendite + (Objektrendite - FK-Zins) x (FK/EK)
+- **Break-Even-Zins** = Nettomietrendite (liegt FK-Zins darueber, wird Cashflow negativ)
 
-// 4. Objektrendite (vor Finanzierung)
-const objektrendite = jahresreinertrag / gesamtinvestition * 100;
+### Cashflow-Berechnung
 
-// 5. Eigenkapitalrendite (nach Leverage)
-const eigenkapitalrendite = (jahresreinertrag - zinsen) / eigenkapital * 100;
+- **Einnahmen:** Kaltmiete + Stellplatz
+- **Ausgaben:** Kreditrate + nicht umlagefaehige NK (ca. 35% vom Hausgeld) + Reserven (je 2% fuer Leerstand und Mietausfall)
+- **Cashflow** = Einnahmen - Ausgaben
 
-// 6. Cashflow-Rendite
-const cashflowRendite = (jaehrlichCashflow / eigenkapital) * 100;
-```
+### Leverage-Effekt 2026
 
-### Leverage-Effekt Formel
+| Szenario | Objektrendite | FK-Zins | FK-Quote | EK-Rendite |
+|----------|--------------|---------|----------|------------|
+| Positiver Hebel | 5,0% | 3,5% | 80% | 11,0% |
+| Neutraler Hebel | 3,5% | 3,5% | 80% | 3,5% |
+| Negativer Hebel | 3,0% | 3,5% | 80% | 1,0% |
+| Stark negativ | 2,5% | 4,0% | 90% | -11,0% |
 
-```javascript
-function berechneLeverage(objektrendite, fremdkapitalzins, fremdkapitalquote) {
-  // EK-Rendite = Objektrendite + (Objektrendite - FK-Zins) x (FK/EK)
-  const eigenkapitalquote = 1 - fremdkapitalquote;
-  const hebel = fremdkapitalquote / eigenkapitalquote;
+### Sensitivitaetsanalyse - Pflichtszenarien
 
-  const ekRendite = objektrendite + (objektrendite - fremdkapitalzins) * hebel;
+- Miete -10%
+- Kaufpreis +10%
+- Zins +2% bei Anschlussfinanzierung
+- Leerstand 3 Monate
+- CapEx-Schock (z.B. neue Heizung 25.000 EUR)
+- Worst Case: Alle Faktoren zusammen
 
-  return ekRendite;
-}
-
-// Beispiel: 5% Objektrendite, 3% FK-Zins, 75% Fremdkapital
-// EK-Rendite = 5% + (5% - 3%) x 3 = 11%
-
-// ACHTUNG Negativer Hebel!
-// Bei 3% Objektrendite, 4,5% FK-Zins:
-// EK-Rendite = 3% + (3% - 4,5%) x 3 = -1,5%
-```
-
-### Break-Even-Zins
-
-```javascript
-// Der FK-Zins, ab dem der Hebel negativ wird
-const breakEvenZins = nettomietrendite;
-// Liegt der FK-Zins darüber -> negativer Cashflow!
-```
-
-### Sensitivitätsanalyse (Pflicht bei Profi-Beratung!)
-
-**Jedes Investment muss auf Robustheit geprüft werden:**
-
-```javascript
-function sensitivitaetsanalyse(basisfall) {
-  const szenarien = [];
-
-  // Szenario 1: Miete -10%
-  szenarien.push({
-    name: 'Miete -10%',
-    cashflow: berechneCashflow({...basisfall, miete: basisfall.miete * 0.9}),
-    kritisch: false
-  });
-
-  // Szenario 2: Preis +10% (Verhandlung gescheitert)
-  szenarien.push({
-    name: 'Kaufpreis +10%',
-    cashflow: berechneCashflow({...basisfall, kaufpreis: basisfall.kaufpreis * 1.1}),
-    kritisch: false
-  });
-
-  // Szenario 3: Zins +2% (Anschlussfinanzierung)
-  szenarien.push({
-    name: 'Zins +2%',
-    cashflow: berechneCashflow({...basisfall, zins: basisfall.zins + 0.02}),
-    kritisch: true // Sehr relevant!
-  });
-
-  // Szenario 4: Leerstand 3 Monate
-  szenarien.push({
-    name: 'Leerstand 3 Monate',
-    cashflow: berechneCashflow({...basisfall, leerstandMonate: 3}),
-    kritisch: true
-  });
-
-  // Szenario 5: CapEx-Schock (neue Heizung)
-  szenarien.push({
-    name: 'Heizung defekt (25.000 EUR)',
-    einmalkosten: 25000,
-    jahreBisAmortisation: 25000 / (basisfall.cashflowJahr || 1)
-  });
-
-  // Worst Case: Alles zusammen
-  szenarien.push({
-    name: 'WORST CASE',
-    cashflow: berechneCashflow({
-      ...basisfall,
-      miete: basisfall.miete * 0.9,
-      zins: basisfall.zins + 0.02,
-      leerstandMonate: 2
-    }),
-    kritisch: true
-  });
-
-  return szenarien;
-}
-```
-
-**Bewertungsmatrix:**
 | Worst-Case Cashflow | Bewertung |
 |---------------------|-----------|
-| > 0 EUR | Robust – Investment trägt sich auch unter Stress |
-| -100 bis 0 EUR | Akzeptabel – Puffer erforderlich |
-| < -100 EUR | Riskant – Nur mit hoher Liquiditätsreserve |
-| < -300 EUR | Gefährlich – Investment gefährdet Gesamtfinanzen |
+| > 0 EUR | Robust |
+| -100 bis 0 EUR | Akzeptabel, Puffer noetig |
+| < -100 EUR | Riskant, nur mit hoher Reserve |
+| < -300 EUR | Gefaehrlich |
 
-### Vollständige Cashflow-Berechnung
+### Break-Even bei aktuellen Zinsen
 
-```javascript
-function berechneMonatlichenCashflow(params) {
-  const {
-    kaltmiete,
-    stellplatzMiete = 0,
-    nebenkosten, // Vorauszahlung, durchlaufend
-    kaufpreis,
-    zinssatz,
-    tilgungssatz,
-    hausgeldGesamt,
-    nichtUmlagefaehigerAnteil = 0.35, // Ca. 35% vom Hausgeld
-    leerstandsReserve = 0.02, // 2%
-    mietausfallReserve = 0.02, // 2%
-  } = params;
+- Bei 3,5% Zins + 2% Tilgung + 0,5% NK = **6,0% Mindestbruttorendite** (in A-Staedten nicht erreichbar)
+- Bei 3,5% Zins + 1% Tilgung + 0,5% NK = **5,0%** (schwierig)
+- Cashflow-neutral nur in B/C-Staedten oder mit hohem EK moeglich
 
-  // Einnahmen
-  const bruttoMiete = kaltmiete + stellplatzMiete;
+### Kaufnebenkosten Schnellrechner
 
-  // Ausgaben
-  const kreditrate = (kaufpreis * (zinssatz + tilgungssatz)) / 12;
-  const nichtUmlagefaehigeNK = hausgeldGesamt * nichtUmlagefaehigerAnteil;
-  const leerstand = bruttoMiete * leerstandsReserve;
-  const mietausfall = bruttoMiete * mietausfallReserve;
+| Bundesland | GrESt | + Notar/Grundbuch | + Makler 50/50 | Gesamt |
+|------------|-------|-------------------|----------------|--------|
+| Bayern | 3,5% | 2,0% | 3,57% | 9,07% |
+| Sachsen | 3,5% | 2,0% | 3,57% | 9,07% |
+| Baden-Wuertt. | 5,0% | 2,0% | 3,57% | 10,57% |
+| Hessen | 6,0% | 2,0% | 3,57% | 11,57% |
+| Berlin | 6,0% | 2,0% | 3,57% | 11,57% |
+| NRW | 6,5% | 2,0% | 3,57% | 12,07% |
+| Brandenburg | 6,5% | 2,0% | 3,57% | 12,07% |
+| S-Holstein | 6,5% | 2,0% | 3,57% | 12,07% |
 
-  const cashflow = bruttoMiete - kreditrate - nichtUmlagefaehigeNK - leerstand - mietausfall;
+### Bauzinsen Schnellreferenz (Maerz 2026)
 
-  return {
-    einnahmen: bruttoMiete,
-    kreditrate,
-    nichtUmlagefaehigeNK,
-    reserven: leerstand + mietausfall,
-    cashflow,
-    cashflowJahr: cashflow * 12
-  };
-}
-```
+| Zinsbindung | Best Case | Durchschnitt | 100% Finanzierung |
+|-------------|-----------|--------------|---------------------|
+| 5 Jahre | 3,15% | 3,39% | 3,91% |
+| 10 Jahre | 3,40% | 3,66% | 4,06% |
+| 15 Jahre | 3,60% | 3,85% | 4,27% |
+| 20 Jahre | 3,75% | 3,95% | 4,45% |

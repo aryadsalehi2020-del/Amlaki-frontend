@@ -1323,6 +1323,119 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               </div>
             </div>
           )}
+
+          {/* Besichtigungs-Roadmap */}
+          {result.besichtigungs_roadmap && (
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
+              <h3 className="text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
+                Dein Besichtigungs-Leitfaden
+              </h3>
+              <p className="text-[13px] text-[#8C7E6A] mb-6">Personalisiert fuer dieses Objekt -- worauf du achten solltest, was du fragen kannst und wie du dich positionierst.</p>
+
+              {/* Checkliste */}
+              {result.besichtigungs_roadmap.checkliste && (
+                <div className="mb-8">
+                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Checkliste fuer die Besichtigung</h4>
+                  <div className="space-y-4">
+                    {result.besichtigungs_roadmap.checkliste.map((kat, i) => (
+                      <div key={i} className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-5">
+                        <h5 className="text-[14px] font-semibold text-[#5C4F3D] mb-3">{kat.kategorie}</h5>
+                        <ul className="space-y-2">
+                          {kat.punkte.map((p, j) => (
+                            <li key={j} className="flex items-start gap-3">
+                              <span className={`mt-0.5 w-5 h-5 rounded-md border-2 flex-shrink-0 ${p.spezifisch ? 'border-[#7C8B6F] bg-[#7C8B6F]/10' : 'border-[#E8E0D4]'}`} />
+                              <div>
+                                <span className="text-[13px] font-medium text-[#2C2418]">{p.was_pruefen}</span>
+                                {p.spezifisch && <span className="ml-2 text-[11px] text-[#7C8B6F] bg-[#7C8B6F]/10 px-1.5 py-0.5 rounded">Objektspezifisch</span>}
+                                <p className="text-[12px] text-[#8C7E6A] mt-0.5">{p.warum}</p>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Fragen an Verkaeufer */}
+              {result.besichtigungs_roadmap.fragen_an_verkaeufer && (
+                <div className="mb-8">
+                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Fragen an den Verkaeufer / Makler</h4>
+                  <div className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-5">
+                    <ul className="space-y-3">
+                      {result.besichtigungs_roadmap.fragen_an_verkaeufer.map((frage, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <span className="text-[#7C8B6F] font-bold text-[13px] mt-0.5">{i + 1}.</span>
+                          <span className="text-[13px] text-[#2C2418]">{frage}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Verhalten Tipps */}
+              {result.besichtigungs_roadmap.verhalten_tipps && (
+                <div className="mb-8">
+                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">So positionierst du dich richtig</h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-2xl p-5">
+                      <h5 className="text-[13px] font-semibold text-[#7C8B6F] mb-3">Das solltest du tun</h5>
+                      <ul className="space-y-2">
+                        {result.besichtigungs_roadmap.verhalten_tipps.do?.map((tip, i) => (
+                          <li key={i} className="flex items-start gap-2 text-[13px] text-[#2C2418]">
+                            <span className="text-[#7C8B6F] mt-0.5 flex-shrink-0">+</span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="bg-[#B85C5C]/5 border border-[#B85C5C]/15 rounded-2xl p-5">
+                      <h5 className="text-[13px] font-semibold text-[#B85C5C] mb-3">Das solltest du vermeiden</h5>
+                      <ul className="space-y-2">
+                        {result.besichtigungs_roadmap.verhalten_tipps.dont?.map((tip, i) => (
+                          <li key={i} className="flex items-start gap-2 text-[13px] text-[#2C2418]">
+                            <span className="text-[#B85C5C] mt-0.5 flex-shrink-0">-</span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Naechste Schritte */}
+              {result.besichtigungs_roadmap.naechste_schritte && (
+                <div>
+                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Nach der Besichtigung</h4>
+                  <div className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-5">
+                    <ul className="space-y-2">
+                      {result.besichtigungs_roadmap.naechste_schritte.map((schritt, i) => (
+                        <li key={i} className="flex items-start gap-3 text-[13px] text-[#2C2418]">
+                          <span className="w-6 h-6 rounded-full bg-[#7C8B6F]/10 text-[#7C8B6F] flex items-center justify-center text-[11px] font-bold flex-shrink-0">{i + 1}</span>
+                          {schritt}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-4 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">
+                      Nach der Besichtigung kannst du deine Analyse mit neuen Erkenntnissen verfeinern -- einfach die Daten aktualisieren.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Hinweis fuer bereits besichtigte Objekte */}
+          {result.besichtigt === true && (
+            <div className="bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-2xl p-5">
+              <p className="text-[13px] text-[#5C4F3D]">
+                <span className="font-semibold text-[#7C8B6F]">Tipp:</span> Du warst bereits bei der Besichtigung. Falls du neue Erkenntnisse hast (z.B. Zustand, Renovierungsbedarf, Nachbarschaft), kannst du deine Daten aktualisieren und eine noch praezisere Analyse erhalten.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

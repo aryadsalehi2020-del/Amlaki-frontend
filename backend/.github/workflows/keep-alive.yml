@@ -1,0 +1,15 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Alle 14 Minuten (Render schlaeft nach 15 Min Inaktivitaet)
+    - cron: '*/14 * * * *'
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend
+        run: |
+          curl -s -o /dev/null -w "Status: %{http_code}, Time: %{time_total}s\n" \
+            https://amlaki-backend.onrender.com/

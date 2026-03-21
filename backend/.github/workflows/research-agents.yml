@@ -1,0 +1,46 @@
+name: Research Agents - Knowledge Base Update
+
+on:
+  schedule:
+    # Taeglich um 7:00 Uhr CET (6:00 UTC)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Manuell ausfuehrbar
+
+jobs:
+  update-knowledge-base:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: pip install httpx
+
+      - name: Run Research Agents
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python agents/run_all.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet brain/topics/ || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and Push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "AmlakiAI Research Bot"
+          git config user.email "bot@amlaki.de"
+          git add brain/topics/
+          git commit -m "Auto-update: Knowledge Base $(date +%Y-%m-%d)
+
+          Updated by AmlakiAI Research Agents (zinsen, news)"
+          git push

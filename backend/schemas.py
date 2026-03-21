@@ -2,7 +2,8 @@
 Pydantic Schemas für API Requests/Responses
 """
 
-from pydantic import BaseModel, EmailStr
+import re
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -13,9 +14,34 @@ class UserBase(BaseModel):
     username: str
     full_name: Optional[str] = None
 
+    @field_validator('email')
+    @classmethod
+    def email_to_lowercase(cls, v):
+        return v.lower()
+
+    @field_validator('username')
+    @classmethod
+    def validate_username(cls, v):
+        if len(v) < 3 or len(v) > 30:
+            raise ValueError('Username muss zwischen 3 und 30 Zeichen lang sein')
+        if not re.match(r'^[a-zA-Z0-9_.-]+$', v):
+            raise ValueError('Username darf nur Buchstaben, Zahlen, Punkte, Bindestriche und Unterstriche enthalten')
+        return v
+
 
 class UserCreate(UserBase):
     password: str
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Passwort muss mindestens 8 Zeichen lang sein')
+        if not re.search(r'[a-zA-Z]', v):
+            raise ValueError('Passwort muss mindestens einen Buchstaben enthalten')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('Passwort muss mindestens eine Zahl enthalten')
+        return v
 
 
 class UserUpdate(BaseModel):
@@ -33,6 +59,7 @@ class UserResponse(UserBase):
     default_verwendungszweck: str
     default_zinssatz: float
     default_tilgung: float
+    analysis_credits: Optional[int] = 1
 
     class Config:
         from_attributes = True

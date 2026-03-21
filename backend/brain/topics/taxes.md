@@ -1,187 +1,77 @@
-## TEIL 2: STEUEROPTIMIERUNG
+## STEUEROPTIMIERUNG (Stand 2026)
 
-### AfA-Systematik (Abschreibung für Abnutzung)
+### AfA (Absetzung fuer Abnutzung)
 
 #### Lineare AfA
-| Baujahr | AfA-Satz | Abschreibungsdauer | Bemessungsgrundlage |
-|---------|----------|--------------------|--------------------|
-| Ab 2023 | 3% | 33 Jahre | Nur Gebäudewert (ohne Grundstück!) |
-| 1925-2022 | 2% | 50 Jahre | Nur Gebäudewert |
-| Vor 1925 | 2,5% | 40 Jahre | Nur Gebäudewert |
 
-#### Degressive AfA (Neu seit 2024!)
-- **Gilt für:** Neubauten zwischen Oktober 2023 und September 2029
-- **Satz:** 5% vom jeweiligen Restwert
-- **Vorteil:** Höhere Abschreibung in den ersten Jahren
+| Baujahr | AfA-Satz | Dauer | Bemessungsgrundlage |
+|---------|----------|-------|--------------------|
+| Ab 2023 | 3,0% | 33 Jahre | Nur Gebaeudewert (ohne Grundstueck!) |
+| 1925-2022 | 2,0% | 50 Jahre | Nur Gebaeudewert |
+| Vor 1925 | 2,5% | 40 Jahre | Nur Gebaeudewert |
 
-```javascript
-// Vergleich Linear vs. Degressiv bei 1.000.000 EUR Gebäudewert
-function vergleicheAfA(gebaeudewert, jahre) {
-  let linearGesamt = 0;
-  let degressivGesamt = 0;
-  let degressivRestwert = gebaeudewert;
+#### Degressive AfA (seit 2024)
 
-  for (let i = 0; i < jahre; i++) {
-    // Linear: Konstant 3%
-    linearGesamt += gebaeudewert * 0.03;
+- **5% vom Restwert** (degressiv, nicht linear)
+- **Gilt fuer:** Neubauten mit Baubeginn 01.10.2023 - 30.09.2029
+- **Wechsel** zur linearen AfA moeglich (empfohlen nach ca. 13-14 Jahren)
 
-    // Degressiv: 5% vom Restwert
-    const degressivJahr = degressivRestwert * 0.05;
-    degressivGesamt += degressivJahr;
-    degressivRestwert -= degressivJahr;
-  }
+**Vergleich bei 1.000.000 EUR Gebaeudewert (5 Jahre):**
+- Linear (3%): 150.000 EUR
+- Degressiv (5%): 226.219 EUR = **+76.219 EUR mehr**
+- Bei 42% Steuersatz: **32.012 EUR Ersparnis in 5 Jahren**
 
-  return { linearGesamt, degressivGesamt };
-}
+#### Sonder-AfA (Paragraf 7b EStG)
 
-// Nach 5 Jahren bei 1 Mio EUR:
-// Linear: 150.000 EUR (5 x 30.000 EUR)
-// Degressiv: 226.000 EUR -> 50% mehr Abschreibung!
-```
+- **5% zusaetzlich fuer 4 Jahre** (= 20% extra)
+- Voraussetzung: Baukosten max. 5.200 EUR/m2, EH 40 mit QNG, min. 10 Jahre Vermietung
+- **Kombinierbar mit degressiver AfA:** Bis 10% pro Jahr = 36% in 4 Jahren
 
-**Empfehlung:** Nach ca. 13-14 Jahren zur linearen AfA wechseln (einmaliger Wechsel erlaubt).
+#### Denkmal-AfA (Paragraf 7h, 7i EStG)
 
-#### Sonder-AfA nach §7b EStG
-- **Zusätzliche AfA:** 5% für 4 Jahre (= 20% extra)
-- **Voraussetzungen:**
-  - Baukosten max. 5.200 EUR/m²
-  - Effizienzhaus 40 mit QNG-Zertifikat
-  - Mindestens 10 Jahre Vermietung
-- **Kombinierbar mit degressiver AfA!**
+- **Vermietung:** 100% Sanierungskosten in 12 Jahren (8x9% + 4x7%)
+- **Selbstnutzung:** 90% in 10 Jahren (10x9%)
+- **WICHTIG:** Abstimmung mit Denkmalbehoerde VOR Baubeginn!
+- **Beispiel:** 500.000 EUR Sanierung bei 42% Steuersatz = 210.000 EUR Ersparnis
 
-```javascript
-// Maximale AfA in ersten 4 Jahren (Neubau ab 2023)
-// Degressiv + Sonder-AfA:
-// Jahr 1: 5% + 5% = 10%
-// Jahr 2: 5% + 5% = 10%
-// Jahr 3: 5% + 5% = 10%
-// Jahr 4: 5% + 5% = 10%
-// -> 36% in 4 Jahren abgeschrieben!
-```
+#### Verkuerzte Restnutzungsdauer (Profi-Trick)
 
-#### Denkmal-AfA (§7h, §7i EStG) – DER Steuertrick!
-- **Vermietung:** 100% der Sanierungskosten in 12 Jahren (8x9% + 4x7%)
-- **Selbstnutzung:** 90% der Sanierungskosten in 10 Jahren (10x9%)
-- **WICHTIG:** Abstimmung mit Denkmalschutzbehörde VOR Baubeginn!
-
-```javascript
-// Denkmal-AfA Beispiel
-const sanierungskosten = 500000;
-const grenzsteuersatz = 0.42;
-
-// Steuerersparnis über 12 Jahre bei Vermietung:
-const steuerersparnis = sanierungskosten * grenzsteuersatz; // 210.000 EUR!
-```
-
-#### Verkürzte Restnutzungsdauer (Profi-Trick!)
-- **Statt pauschal 50 Jahre:** Gutachten für 15-25 Jahre Restnutzungsdauer
-- **Effekt:** AfA-Satz steigt auf 4-6,7%!
-- **Gutachten kostet:** 900-1.500 EUR (selbst absetzbar)
-- **Anerkennungsquote:** >97%
-- **Lohnt sich bei:** Altbauten mit Sanierungsstau
-
-### Absetzbare Kosten (vollständige Liste)
-
-**Sofort absetzbar:**
-- Schuldzinsen (größter Posten!)
-- Disagio (Zinsvorauszahlung)
-- Bereitstellungszinsen
-- Hausverwaltung
-- Instandhaltung/Reparaturen (nicht anschaffungsnah!)
-- Fahrtkosten zur Immobilie (0,30 EUR/km)
-- Telefon/Porto (anteilig)
-- Büromaterial
-- Kontoführungsgebühren
-- Steuerberater (Anlage V-Anteil)
-- Mitgliedsbeiträge (Haus & Grund)
-- Mahnkosten
-- Räumungskosten
-- Mietausfälle (als Werbungskosten)
-- Maklerkosten bei Neuvermietung
-
-**Über AfA abzuschreiben:**
-- Anschaffungskosten Gebäude
-- Kaufnebenkosten (Notar, Grundbuch, Grunderwerbsteuer, Makler beim KAUF)
-- Anschaffungsnahe Herstellungskosten (15%-Regel!)
+- Gutachten fuer 15-25 Jahre statt pauschal 50 Jahre
+- AfA-Satz steigt auf **4,0-6,7%** statt 2%
+- Gutachten: 900-1.500 EUR (selbst absetzbar)
+- Anerkennungsquote: ueber 97%
+- Lohnt sich bei Altbauten mit Sanierungsstau, Baujahr vor 1970
 
 ### 15%-Regel (Anschaffungsnahe Herstellungskosten)
 
-**Definition:** Übersteigen Instandsetzungskosten innerhalb von **3 Jahren nach Kauf 15% des Gebäudewertes**, werden ALLE diese Kosten zu Herstellungskosten.
+- Instandsetzungskosten in 3 Jahren nach Kauf ueber 15% des Gebaeudewerts = ALLE Kosten werden zu Herstellungskosten (nur ueber 50 Jahre absetzbar statt sofort!)
+- **Tipp:** Renovierung auf NACH 3-Jahres-Frist verschieben oder pro Jahr unter 5% halten
 
-```javascript
-function pruefeAnschaffungsnaheKosten(gebaeudewert, kostenJahr1, kostenJahr2, kostenJahr3) {
-  const grenze = gebaeudewert * 0.15;
-  const gesamtkosten = kostenJahr1 + kostenJahr2 + kostenJahr3;
+### Absetzbare Kosten
 
-  if (gesamtkosten > grenze) {
-    // Alle Kosten müssen über 50 Jahre abgeschrieben werden!
-    const jaehrlicheAfA = gesamtkosten / 50;
-    return {
-      warnung: true,
-      grenze: grenze,
-      istKosten: gesamtkosten,
-      sofortAbsetzbar: 0,
-      jaehrlicheAfA: jaehrlicheAfA
-    };
-  }
+**Sofort absetzbar:** Schuldzinsen, Disagio, Bereitstellungszinsen, Hausverwaltung, Instandhaltung/Reparaturen, Fahrtkosten (0,30 EUR/km, ab 21. km 0,38 EUR), Kontofuehrung, Steuerberater (Anlage V), Mahnkosten, Makler bei Neuvermietung, Mietausfaelle
 
-  return {
-    warnung: false,
-    sofortAbsetzbar: gesamtkosten
-  };
-}
-
-// Beispiel: 240.000 EUR Gebäudewert
-// Grenze: 36.000 EUR in 3 Jahren
-// Bei 45.000 EUR Renovierung -> nur 900 EUR/Jahr statt 45.000 EUR sofort!
-```
-
-**Gestaltungstipps:**
-1. Renovierung auf NACH der 3-Jahres-Frist verschieben
-2. Eigenleistung: Nur Materialkosten zählen
-3. Kosten auf 3 Jahre verteilen, jedes Jahr unter 15%/3 = 5% bleiben
+**Ueber AfA:** Anschaffungskosten Gebaeude, Kaufnebenkosten (Notar, Grundbuch, GrESt, Makler beim Kauf)
 
 ### Spekulationssteuer
 
 - **Frist:** 10 Jahre ab notariellem Kaufvertrag
-- **Steuersatz:** Persönlicher Einkommensteuersatz (bis 45%)
-- **Ausnahme Eigennutzung:** Steuerfrei, wenn im Verkaufsjahr + 2 vorangegangenen Kalenderjahren selbst bewohnt
+- **Steuersatz:** Persoenlicher Einkommensteuersatz (bis 45%)
+- **Ausnahme:** Steuerfrei wenn im Verkaufsjahr + 2 Vorjahre selbst bewohnt
+- **Drei-Objekt-Grenze:** Mehr als 3 Objekte in 5 Jahren = gewerblicher Grundstueckshandel (Gewerbesteuer!)
 
-```javascript
-function berechneSpekuSteuer(kaufdatum, verkaufsdatum, gewinn, steuersatz) {
-  const jahreDifferenz = (verkaufsdatum - kaufdatum) / (365 * 24 * 60 * 60 * 1000);
+### Vermietung an Angehoerige
 
-  if (jahreDifferenz > 10) {
-    return 0; // Steuerfrei!
-  }
+- Miete mind. **66%** der ortsueblichen Vergleichsmiete = 100% Werbungskostenabzug
+- Voraussetzung: Schriftlicher Mietvertrag, regelmaessige Ueberweisungen, Kaution wie bei Fremden
 
-  return gewinn * steuersatz;
-}
-```
-
-### Drei-Objekt-Grenze
-
-**Gefahr gewerblicher Grundstückshandel:**
-- Mehr als 3 Objekte innerhalb von 5 Jahren verkauft
-- Folge: Einkommensteuer + Gewerbesteuer auf ALLE Verkäufe (rückwirkend!)
-- Jede Wohnung zählt einzeln
-
-### Vermietung an Angehörige
-
-- **66%-Regel:** Miete mindestens 66% der ortsüblichen Vergleichsmiete
-- **Effekt:** 100% Werbungskostenabzug
-- **Voraussetzungen:**
-  - Schriftlicher Mietvertrag
-  - Regelmäßige Überweisungen
-  - Kaution wie bei Fremden
-
-### Immobilien-GmbH (Vermögensverwaltend)
+### Immobilien-GmbH (vermoegensverwaltend)
 
 | Merkmal | Privatperson | VV-GmbH |
-|---------|--------------|---------|
-| Steuersatz | Bis 45% | 15,825% |
-| 10-Jahres-Frist | Ja, steuerfrei | Nein |
-| Gewerbesteuer | Nein | Mit erweiterter Kürzung: Nein |
-| Laufende Kosten | Gering | Buchhaltung, Jahresabschluss |
+|---------|-------------|---------|
+| Steuersatz Mieten | Bis 45% + SolZ | 15,825% (KSt + SolZ) |
+| 10-Jahres-Frist | Ja, dann steuerfrei | Nein, immer steuerpflichtig |
+| Gewerbesteuer | Nein | Mit erweiterter Kuerzung: Nein |
+| Laufende Kosten | Gering | 3.000-6.000 EUR/Jahr |
 
-**Lohnt sich ab:** 500.000-1.000.000 EUR Immobilienvermögen bei hohem Steuersatz
+**Lohnt sich ab:** 500.000-1.000.000 EUR Immobilienvermoegen bei Steuersatz >35%

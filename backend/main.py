@@ -754,6 +754,7 @@ class AnalysisRequest(BaseModel):
     zinssatz: Optional[float] = 3.75  # Angepasst auf 3.75%
     tilgung: Optional[float] = 1.25   # Angepasst auf 1.25%
     marktpreis_qm: Optional[float] = None  # Falls manuell eingegeben
+    besichtigt: Optional[bool] = None  # Ob User schon bei Besichtigung war
 
 
 class CriterionScore(BaseModel):
@@ -807,6 +808,9 @@ class AnalysisResult(BaseModel):
     analysis_id: Optional[int] = None  # ID der gespeicherten Analyse
     # Verhandlungsnachricht
     verhandlungsmail: Optional[str] = None  # Fertige Nachricht an Verkaeufer/Makler
+    # Besichtigungs-Roadmap
+    besichtigungs_roadmap: Optional[dict] = None  # Checkliste und Tipps fuer die Besichtigung
+    besichtigt: Optional[bool] = None  # Ob User schon besichtigt hat
     # Premium Status
     is_premium: bool = False  # True = alle Features sichtbar
 
@@ -2682,27 +2686,20 @@ Antworte NUR mit dem JSON."""
         if no_go_check["no_go"]:
             empfehlung = "ABLEHNEN"
             empfehlung_text = f"[ERROR] NICHT INVESTIEREN - No-Go-Kriterien: {', '.join(no_go_check['gründe'])}"
-        elif gesamtscore >= 65:  # war 75
+        elif gesamtscore >= 65:
             if warnsignale["kritisch"]:
                 empfehlung = "PRÜFEN"
-                empfehlung_text = f"[WARN] GENAU PRÜFEN - Guter Score ({gesamtscore}), aber kritische Warnsignale vorhanden"
             else:
                 empfehlung = "INVESTIEREN"
-                empfehlung_text = f"[OK] EMPFEHLENSWERT - Score: {gesamtscore}/100"
-        elif gesamtscore >= 50:  # war 60
+        elif gesamtscore >= 50:
             empfehlung = "PRÜFEN"
-            empfehlung_text = f"🔍 PRÜFENSWERT - Solider Score ({gesamtscore}/100)"
-            if warnsignale["anzahl"] > 0:
-                empfehlung_text += f", {warnsignale['anzahl']} Warnsignal(e)"
-        elif gesamtscore >= 35:  # NEU: Zwischenstufe
+        elif gesamtscore >= 35:
             empfehlung = "VORSICHT"
-            empfehlung_text = f"[WARN] MIT VORSICHT - Unterdurchschnittlicher Score ({gesamtscore}/100)"
         else:
             empfehlung = "ABLEHNEN"
-            empfehlung_text = f"[ERROR] NICHT EMPFOHLEN - Schwacher Score ({gesamtscore}/100)"
 
-        # Erweitere Zusammenfassung mit Empfehlung
-        zusammenfassung_erweitert = f"{empfehlung_text}\n\n{ai_analysis['zusammenfassung']}"
+        # Zusammenfassung direkt von der KI (ohne doppelten Score)
+        zusammenfassung_erweitert = ai_analysis['zusammenfassung']
 
         # Kaufnebenkosten berechnen
         kaufnebenkosten_result = None
@@ -2816,6 +2813,83 @@ Antworte NUR mit der fertigen Nachricht, kein anderer Text."""
             except Exception as e:
                 print(f"Verhandlungsmail-Generierung fehlgeschlagen: {e}")
                 result.verhandlungsmail = None
+
+        # Besichtigungs-Roadmap generieren (wenn User noch nicht besichtigt hat)
+        result.besichtigt = request.besichtigt
+        if request.besichtigt == False:
+            try:
+                besichtigungs_prompt = f"""Erstelle eine Besichtigungs-Checkliste fuer diese spezifische Immobilie. Der Kaeufer war noch NICHT bei der Besichtigung.
+
+OBJEKTDATEN:
+- Kaufpreis: {data.kaufpreis:,.0f} EUR
+- Wohnflaeche: {data.wohnflaeche or '?'} m2
+- Stadt: {data.stadt or '?'}, {data.stadtteil or ''}
+- Baujahr: {data.baujahr or '?'}
+- Objekttyp: {data.objekttyp or '?'}
+- Energieklasse: {data.energieklasse or '?'}
+- Zustand: {data.zustand or '?'}
+- Heizungsart: {data.heizungsart or '?'}
+
+ANALYSE-ERGEBNIS:
+- Score: {gesamtscore}/100
+- Schwaechen: {', '.join(ai_analysis.get('schwächen', [])[:4])}
+- Warnsignale: {json.dumps(warnsignale.get('signale', [])[:3], ensure_ascii=False) if warnsignale else 'keine'}
+
+Antworte als JSON mit dieser Struktur:
+{{
+    "checkliste": [
+        {{
+            "kategorie": "z.B. Bausubstanz",
+            "punkte": [
+                {{
+                    "was_pruefen": "Konkreter Punkt",
+                    "warum": "Kurze Begruendung bezogen auf dieses Objekt",
+                    "spezifisch": true
+                }}
+            ]
+        }}
+    ],
+    "fragen_an_verkaeufer": [
+        "Konkrete Frage die der Kaeufer stellen sollte"
+    ],
+    "verhalten_tipps": {{
+        "do": ["Was man tun/sagen sollte"],
+        "dont": ["Was man NICHT tun/sagen sollte"]
+    }},
+    "naechste_schritte": [
+        "Schritt nach der Besichtigung"
+    ]
+}}
+
+REGELN:
+1. Checkliste muss SPEZIFISCH fuer dieses Objekt sein (Baujahr, Energieklasse, Schwaechen beruecksichtigen)
+2. Allgemeine Punkte auch aufnehmen aber als spezifisch=false markieren
+3. Fragen an Verkaeufer muessen professionell und strategisch sein
+4. Verhalten-Tipps: wie man sich als Kaeufer gut positioniert ohne zu viel preiszugeben
+5. Max 6 Kategorien in der Checkliste, max 4 Punkte pro Kategorie
+6. Max 8 Fragen an Verkaeufer
+7. Max 5 Do's und 5 Don'ts
+8. Auf Deutsch, professionell
+9. Keine Emojis
+
+Antworte NUR mit dem JSON."""
+
+                roadmap_result = call_claude_direct(
+                    "Du bist ein erfahrener Immobilienberater der Kaeufer auf Besichtigungen vorbereitet.",
+                    [{"role": "user", "content": besichtigungs_prompt}],
+                    max_tokens=2000,
+                    model="claude-haiku-4-5-20251001"
+                )
+                roadmap_text = roadmap_result["content"][0]["text"].strip()
+                if roadmap_text.startswith("```"):
+                    roadmap_text = roadmap_text.split("```")[1]
+                    if roadmap_text.startswith("json"):
+                        roadmap_text = roadmap_text[4:]
+                roadmap_text = roadmap_text.strip()
+                result.besichtigungs_roadmap = json.loads(roadmap_text)
+            except Exception as e:
+                print(f"Besichtigungs-Roadmap-Generierung fehlgeschlagen: {e}")
+                result.besichtigungs_roadmap = None
 
         # Credit abziehen (nur wenn Premium und nicht Superuser)
         if is_premium and not current_user.is_superuser and credits > 0:
@@ -2941,9 +3015,9 @@ async def chat_with_ai(
     analysis_context = ""
     if conversation.analysis_id:
         analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id).first()
-        if analysis and analysis.result:
+        if analysis and analysis.analysis_result:
             try:
-                result_data = json.loads(analysis.result) if isinstance(analysis.result, str) else analysis.result
+                result_data = json.loads(analysis.analysis_result) if isinstance(analysis.analysis_result, str) else analysis.analysis_result
                 # Extract key fields
                 props = result_data.get("eingabedaten", result_data.get("input", {}))
                 score = result_data.get("score", result_data.get("gesamtscore", "N/A"))
@@ -3007,16 +3081,20 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
     # System Prompt für Chat
     chat_system = f"""STRIKTE FORMATIERUNGSREGELN (IMMER EINHALTEN):
 1. ABSOLUT KEINE Emojis. Kein einziges Emoji-Zeichen in deiner gesamten Antwort. Keine Ausnahmen. Auch keine Unicode-Symbole wie Pfeile, Haekchen oder Sterne.
-2. Verwende ## und ### fuer Ueberschriften. Nutze **Fettschrift** fuer wichtige Begriffe innerhalb von Absaetzen.
+2. Verwende ## und ### fuer Ueberschriften nur bei laengeren Antworten. Bei kurzen Fragen KEINE Ueberschriften.
 3. Verwende Aufzaehlungszeichen (-) fuer Listen.
 4. Halte den Ton professionell, sachlich und kompetent.
-5. Strukturiere Antworten klar mit Absaetzen und Zwischenueberschriften.
 
-Antworte in einfacher, verstaendlicher Sprache. Vermeide Fachjargon wo moeglich - erklaere komplexe Begriffe kurz in Klammern wenn noetig. Strukturiere Antworten mit kurzen Absaetzen und Aufzaehlungen. Jede Antwort soll so klar sein, dass auch jemand ohne Vorwissen sie versteht.
+WICHTIGSTE REGEL - ANTWORTLAENGE:
+- Beantworte die Frage so KURZ und DIREKT wie moeglich.
+- Einfache Fragen = 1-3 Saetze. Nicht mehr.
+- Nur bei komplexen Fragen (Steuer, Recht, Finanzierung) ausfuehrlicher antworten.
+- KEIN Dozieren, KEIN Ausholen, KEIN Wiederholen der Frage.
+- Zuerst die Antwort, dann optional kurze Einordnung.
+- Beispiel: "Wie gross ist die Wohnung?" -> "Die Wohnung hat 48 m² mit 1 Zimmer." FERTIG.
 
-Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt (Deutschland, Oesterreich, Schweiz).
-Du verfuegst ueber Expertenwissen in: Immobilienbewertung, Finanzierung, Steueroptimierung, Foerderprogramme, Mietrecht, WEG-Recht, Due Diligence und Verhandlungsfuehrung.
-Deine Beratung basiert auf aktuellen Marktdaten, geltendem Recht und anerkannten Bewertungsverfahren.
+Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt.
+Antworte in einfacher, verstaendlicher Sprache. Kurz und praegnant.
 
 WICHTIG V4.0:
 - Bei Fragen zu konkreten Preisen/Maerkten IMMER die Live-Daten unten verwenden
@@ -3205,9 +3283,9 @@ async def chat_stream(data: dict = Body(...), current_user: User = Depends(get_c
     analysis_context = ""
     if conversation.analysis_id:
         analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id).first()
-        if analysis and analysis.result:
+        if analysis and analysis.analysis_result:
             try:
-                result_data = json.loads(analysis.result) if isinstance(analysis.result, str) else analysis.result
+                result_data = json.loads(analysis.analysis_result) if isinstance(analysis.analysis_result, str) else analysis.analysis_result
                 # Extract key fields
                 props = result_data.get("eingabedaten", result_data.get("input", {}))
                 score = result_data.get("score", result_data.get("gesamtscore", "N/A"))

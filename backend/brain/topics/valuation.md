@@ -1,57 +1,33 @@
-## TEIL 0.5: IMMOBILIENBEWERTUNG (DE-STANDARD)
+## IMMOBILIENBEWERTUNG
 
 ### Verkehrswert vs. Marktpreis
 
 | Begriff | Definition | Relevanz |
 |---------|------------|----------|
-| **Verkehrswert** | Objektiv ermittelter Wert nach ImmoWertV | Gutachten, Finanzierung, Erbschaft |
-| **Marktpreis** | Tatsächlich geforderter/gezahlter Preis | Kann abweichen (Emotion, Zeitdruck, Knappheit) |
+| **Verkehrswert** | Objektiv nach ImmoWertV | Gutachten, Finanzierung, Erbschaft |
+| **Marktpreis** | Tatsaechlich geforderter/gezahlter Preis | Kann abweichen (Emotion, Zeitdruck, Knappheit) |
 
-**Regel:** Abweichungen zwischen Verkehrswert und Marktpreis immer begründen!
+Abweichungen immer begruenden!
 
-### Die drei Bewertungsverfahren
+### Bewertungsverfahren
 
-#### 1. Vergleichswertverfahren
-- **Für:** ETW, EFH in homogenen Märkten, Standardobjekte
-- **Basis:** Reale Kaufpreise vergleichbarer Objekte + Anpassungen
-- **Risiko:** Angebotsdaten ≠ Kaufpreise; Unikate schwer vergleichbar
+1. **Vergleichswertverfahren:** Fuer ETW, EFH - basiert auf realen Kaufpreisen vergleichbarer Objekte + Anpassungen. Risiko: Angebotsdaten sind nicht gleich Kaufpreise
+2. **Ertragswertverfahren:** Fuer Renditeobjekte (MFH, Gewerbe) - basiert auf nachhaltigem Ertrag, Bewirtschaftungskosten, Liegenschaftszins. Ertragswert NIEMALS auf Wunschmieten stuetzen!
+3. **Sachwertverfahren:** Fuer Eigennutzer, Spezialimmobilien - Bodenwert + Herstellungskosten - Alterswertminderung (max. 70%). Braucht Marktanpassungsfaktor!
 
-```javascript
-function vergleichswert(vergleichspreise, anpassungen) {
-  // Durchschnitt der Vergleichspreise mit Anpassungsfaktoren
-  const basiswert = vergleichspreise.reduce((a, b) => a + b) / vergleichspreise.length;
-  return basiswert * (1 + anpassungen.lage + anpassungen.zustand + anpassungen.ausstattung);
-}
-```
+### Preisfaktoren (Maerz 2026)
 
-#### 2. Ertragswertverfahren (für Kapitalanleger!)
-- **Für:** Renditeobjekte (vermietetes Wohnen, MFH, Gewerbe)
-- **Basis:** Nachhaltiger Ertrag, Bewirtschaftungskosten, Liegenschaftszins
+| Stadttyp | Kaufpreisfaktor Bestand | Bruttorendite |
+|----------|------------------------|---------------|
+| A-Staedte | 24-38 | 2,7-3,7% |
+| B-Staedte | 16-26 | 3,5-4,5% |
+| C-Staedte | 13-21 | 4,5-7,0% |
 
-```javascript
-function ertragswert(jahresreinertrag, liegenschaftszins, restnutzungsdauer, bodenwert) {
-  // Vereinfachte Formel
-  const vervielfaeltiger = (1 - Math.pow(1 + liegenschaftszins, -restnutzungsdauer)) / liegenschaftszins;
-  const ertragswertGebaeude = jahresreinertrag * vervielfaeltiger;
-  return ertragswertGebaeude + bodenwert;
-}
+### Bewertungsrelevante Trends 2026
 
-// Beispiel: 24.000 Reinertrag, 5% Liegenschaftszins, 50 Jahre RND, 100.000 Boden
-// -> Ertragswert ca. 537.000
-```
-
-**Regel:** Ertragswert NIEMALS auf Wunschmieten stützen – Mietrecht begrenzt Upside!
-
-#### 3. Sachwertverfahren
-- **Für:** Eigennutzer, Spezialimmobilien, wenig Vergleichsdaten
-- **Basis:** Bodenwert + Herstellungskosten - Alterswertminderung
-
-```javascript
-function sachwert(bodenwert, herstellungskosten, alter, gesamtnutzungsdauer, marktanpassungsfaktor) {
-  const alterswertminderung = Math.min(alter / gesamtnutzungsdauer, 0.7); // Max 70%
-  const zeitwertGebaeude = herstellungskosten * (1 - alterswertminderung);
-  return (bodenwert + zeitwertGebaeude) * marktanpassungsfaktor;
-}
-```
-
-**Risiko:** Ohne Marktanpassungsfaktor kann das Ergebnis am Markt vorbeizielen!
+- Erholung seit Tiefpunkt Q2/Q3 2023, noch ca. 5-9% unter Allzeithoch 2022
+- Baukosten +3-4% p.a. stuetzen Sachwerte
+- Mietwachstum +4,5-6,0% stuetzt Ertragswerte
+- Leerstandsquote 2,5% (historisch niedrig)
+- Zinsniveau 3,5-4,0% beeinflusst Kaufpreisfaktoren
+- Energieeffizienz A/A+ = ca. 650 EUR/m2 mehr wert als D/E

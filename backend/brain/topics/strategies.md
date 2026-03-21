@@ -1,142 +1,97 @@
-## TEIL 8: VERMIETUNG
+## STRATEGIEN
 
-### Mieterauswahl
+### Vermietung - Mieterauswahl
 
-**3x-Regel:** Nettoeinkommen >= 3x Kaltmiete
+- **3x-Regel:** Nettoeinkommen >= 3x Kaltmiete
+- **Unterlagen:** SCHUFA (29,95 EUR), Mietschuldenfreiheitsbescheinigung, 3 Gehaltsnachweise, Personalausweis, Selbstauskunft
+- **Mietnomaden-Warnsignale:** Verweigerte Bescheinigung, Barzahlung Kaution, ausweichende Antworten, Draengen auf schnellen Einzug
 
-**Erforderliche Unterlagen:**
-- SCHUFA-BonitätsCheck (29,95 EUR)
-- Mietschuldenfreiheitsbescheinigung vom Vorvermieter
-- Letzte 3 Gehaltsnachweise
-- Personalausweis-Kopie
-- Selbstauskunft (Arbeitgeber, Beschäftigungsdauer)
+### Schoenheitsreparaturen
 
-**Mietnomaden-Warnsignale:**
-- Verweigerte Mietschuldenfreiheitsbescheinigung
-- Barzahlung der Kaution gewünscht
-- Ausweichende Antworten zum Wohnort
-- Keine konkrete Jobbezeichnung
-- Drängen auf schnellen Einzug
-
-### Schönheitsreparaturen (aktuelle Rechtsprechung)
-
-**Unwirksam:**
-- Starre Fristen ("alle 3 Jahre Küche streichen")
-- Bei unrenoviert übergebener Wohnung: Klausel meist komplett unwirksam
-
-**Wirksam:**
-- Flexible, bedarfsorientierte Formulierung
-- "Während der Mietzeit bei Bedarf"
+- **Unwirksam:** Starre Fristen, unrenoviert uebergebene Wohnung
+- **Wirksam:** Flexible, bedarfsorientierte Formulierung
 
 ### Kleinreparaturklausel
 
-**Wirksam bei:**
 - Max. 100-120 EUR pro Einzelfall
 - Max. 8% der Jahresnettokaltmiete insgesamt
-- Nur für Gegenstände, die Mieter häufig bedient
 
----
+### Exit-Strategien
 
-## TEIL 9: EXIT-STRATEGIEN
-
-### Steuerfreier Verkauf
-
-- **Nach 10 Jahren:** Gewinn steuerfrei
-- **Frist läuft ab:** Datum des notariellen Kaufvertrags
-- **AfA wird NICHT zurückgezahlt!** -> Bleibt als Steuervorteil
-
-### Schenkung (Freibeträge alle 10 Jahre)
-
-| Empfänger | Freibetrag |
-|-----------|------------|
-| Ehepartner | 500.000 EUR |
-| Kinder | 400.000 EUR |
-| Enkel | 200.000 EUR |
-| Andere | 20.000 EUR |
-
-### Nießbrauch-Trick
-
-**Effekt:** Mindert Schenkungswert erheblich
-
-```javascript
-function berechneNiessbrauchWert(jahresmiete, alter) {
-  // Vervielfältiger nach Alter (vereinfacht)
-  const vervielfaeltiger = {
-    50: 18.9,
-    55: 17.3,
-    60: 14.0,
-    65: 12.4,
-    70: 10.8
-  };
-
-  return jahresmiete * vervielfaeltiger[alter];
-}
-
-// Beispiel: 60 Jahre alt, 29.000 EUR Jahresmiete
-// Nießbrauchwert: 29.000 x 14 = 406.000 EUR
-// -> 800.000 EUR-Immobilie kann unter Freibetrag 400.000 EUR verschenkt werden!
-```
-
-### Holding-Struktur (Share Deal)
-
-- **Bei Verkauf der GmbH-Anteile** (statt Immobilie): 95% des Gewinns steuerfrei
-- **Effektive Steuer:** Nur ca. 1,5% statt bis zu 45%
-
----
-
-## TEIL 10: PROFI-STRATEGIEN
+- **Steuerfreier Verkauf:** Nach 10 Jahren (ab notariellem Kaufvertrag), AfA wird NICHT zurueckgezahlt
+- **Schenkungsfreibetraege (alle 10 Jahre):** Ehepartner 500.000, Kinder 400.000, Enkel 200.000, Andere 20.000 EUR
+- **Niessbrauch-Trick:** Mindert Schenkungswert erheblich (Vervielfaeltiger nach Alter: 50J=18,9 / 55J=17,3 / 60J=14,0 / 65J=12,4 / 70J=10,8 x Jahresmiete)
+- **Holding-Struktur (Share Deal):** Bei Verkauf der GmbH-Anteile 95% des Gewinns steuerfrei, effektive Steuer nur ca. 1,5%
 
 ### BRRRR-Methode
 
-**B**uy – Unter Marktwert kaufen (Ziel: 70% des After-Repair-Value)
-**R**ehab – Sanieren und aufwerten
-**R**ent – Vermieten für stabilen Cashflow
-**R**efinance – Nach 6-12 Monaten refinanzieren (80% des neuen Wertes)
-**R**epeat – Eigenkapital für nächste Immobilie nutzen
-
-```javascript
-// BRRRR Beispiel
-const kauf = 150000;
-const sanierung = 25000;
-const investment = kauf + sanierung; // 175.000 EUR
-
-const neuerWert = 230000;
-const refinanzierung = neuerWert * 0.80; // 184.000 EUR
-
-const rueckfluss = refinanzierung - investment; // 9.000 EUR + laufender Cashflow!
-```
+- **Buy:** Unter Marktwert kaufen (Ziel: 70% des After-Repair-Value)
+- **Rehab:** Sanieren und aufwerten
+- **Rent:** Vermieten fuer Cashflow
+- **Refinance:** Nach 6-12 Monaten refinanzieren (80% des neuen Wertes)
+- **Repeat:** Freigewordenes EK fuer naechste Immobilie
 
 ### Cashflow-Optimierung
 
-**Möblierte Vermietung:**
-- 10-30% höhere Miete
-- Hamburger Modell: 2% des Möbel-Zeitwerts monatlich
-- Kürzere Kündigungsfristen
+- **Moeblierte Vermietung:** 10-30% hoehere Miete, Hamburger Modell (2% Moebel-Zeitwert/Monat)
+- **Garagen separat vermieten:** Nicht an Mietspiegel gebunden, freie Preisgestaltung, 3 Monate Kuendigung
+- **WG-Vermietung:** 20-40% mehr Gesamtmiete, aber hoeherer Aufwand
 
-**Garagen separat vermieten:**
-- Nicht an Mietspiegel gebunden
-- Freie Preisgestaltung
-- Nur 3 Monate Kündigungsfrist
-- Separat kündbar ohne Wohnungskündigung
+### Kurzzeitvermietung (Airbnb) - VORSICHT
 
-**WG-Vermietung:**
-- Oft 20-40% mehr Gesamtmiete
-- Aber: Höherer Verwaltungsaufwand
+| Stadt | Max. Tage/Jahr | Bussgeld |
+|-------|---------------|---------|
+| Berlin | 90 Tage | Bis 500.000 EUR |
+| Muenchen | 8 Wochen | Bis 500.000 EUR |
+| Hamburg | 8 Wochen | Bis 500.000 EUR |
+| Koeln | Keine Grenze (Genehmigung noetig) | Bis 50.000 EUR |
+| Frankfurt | 8 Wochen | Bis 500.000 EUR |
 
-### Kurzzeitvermietung (Airbnb) – VORSICHT!
+Ab 2025/2026: EU-weite Registrierungspflicht. Fuer Kapitalanleger meist NICHT empfehlenswert.
 
-**Regulierungen in Deutschland:**
-| Stadt | Maximale Tage/Jahr | Genehmigung? | Bußgeld |
-|-------|-------------------|--------------|---------|
-| Berlin | 90 Tage | Ab 2 Monaten/Jahr | Bis 500.000 EUR |
-| München | 8 Wochen | Ab 8 Wochen | Bis 500.000 EUR |
-| Hamburg | 8 Wochen | Ab 8 Wochen | Bis 500.000 EUR |
-| Köln | Keine Grenze | Immer nötig | Bis 50.000 EUR |
-| Frankfurt | 8 Wochen | Ab 8 Wochen | Bis 500.000 EUR |
+### Kauf-Strategien 2026
 
-**Ab 2025/2026:** EU-weite Registrierungspflicht für alle Kurzzeitvermietungen!
+1. **B-Staedte mit Hochschulen:** Leipzig, Dresden, Magdeburg, Erfurt - Renditen 4-6%, stabile Nachfrage
+2. **Speckguertel A-Staedte:** 20-30 km um Grossstaedte, 30-50% guenstiger, 0,5-1,5% hoehere Rendite
+3. **Sanierungsfall + KfW:** Klasse F-H kaufen, 15-25% unter Markt verhandeln, KfW 261 bis 67.500 EUR Zuschuss
+4. **Mikroapartments Uni-Staedte:** 20-30 m2, hoechste EUR/m2-Miete, moebliert +20-30%
+5. **Denkmal-Immobilien:** 100% Sanierungskosten ueber 12 Jahre absetzbar, lohnt ab Steuersatz >42%
+6. **Zwangsversteigerungen (zvg-portal.de):** 20-40% unter Marktwert, aber keine Besichtigung/Gewaehrleistung
+7. **Off-Market:** Netzwerk (Haus & Grund, Stammtische, Handwerker), Briefe an Eigentuemer, keine Maklerprovision
 
-**Empfehlung:** Für Kapitalanleger meist NICHT empfehlenswert wegen:
-- Hohem Verwaltungsaufwand
-- Rechtlichen Risiken
-- Fehlender Planungssicherheit
+### Verhandlungstipps
+
+| Situation | Typischer Nachlass |
+|-----------|-------------------|
+| Normaler Markt | 5-10% |
+| Objekt >3 Monate am Markt | 10-15% |
+| Sanierungsbedarf | Sanierungskosten + 10% |
+| Notverkauf/Scheidung | 10-20% |
+| Energieklasse F-H | 5-15% |
+| Mietvertrag unter Markt | 12x Mietdifferenz |
+
+**Vorbereitung:** BORIS-D Bodenrichtwerte + Vergleichspreise, Angebotsdauer pruefen, Preishistorie, Verkaufsgrund kennen
+
+**Dont's:** Nie als Erstes bieten, Makler nicht uebergehen, nie emotional ("Traumwohnung"), nie ohne Finanzierungszusage
+
+**Tipp:** Erstes Gebot 10-15% unter Zielpreis, dann in 2-3% Schritten erhoehen, immer sachlich begruenden
+
+### Verwaltungs-Tipps
+
+- **Indexmiete:** Automatische Anpassung an Verbraucherpreisindex
+- **Staffelmiete:** Festgelegte Erhoehungen
+- **Instandhaltungsruecklage:** Bestand 9-12 EUR/m2/Jahr, Neubau 7-9, Altbau vor 1960: 12-15 EUR/m2/Jahr
+- **Hausverwaltung:** 25-35 EUR/Einheit/Monat, lohnt ab 3+ Einheiten
+
+### Haeufige Fehler
+
+1. Nicht ohne Ruecklagen kaufen (mind. 6 Monatsraten + 10.000 EUR Reserve)
+2. Nicht blind auf Rendite schauen - Lage, Substanz, Mieter wichtiger
+3. 15%-Regel bei Renovierung beachten
+4. Energieausweis nicht ignorieren (G/H = 50.000-100.000 EUR Sanierung)
+5. Nicht ohne WEG-Protokolle kaufen
+6. Immer Worst-Case durchrechnen
+7. AfA ist Stundung, nicht Geschenk
+8. Min. 3 Finanzierungsangebote vergleichen
+9. Eigenen Notar waehlen
+10. Kaufnebenkosten (8-12%) nicht vergessen

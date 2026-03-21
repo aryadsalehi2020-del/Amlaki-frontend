@@ -13,8 +13,10 @@ import os
 from database import get_db
 from models import User
 
-# Secret Key für JWT (in Production: aus Environment Variable!)
-SECRET_KEY = os.getenv("SECRET_KEY", "amlaki_secret_key_change_in_production_12345678")
+# Secret Key für JWT - MUSS als Environment Variable gesetzt sein!
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("FATAL: SECRET_KEY environment variable is not set. Server cannot start without it.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 Tage
 
@@ -45,8 +47,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
-    """Holt User anhand E-Mail"""
-    return db.query(User).filter(User.email == email).first()
+    """Holt User anhand E-Mail (case-insensitive)"""
+    return db.query(User).filter(User.email == email.lower()).first()
 
 
 def get_user_by_username(db: Session, username: str) -> Optional[User]:

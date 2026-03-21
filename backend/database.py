@@ -50,26 +50,64 @@ def get_db():
 
 def run_migrations():
     """Führt notwendige Migrationen durch"""
-    try:
-        with engine.connect() as conn:
-            # Prüfe und füge usage_limit_usd zur users Tabelle hinzu
+    migrations = [
+        ("users", "usage_limit_usd", "ALTER TABLE users ADD COLUMN usage_limit_usd FLOAT DEFAULT 5.0"),
+        ("users", "analysis_credits", "ALTER TABLE users ADD COLUMN analysis_credits INTEGER DEFAULT 1"),
+        ("analyses", "is_premium", "ALTER TABLE analyses ADD COLUMN is_premium BOOLEAN DEFAULT FALSE"),
+    ]
+
+    for table, column, sql in migrations:
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(text(f"SELECT {column} FROM {table} LIMIT 1"))
+                result.close()
+                print(f"Migration: {column} existiert bereits in {table}")
+        except Exception:
             try:
-                conn.execute(text("SELECT usage_limit_usd FROM users LIMIT 1"))
-            except Exception:
-                try:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN usage_limit_usd FLOAT DEFAULT 5.0"))
+                with engine.connect() as conn:
+                    conn.execute(text(sql))
                     conn.commit()
-                    print("Migration: usage_limit_usd Spalte hinzugefügt")
-                except Exception as e:
-                    print(f"Migration usage_limit_usd fehlgeschlagen: {e}")
+                    print(f"Migration: {column} Spalte zu {table} hinzugefuegt")
+            except Exception as e:
+                print(f"Migration {column} fehlgeschlagen: {e}")
+
+
+def seed_agents():
+    """Erstellt Default-Agent-Konfigurationen falls noch nicht vorhanden"""
+    try:
+        from models import AgentConfig
+        session = SessionLocal()
+        existing = session.query(AgentConfig).count()
+        if existing == 0:
+            defaults = [
+                AgentConfig(
+                    name="zinsen",
+                    display_name="Zinsen-Monitor",
+                    description="Aktualisiert Bauzinsen von Interhyp taeglich",
+                    enabled=True,
+                    schedule="taeglich 07:00",
+                ),
+                AgentConfig(
+                    name="news",
+                    display_name="News-Intelligence",
+                    description="Scannt Handelsblatt, FAZ, tagesschau nach immobilienrelevanten News",
+                    enabled=True,
+                    schedule="taeglich 07:00",
+                ),
+            ]
+            for agent in defaults:
+                session.add(agent)
+            session.commit()
+            print("Agent-Konfigurationen erstellt (zinsen, news)")
+        session.close()
     except Exception as e:
-        print(f"Could not run migrations: {e}")
+        print(f"Agent-Seed fehlgeschlagen: {e}")
 
 
 def init_db(max_retries=5, retry_delay=3):
     """Initialisiert die Datenbank-Tabellen mit Retry-Logik"""
     # Importiere Models hier um sicherzustellen dass alle Tabellen registriert sind
-    from models import User, Analysis, UsageLog
+    from models import User, Analysis, UsageLog, AgentConfig
 
     for attempt in range(max_retries):
         try:
@@ -83,6 +121,8 @@ def init_db(max_retries=5, retry_delay=3):
 
             # Führe Migrationen für existierende Tabellen durch
             run_migrations()
+            # Seed Agent-Konfigurationen
+            seed_agents()
             return  # Erfolg!
 
         except Exception as e:

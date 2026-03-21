@@ -16,6 +16,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
   });
 
   const [verwendungszweck, setVerwendungszweck] = useState('kapitalanlage');
+  const [besichtigt, setBesichtigt] = useState(null); // null = nicht ausgewählt, true/false
   const [finanzierung, setFinanzierung] = useState({ eigenkapital: 0, zinssatz: 3.75, tilgung: 1.25 });
   const [validationError, setValidationError] = useState(null);
 
@@ -58,7 +59,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte geben Sie eine gultige Wohnflache ein (min. 5 m2)'); return; }
     const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
     const activeProfile = verwendungszweck === 'kapitalanlage' ? getActiveProfile() : null;
-    onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile);
+    onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile, besichtigt);
   }, [formData, verwendungszweck, finanzierung, onAnalyze, getActiveProfile]);
 
   const inputClass = "w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[15px]";
@@ -112,6 +113,24 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
             </div>
             {verwendungszweck === 'kapitalanlage' && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Bei Kapitalanlage wird Cashflow, Rendite und Mietpotenzial priorisiert</p>}
             {verwendungszweck === 'eigennutzung' && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Bei Eigennutzung wird Wohnqualitat, Lage und Zustand priorisiert</p>}
+          </div>
+
+          {/* Besichtigung */}
+          <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
+            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Warst du schon bei der Besichtigung?</label>
+            <p className="text-[13px] text-[#8C7E6A] mb-4">Wir passen die Analyse an deinen aktuellen Stand an</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button type="button" onClick={() => setBesichtigt(true)}
+                className={`py-4 px-5 rounded-[16px] border-2 font-medium transition-all text-center ${besichtigt === true ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
+                <span className={`text-[15px] block ${besichtigt === true ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Ja, war ich schon</span>
+              </button>
+              <button type="button" onClick={() => setBesichtigt(false)}
+                className={`py-4 px-5 rounded-[16px] border-2 font-medium transition-all text-center ${besichtigt === false ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
+                <span className={`text-[15px] block ${besichtigt === false ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Nein, noch nicht</span>
+              </button>
+            </div>
+            {besichtigt === false && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Du erhaeltst eine personalisierte Besichtigungs-Checkliste mit deiner Analyse</p>}
+            {besichtigt === true && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Hast du bei der Besichtigung etwas Neues erfahren? Trage es unten ein fuer eine praezisere Analyse</p>}
           </div>
 
           {/* Investoren-Profil / Wohnprofil */}

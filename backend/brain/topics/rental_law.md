@@ -1,96 +1,78 @@
-## TEIL 5: MIETRECHT
+## MIETRECHT (Stand 2026)
 
-### Mieterhöhung §558 BGB (Vergleichsmiete)
+### Mieterhoehung (Paragraf 558 BGB)
 
-- **Kappungsgrenze:** Max. 20% in 3 Jahren (in 627 Gemeinden nur 15%!)
-- **Bis zur:** Ortsüblichen Vergleichsmiete
-- **Sperrfrist:** 12 Monate zwischen Erhöhungen
-- **Begründung durch:** Mietspiegel, 3 Vergleichswohnungen oder Gutachten
+- **Kappungsgrenze:** Max. 20% in 3 Jahren (in 627 Gemeinden nur 15%)
+- **Bis zur** ortsueblichen Vergleichsmiete
+- **Sperrfrist:** 12 Monate zwischen Erhoehungen
+- **Begruendung durch:** Mietspiegel, 3 Vergleichswohnungen oder Gutachten
 
-### Modernisierungsumlage §559 BGB
+### Modernisierungsumlage (Paragraf 559 BGB)
 
-- **Umlage:** 8% der Modernisierungskosten pro Jahr dauerhaft
-- **Kappung:** Max. 2 EUR/m² (bei Miete <7 EUR) bzw. 3 EUR/m² in 6 Jahren
-- **Nur echte Modernisierung!** Nicht: Instandhaltung
-
-```javascript
-function berechneModernisierungsumlage(kosten, wohnflaeche, aktuelleKaltmiete) {
-  const monatlicheUmlage = (kosten * 0.08) / 12;
-  const proQm = monatlicheUmlage / wohnflaeche;
-
-  // Kappungsgrenze
-  const maxErhoeung = aktuelleKaltmiete < 7 ? 2 : 3; // EUR/m² in 6 Jahren
-  const maxMonatlich = (maxErhoeung * wohnflaeche) / 72; // 72 Monate = 6 Jahre
-
-  return Math.min(monatlicheUmlage, maxMonatlich);
-}
-```
+- **Umlage:** 8% der Modernisierungskosten pro Jahr (dauerhaft)
+- **Kappung:** Max. 2 EUR/m2 (bei Miete <7 EUR) bzw. 3 EUR/m2 in 6 Jahren
+- Nur echte Modernisierung, NICHT Instandhaltung
 
 ### Mietpreisbremse
 
-- **Verlängert bis:** 31.12.2029
+- **Verlaengert bis:** 31.12.2029
 - **Gilt in:** 410 Gemeinden
-- **Regel:** Max. 10% über ortsüblicher Vergleichsmiete bei Neuvermietung
+- **Regel:** Max. 10% ueber ortsueblicher Vergleichsmiete bei Neuvermietung
+- **Ausnahmen:** Neubauten ab 01.10.2014, umfassende Modernisierung (>1/3 Neubaukosten), Vormiete war hoeher
 
-**Ausnahmen:**
-- Neubauten ab 01.10.2014
-- Umfassende Modernisierung (>1/3 Neubaukosten)
-- Vormiete war höher
+### Kuendigung wegen Eigenbedarf
 
-### Kündigung wegen Eigenbedarf
-
-**Kündigungsfristen nach Mietdauer:**
-| Mietdauer | Kündigungsfrist |
+| Mietdauer | Kuendigungsfrist |
 |-----------|-----------------|
 | Bis 5 Jahre | 3 Monate |
 | 5-8 Jahre | 6 Monate |
-| Über 8 Jahre | 9 Monate |
+| Ueber 8 Jahre | 9 Monate |
 
-**Formvorschriften (streng!):**
-- Schriftform (keine E-Mail!)
-- Begründung im Kündigungsschreiben
-- Hinweis auf Widerspruchsrecht
-
-**Kündigungssperrfrist bei ETW-Umwandlung:** 3-10 Jahre (je nach Bundesland)
+- Schriftform (keine E-Mail!), Begruendung im Schreiben, Hinweis auf Widerspruchsrecht
+- **Sperrfrist bei ETW-Umwandlung:** 3-10 Jahre (je nach Bundesland)
 
 ### Nebenkostenabrechnung
 
-**Umlagefähig (vollständige Liste):**
-- Grundsteuer
-- Wasserversorgung & Entwässerung
-- Heizung & Warmwasser
-- Aufzug
-- Straßenreinigung & Müllabfuhr
-- Gebäudereinigung
-- Gartenpflege
-- Beleuchtung (Gemeinschaftsflächen)
-- Schornsteinfeger
-- Versicherungen (Gebäude, Haftpflicht)
-- Hauswart
-- Gemeinschaftsantenne/Breitband
-- Wäschepflege (Gemeinschaftswaschküche)
+**Umlagefaehig:** Grundsteuer, Wasser/Entwaesserung, Heizung/Warmwasser, Aufzug, Strassenreinigung/Muell, Gebaeudereinigung, Gartenpflege, Beleuchtung, Schornsteinfeger, Versicherungen, Hauswart, Breitband, Waeschepflege
 
-**NICHT umlagefähig:**
-- Hausverwaltung
-- Instandhaltungsrücklage
-- Reparaturen
-- Bankgebühren
+**NICHT umlagefaehig:** Hausverwaltung, Instandhaltungsruecklage, Reparaturen, Bankgebuehren
 
-**Fristen:** 12 Monate nach Abrechnungszeitraum!
+**Frist:** 12 Monate nach Abrechnungszeitraum!
 
 ### WEG-Recht (seit Reform 2020)
 
-**Wichtige Änderungen:**
-- Bauliche Veränderungen: Nur noch einfache Mehrheit statt Allstimmigkeit
-- Privilegierte Maßnahmen (Barrierefreiheit, E-Ladestationen, Einbruchschutz, Glasfaser): Kann jeder Eigentümer auf eigene Kosten verlangen
+- Bauliche Veraenderungen: Nur noch einfache Mehrheit
+- Privilegierte Massnahmen (Barrierefreiheit, E-Ladestationen, Einbruchschutz, Glasfaser): Jeder Eigentuemer kann auf eigene Kosten verlangen
 - Verwalterzertifizierung: Seit Juni 2024 Pflicht
 
-### GEG-Pflichten (Heizungsgesetz)
+### GEG Heizungsgesetz - Pflichten
 
-**Ab 01.01.2024:** Neue Heizungen müssen 65% erneuerbare Energien nutzen
+**Ab 01.01.2024:** Neue Heizungen muessen mind. 65% erneuerbare Energien nutzen (zunaechst nur Neubaugebiete)
 
-**Übergangsfristen:**
-- Großstädte (>100.000 EW): Ab 30.06.2026 (nach Wärmeplanung)
-- Alle anderen: Ab 30.06.2028
+**Ab 30.06.2026:** Grossstaedte ueber 100.000 EW: Kommunale Waermeplanung muss vorliegen, danach 65%-EE-Pflicht auch fuer Bestand bei Heizungstausch
 
-**Bei Eigentümerwechsel:** 2-Jahres-Frist für Nachrüstpflichten (Dämmung oberste Geschossdecke, Heizungsleitungen)
+**Ab 30.06.2028:** Alle anderen Gemeinden: Waermeplanung + 65%-EE-Pflicht
+
+**Erfuellungsoptionen:** Waermepumpe, Fernwaerme, Biomasse, Hybridheizung, Stromdirektheizung, Solarthermie, H2-ready Gasheizung
+
+**Nachruestpflichten bei Eigentuemerwechsel (innerhalb 2 Jahre):**
+- Daemmung oberste Geschossdecke/Dach
+- Daemmung freiliegender Heizungs-/Warmwasserleitungen
+- **Bussgeld:** Bis 50.000 EUR
+
+**Energieausweis:** Pflicht bei Verkauf/Vermietung/Neubau, Verbrauchsausweis ab 50 EUR, Bedarfsausweis ab 300 EUR (Pflicht bei <5 WE + Baujahr vor 1977), 10 Jahre gueltig
+
+### Rechtliche Aenderungen 2025/2026
+
+**Bereits in Kraft:**
+- Degressive AfA 5% fuer Neubauten (Baubeginn 01.10.2023-30.09.2029)
+- GEG/Heizungsgesetz seit 01.01.2024
+- Mietpreisbremse verlaengert bis 31.12.2029
+- Grundsteuer-Reform seit 01.01.2025 (teils erhebliche Verschiebungen, z.B. Frankfurt: Hebesatz 500% auf 690%)
+- Bleirohre-Austauschpflicht Frist 12.01.2026 (abgelaufen)
+- Share-Deal-Reform: GrESt ab 90% Anteilsuebertragung, 10-Jahres-Frist
+
+**Geplant/in Diskussion:**
+- GrESt-Freibetrag fuer Ersterwerber (250.000/500.000 EUR) - Umsetzung unsicher
+- Bundesweites Mietkataster
+- EU-Gebaeude-Richtlinie: Schlimmste 15% der Gebaeude muessen bis 2030 saniert werden
