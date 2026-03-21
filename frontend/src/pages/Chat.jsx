@@ -179,9 +179,6 @@ function ConversationItem({ conv, isActive, onClick, onDelete }) {
           {conv.last_message}
         </p>
       )}
-      <span className={`text-[10px] text-[#B5A68C] mt-0.5 block ${hasAnalysis ? 'pl-5.5' : ''}`}>
-        {relativeTime(conv.updated_at || conv.created_at)}
-      </span>
       {hovering && (
         <button
           onClick={(e) => {
