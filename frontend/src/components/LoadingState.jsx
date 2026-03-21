@@ -24,18 +24,12 @@ function LoadingState({ message }) {
   return (
     <div style={{ padding: '80px 20px', textAlign: 'center' }}>
       {/* Three dots - calm fade animation */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '32px' }}>
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            style={{
-              display: 'block',
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: '#B5A68C',
-              animation: `loadFade 1.8s ease-in-out ${i * 0.25}s infinite`,
-            }}
+            className="loading-dot-slow"
+            style={{ animationDelay: `${i * 0.3}s` }}
           />
         ))}
       </div>
@@ -55,9 +49,20 @@ function LoadingState({ message }) {
       </div>
 
       <style>{`
-        @keyframes loadFade {
+        .loading-dot-slow {
+          display: block;
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          background-color: #B5A68C;
+          opacity: 0.2;
+          will-change: opacity;
+          animation: loadPulseSlow 2.4s ease-in-out infinite;
+        }
+        @keyframes loadPulseSlow {
           0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.7; }
+          40% { opacity: 0.6; }
+          60% { opacity: 0.6; }
         }
       `}</style>
     </div>
