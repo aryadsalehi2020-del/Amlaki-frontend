@@ -3188,16 +3188,27 @@ async def list_conversations(current_user: User = Depends(get_current_active_use
 
 @app.post("/conversations")
 async def create_conversation(data: dict = Body(default={}), current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    """Create a new conversation."""
+    """Create a new conversation. If analysis_id is given and a conversation already exists for it, return the existing one."""
+    analysis_id = data.get("analysis_id")
+
+    # Wenn analysis_id gegeben: pruefen ob schon eine Conversation existiert
+    if analysis_id:
+        existing = db.query(Conversation).filter(
+            Conversation.user_id == current_user.id,
+            Conversation.analysis_id == analysis_id
+        ).order_by(Conversation.created_at.desc()).first()
+        if existing:
+            return {"id": existing.id, "title": existing.title, "created_at": existing.created_at.isoformat(), "existing": True}
+
     conv = Conversation(
         user_id=current_user.id,
         title=data.get("title", "Neue Unterhaltung"),
-        analysis_id=data.get("analysis_id")
+        analysis_id=analysis_id
     )
     db.add(conv)
     db.commit()
     db.refresh(conv)
-    return {"id": conv.id, "title": conv.title, "created_at": conv.created_at.isoformat()}
+    return {"id": conv.id, "title": conv.title, "created_at": conv.created_at.isoformat(), "existing": False}
 
 
 @app.get("/conversations/{conversation_id}")

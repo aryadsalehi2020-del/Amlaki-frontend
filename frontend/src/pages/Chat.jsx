@@ -346,7 +346,7 @@ export default function Chat() {
         const analysis = await analysisRes.json();
         setAnalysisData(analysis);
 
-        // Create a new conversation linked to this analysis
+        // Find existing or create new conversation for this analysis
         const convRes = await fetch(`${API_BASE}/conversations`, {
           method: 'POST',
           headers: {
@@ -361,17 +361,29 @@ export default function Chat() {
         if (!convRes.ok) return;
         const conv = await convRes.json();
 
-        // Navigate to the new conversation (replace the ?analysis_id URL)
+        // Navigate to the conversation (replace the ?analysis_id URL)
         navigate(`/chat/${conv.id}`, { replace: true });
 
-        // Set the initial system-style message
-        setActiveConversation(conv);
-        setMessages([
-          {
-            role: 'assistant',
-            content: 'Ich habe alle Daten zu diesem Objekt. Stelle mir eine Frage zur Analyse, Finanzierung, Verhandlung oder zu anderen Aspekten.',
-          },
-        ]);
+        if (conv.existing) {
+          // Existing conversation - load its messages
+          const msgRes = await fetch(`${API_BASE}/conversations/${conv.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (msgRes.ok) {
+            const msgData = await msgRes.json();
+            setActiveConversation(msgData);
+            setMessages(msgData.messages || []);
+          }
+        } else {
+          // New conversation - show welcome message
+          setActiveConversation(conv);
+          setMessages([
+            {
+              role: 'assistant',
+              content: 'Ich habe alle Daten zu diesem Objekt. Stelle mir eine Frage zur Analyse, Finanzierung, Verhandlung oder zu anderen Aspekten.',
+            },
+          ]);
+        }
 
         loadConversations();
       } catch {
