@@ -2610,13 +2610,16 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 9. **verkäufertyp** (Gewichtung: {weights['verkäufertyp']}%)
    - Privat vs. Makler, Provision
 
-WICHTIG - V3.0 PHILOSOPHIE:
+WICHTIG - V4.0 PHILOSOPHIE (EHRLICH & DIREKT):
 - IMMER Live-Marktdaten in der Begründung zitieren!
 - Bei überhöhtem Preis: "Markt-Durchschnitt ist X€/m², Objekt liegt bei Y€/m² = Z% über Markt"
-- NIEMALS nur "Nein" sagen!
-- Bei schlechtem Score: Preisverhandlung, Förderungen, Mieterhöhungspotenzial aufzeigen
-- "Fairer Preis" als Verhandlungsziel angeben
-- Konstruktive Tipps auch bei Ablehnung
+- SEI EHRLICH UND DIREKT. Kein Schönreden. Kein Diplomatentum.
+- Wenn ein Deal schlecht ist, sag klar: "Dieses Objekt lohnt sich nicht" oder "Finger weg"
+- Wenn ein Deal gut ist, sag klar: "Zuschlagen" oder "Starkes Investment"
+- KEINE widersprüchlichen Aussagen! Wenn der Score niedrig ist, schreib NICHT "gutes Potenzial" oder "passt zu deinem Profil"
+- Die Zusammenfassung MUSS eine klare Handlungsempfehlung enthalten - JA oder NEIN
+- Stärken und Schwächen müssen zum Score PASSEN. Bei Score <50 dürfen Stärken nicht überwiegen.
+- Bei schlechtem Score: Sag klar was falsch ist. Du kannst trotzdem einen fairen Preis nennen, bei dem es sich lohnen WÜRDE.
 
 Antworte als JSON:
 {{
@@ -2630,7 +2633,7 @@ Antworte als JSON:
     ],
     "stärken": ["<konkrete Stärke mit Zahlen>", ...],
     "schwächen": ["<konkrete Schwäche mit Zahlen>", ...],
-    "zusammenfassung": "<3-4 Sätze mit: 1) Gesamtbewertung, 2) Wichtigste Förderung, 3) Verhandlungsziel wenn überteuert>"
+    "zusammenfassung": "<3-4 Sätze: 1) KLARE Empfehlung (Kaufen/Nicht kaufen/Nur mit Verhandlung), 2) Wichtigster Grund dafür, 3) Fairer Preis oder Verhandlungsziel wenn überteuert>"
 }}
 
 Antworte NUR mit dem JSON."""
@@ -2680,21 +2683,21 @@ Antworte NUR mit dem JSON."""
                 begründung=criterion["begründung"]
             ))
 
-        # Gesamtscore (auf 100 normalisiert) + 10 Basis-Bonus für positivere Bewertung
-        gesamtscore = min(100, round(total_weighted + 10, 1))
+        # Gesamtscore (auf 100 normalisiert) - kein künstlicher Bonus
+        gesamtscore = min(100, round(total_weighted, 1))
 
-        # EMPFEHLUNG basierend auf No-Gos, Score und Warnsignalen (positivere Schwellen)
+        # EMPFEHLUNG basierend auf No-Gos, Score und Warnsignalen (ehrliche Schwellen)
         if no_go_check["no_go"]:
             empfehlung = "ABLEHNEN"
-            empfehlung_text = f"[ERROR] NICHT INVESTIEREN - No-Go-Kriterien: {', '.join(no_go_check['gründe'])}"
-        elif gesamtscore >= 65:
+            empfehlung_text = f"NICHT INVESTIEREN - No-Go-Kriterien: {', '.join(no_go_check['gründe'])}"
+        elif gesamtscore >= 70:
             if warnsignale["kritisch"]:
                 empfehlung = "PRÜFEN"
             else:
                 empfehlung = "INVESTIEREN"
-        elif gesamtscore >= 50:
+        elif gesamtscore >= 55:
             empfehlung = "PRÜFEN"
-        elif gesamtscore >= 35:
+        elif gesamtscore >= 40:
             empfehlung = "VORSICHT"
         else:
             empfehlung = "ABLEHNEN"
