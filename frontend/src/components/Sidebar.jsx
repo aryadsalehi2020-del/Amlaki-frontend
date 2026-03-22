@@ -84,11 +84,11 @@ function Sidebar() {
     const [hovering, setHovering] = useState(false);
     const isActive = location.pathname === `/chat/${conv.id}`;
     return (
-      <button
+      <div
         onClick={() => navigate(`/chat/${conv.id}`)}
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        className={`w-full text-left px-3 py-2 rounded-[10px] transition-all duration-200 relative ${
+        className={`w-full text-left px-3 py-2 rounded-[10px] transition-all duration-200 relative cursor-pointer ${
           isActive ? 'bg-[#7C8B6F]/[0.12] text-[#2C2418]' : 'text-[#5C4F3D] hover:bg-[#F5F0E8]'
         }`}
       >
@@ -105,7 +105,7 @@ function Sidebar() {
             </svg>
           </button>
         )}
-      </button>
+      </div>
     );
   };
 
