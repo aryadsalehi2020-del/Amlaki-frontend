@@ -53,7 +53,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
         role: 'assistant',
         content: `Ich bin Ihr Berater fur **diese Immobilie** in ${stadt} (${kaufpreis})!\n\n` +
           (score ? `Aktueller Score: **${score}**\n\n` : '') +
-          `Fragen Sie mich spezifisch zu diesem Objekt:\n` +
+          `Frag mich zu diesem Objekt:\n` +
           `- "Ist der Preis angemessen?"\n` +
           `- "Wie kann ich den Cashflow verbessern?"\n` +
           `- "Welche Forderungen passen hier?"\n` +
@@ -62,7 +62,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
     }
     return {
       role: 'assistant',
-      content: 'Hallo! Ich bin Ihr **Immobilien-Experte** - Ihr Vorteil gegenuber 95% der Makler!\n\nIch helfe Ihnen bei **allem rund um Immobilien:**\n- Finanzierung & Eigenkapital-Strategien\n- KfW-Forderungen & Zuschusse maximieren\n- Steuern, AfA & Abschreibungen\n- Rendite-Analyse & Cashflow-Berechnung\n- Mietrecht, WEG & Due Diligence\n- **Live-Marktpreise** fur jede Stadt\n\nStellen Sie mir jede Frage - oder wahlen Sie ein Thema oben!'
+      content: 'Hallo! Ich bin dein **Immobilien-Experte**.\n\nIch helfe dir bei **allem rund um Immobilien:**\n- Finanzierung & Eigenkapital-Strategien\n- KfW-F\u00f6rderungen & Zusch\u00fcsse maximieren\n- Steuern, AfA & Abschreibungen\n- Rendite-Analyse & Cashflow-Berechnung\n- Mietrecht, WEG & Due Diligence\n- **Live-Marktpreise** f\u00fcr jede Stadt\n\nStell mir jede Frage!'
     };
   };
 
@@ -108,7 +108,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
     const q = question.toLowerCase();
     if (q.includes('eigenkapital') || q.includes('ek')) return `**Eigenkapital-Anforderungen:**\n\nDie meisten Banken erwarten mindestens die **Kaufnebenkosten** (ca. 10-12%) als Eigenkapital.\n\n**Szenarien:**\n- **20%+ EK:** Beste Konditionen, 95% Bewilligungschance\n- **10-20% EK:** Gute Konditionen, 80% Chance\n- **Nur Nebenkosten:** Moglich, aber hohere Zinsen (+0,2-0,5%)\n- **110% Finanzierung:** Nur bei sehr guter Bonitat`;
     if (q.includes('kfw') || q.includes('forderung')) return `**KfW-Forderungen 2025:**\n\n**KfW 300 - Wohneigentum fur Familien:**\n- Zinssatz: nur **1,12%**\n- Kredit: 170.000-270.000 je nach Kinderzahl\n- Einkommensgrenze: 90.000 + 10.000/Kind`;
-    return `Ich kann Ihnen bei Fragen zu folgenden Themen helfen:\n\n**Finanzierung**\n- Eigenkapital-Strategien\n- Bankenvergleich & Verhandlung\n\n**Forderungen**\n- KfW-Programme\n- Landesforderungen\n\n**Steuern**\n- AfA-Berechnung\n- Werbungskosten\n\n**Recht**\n- Mietrecht\n- WEG-Recht\n\nStellen Sie mir eine konkrete Frage!`;
+    return `Ich helfe dir bei:\n\n**Finanzierung** - Eigenkapital, Bankenvergleich\n**F\u00f6rderungen** - KfW, Landesf\u00f6rderungen\n**Steuern** - AfA, Werbungskosten\n**Recht** - Mietrecht, WEG\n\nStell mir eine konkrete Frage!`;
   };
 
   return (
@@ -116,7 +116,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
       {/* Header */}
       <div className="p-4 border-b border-[#E8E0D4]">
         <h3 className="text-[16px] font-semibold text-[#2C2418]">Immobilien-Berater AI</h3>
-        <p className="text-[#8C7E6A] text-[13px] mt-1">Fragen Sie mich alles zu Immobilien</p>
+        <p className="text-[#8C7E6A] text-[13px] mt-1">Frag mich alles zu Immobilien</p>
       </div>
 
       {/* Quick Questions */}
@@ -192,7 +192,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
         <div className="flex gap-2">
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Stellen Sie eine Frage..."
+            placeholder="Stelle eine Frage..."
             className="flex-1 px-4 py-3.5 md:py-3 min-h-[44px] bg-white border border-[#E8E0D4] rounded-[12px] focus:border-[#7C8B6F] focus:outline-none focus:ring-2 focus:ring-[#7C8B6F]/10 transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[15px]"
           />
           <button onClick={() => handleSend()} disabled={isLoading || !input.trim()}
