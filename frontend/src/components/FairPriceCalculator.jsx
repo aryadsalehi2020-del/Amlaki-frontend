@@ -157,12 +157,11 @@ function FairPriceCalculator({ analysisData }) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-xl font-bold text-[#2C2418] flex items-center gap-3">
-          <span className="w-10 h-10 bg-gradient-to-br from-accent/20 to-orange-500/20 rounded-xl flex items-center justify-center text-xl border border-accent/30"></span>
-          <span className="text-[#2C2418]">Fairer Preis Rechner</span>
+        <h3 className="text-xl font-bold text-[#2C2418]">
+          Fairer Preis Rechner
         </h3>
         <p className="text-[#8C7E6A] text-sm mt-1">
-          Berechnen Sie den objektiven Marktwert und das optimale Verhandlungsziel
+          Berechne den objektiven Marktwert und das optimale Verhandlungsziel
         </p>
       </div>
 

@@ -47,40 +47,21 @@ function Pricing() {
 
   const plans = [
     {
-      id: 'free',
-      name: 'Free',
-      price: '0',
-      period: '',
-      description: 'Zum Kennenlernen',
-      icon: Zap,
-      features: [
-        'Grundlegende Immobilienanalyse',
-        'Score und Bewertung',
-        'Cashflow-Berechnung',
-        'Unbegrenzter KI-Chat',
-        'Investoren-Profil',
-      ],
-      cta: credits !== null && credits > 0 ? 'Aktueller Plan' : 'Aufgebraucht',
-      disabled: true,
-      highlight: false,
-    },
-    {
       id: 'single',
       name: 'Basic',
       price: '9',
       period: '1 Analyse',
+      pricePerUnit: '9€/Analyse',
       description: '1 vollständige Analyse',
       icon: TrendingUp,
       features: [
-        'Alles aus Free',
-        'Szenarien-Vergleich (Best/Worst Case)',
-        'Sensitivitätsanalyse',
-        'Fairer Preis Berechnung',
+        'Vollständige Analyse',
+        'Szenarien-Vergleich',
+        'Fairer Preis',
         'Förderungen und AfA',
         'Verbesserungsvorschläge',
-        'Finanzierungsoptionen',
       ],
-      cta: '1 Credit kaufen',
+      cta: '1 Credit',
       disabled: false,
       highlight: false,
     },
@@ -89,7 +70,7 @@ function Pricing() {
       name: 'Plus',
       price: '35',
       period: '5 Analysen',
-      pricePerUnit: '7 pro Analyse',
+      pricePerUnit: '7€/Analyse',
       description: 'Mehrere Objekte vergleichen',
       icon: Crown,
       badge: 'Beliebt',
@@ -100,7 +81,7 @@ function Pricing() {
         'Ideal zum Vergleichen',
         'Objekte gegeneinander abwägen',
       ],
-      cta: '5 Credits kaufen',
+      cta: '5 Credits',
       disabled: false,
       highlight: true,
     },
@@ -109,7 +90,7 @@ function Pricing() {
       name: 'Pro',
       price: '50',
       period: '10 Analysen',
-      pricePerUnit: '5 pro Analyse',
+      pricePerUnit: '5€/Analyse',
       description: 'Für aktive Immobilienkäufer',
       icon: Crown,
       features: [
@@ -119,109 +100,112 @@ function Pricing() {
         'Bester Preis pro Analyse',
         'Unbegrenzt analysieren',
       ],
-      cta: '10 Credits kaufen',
+      cta: '10 Credits',
       disabled: false,
       highlight: false,
     },
   ];
 
-  return (
-    <div className="px-4 md:px-8 lg:px-16 py-4 md:py-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-8 md:mb-10">
-        <h1 className="text-[28px] md:text-[34px] font-bold text-[#2C2418] tracking-tight mb-2">
-          Analyse-Credits
-        </h1>
-        <p className="text-[15px] text-[#8C7E6A] max-w-md mx-auto">
-          Vollständige Immobilienanalyse mit Szenarien, Förderungen und Verhandlungstipps.
-        </p>
+  const packs = [
+    { id: 'single', credits: 1, price: 9, perUnit: 9, save: null },
+    { id: 'pack5', credits: 5, price: 35, perUnit: 7, save: 22, popular: true },
+    { id: 'pack10', credits: 10, price: 50, perUnit: 5, save: 44, best: true },
+  ];
 
-        {/* Current credits */}
+  return (
+    <div className="px-4 md:px-8 lg:px-16 py-6 md:py-10 max-w-lg mx-auto">
+      {/* Header */}
+      <div className="text-center mb-4">
+        <h1 className="text-[20px] md:text-[30px] font-bold text-[#2C2418] tracking-tight mb-0.5">
+          Credits kaufen
+        </h1>
         {credits !== null && (
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#7C8B6F]/10 border border-[#7C8B6F]/20 rounded-full">
-            <span className="text-[14px] font-medium text-[#7C8B6F]">
-              {credits} {credits === 1 ? 'Credit' : 'Credits'} verfügbar
-            </span>
-          </div>
+          <p className="text-[12px] text-[#7C8B6F] font-medium">
+            {credits} {credits === 1 ? 'Credit' : 'Credits'} verf&uuml;gbar
+          </p>
         )}
-        <p className="text-[12px] text-[#B5A68C] mt-2">1 Credit = 1 vollständige Immobilienanalyse</p>
+        <p className="text-[11px] text-[#8C7E6A] mt-1">1 Credit = 1 vollst&auml;ndige Immobilienanalyse</p>
       </div>
 
-      {/* Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {plans.map((plan) => {
-          const Icon = plan.icon;
-          return (
-            <div
-              key={plan.id}
-              className={`rounded-[18px] p-6 flex flex-col relative transition-shadow duration-300 ${
-                plan.highlight
-                  ? 'bg-white border-2 border-[#7C8B6F] shadow-lg'
-                  : 'bg-white border border-[#E8E0D4]'
-              }`}
-              style={plan.highlight ? { boxShadow: '0 8px 30px rgba(124,139,111,0.12)' } : {}}
-            >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-[#7C8B6F] text-white text-[11px] font-semibold rounded-full uppercase tracking-wide">
-                  {plan.badge}
-                </div>
-              )}
-
-              <div className="mb-3">
-                <div className="w-9 h-9 rounded-[10px] bg-[#7C8B6F]/10 flex items-center justify-center mb-2.5">
-                  <Icon className="w-4.5 h-4.5 text-[#7C8B6F]" />
-                </div>
-                <h3 className="text-[17px] font-bold text-[#2C2418]">{plan.name}</h3>
-                <p className="text-[12px] text-[#8C7E6A]">{plan.description}</p>
+      {/* Credit Packs */}
+      <div className="space-y-2 mb-4">
+        {packs.map((pack) => (
+          <button
+            key={pack.id}
+            onClick={() => handlePurchase(pack.id)}
+            disabled={loading !== null}
+            className={`w-full p-3 rounded-[12px] border-2 text-left transition-all flex items-center gap-3 relative ${
+              pack.popular
+                ? 'border-[#7C8B6F] bg-[#7C8B6F]/[0.04]'
+                : 'border-[#E8E0D4] hover:border-[#B5A68C]'
+            } ${loading === pack.id ? 'opacity-60' : 'active:scale-[0.99]'}`}
+          >
+            {pack.popular && (
+              <div className="absolute -top-2.5 right-4 px-2 py-0.5 bg-[#7C8B6F] text-white text-[9px] font-semibold rounded-full uppercase tracking-wide">
+                Beliebt
               </div>
+            )}
 
-              <div className="mb-0.5">
-                <span className="text-[28px] font-bold text-[#2C2418]">{plan.price}</span>
-                {plan.price !== '0' && <span className="text-[14px] font-medium text-[#2C2418]"> EUR</span>}
-              </div>
-              <p className="text-[12px] text-[#8C7E6A] mb-0.5">{plan.period}</p>
-              {plan.pricePerUnit && (
-                <p className="text-[12px] text-[#7C8B6F] font-medium mb-4">{plan.pricePerUnit}</p>
-              )}
-              {!plan.pricePerUnit && <div className="mb-4" />}
-
-              <ul className="space-y-2 mb-5 flex-1">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[13px] text-[#5C4F3D]">
-                    <CheckCircle2 className="w-4 h-4 text-[#7C8B6F] shrink-0 mt-0.5" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => !plan.disabled && handlePurchase(plan.id)}
-                disabled={plan.disabled || loading !== null}
-                className={`w-full py-3 rounded-[12px] font-semibold text-[14px] transition-all duration-200 ${
-                  plan.disabled
-                    ? 'bg-[#F5F0E8] text-[#B5A68C] cursor-default'
-                    : plan.highlight
-                    ? 'bg-[#7C8B6F] text-white hover:bg-[#6B7A5E] active:scale-[0.98]'
-                    : 'bg-white text-[#7C8B6F] border-2 border-[#7C8B6F] hover:bg-[#7C8B6F]/5 active:scale-[0.98]'
-                } ${loading === plan.id ? 'opacity-60' : ''}`}
-              >
-                {loading === plan.id ? 'Weiterleitung...' : plan.cta}
-              </button>
+            {/* Credit count circle */}
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+              pack.popular ? 'bg-[#7C8B6F] text-white' : 'bg-[#F5F0E8] text-[#2C2418]'
+            }`}>
+              <span className="text-[16px] font-bold">{pack.credits}</span>
             </div>
-          );
-        })}
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[14px] font-semibold text-[#2C2418]">
+                  {pack.credits} {pack.credits === 1 ? 'Credit' : 'Credits'}
+                </span>
+                {pack.save && (
+                  <span className="text-[11px] font-medium bg-[#7C8B6F]/10 text-[#7C8B6F] px-1.5 py-0.5 rounded">
+                    -{pack.save}%
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] text-[#8C7E6A]">{pack.perUnit}&euro;/Credit</span>
+            </div>
+
+            {/* Price */}
+            <div className="text-right shrink-0">
+              <span className="text-[18px] font-bold text-[#2C2418]">{pack.price}&euro;</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* What's included */}
+      <div className="bg-white rounded-[12px] p-3 border border-[#E8E0D4] mb-4">
+        <p className="text-[10px] font-semibold text-[#8C7E6A] uppercase tracking-wider mb-2">Jede Analyse enth&auml;lt</p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          {[
+            'Marktwert-Berechnung',
+            'Cashflow und Rendite',
+            'Best/Worst Case',
+            'KfW und Steuervorteile',
+            'Verhandlungs-Argumente',
+            'Besichtigungs-Checkliste',
+            'Notar-Checkliste',
+          ].map((f) => (
+            <div key={f} className="flex items-center gap-1.5 text-[11px] text-[#5C4F3D]">
+              <CheckCircle2 className="w-3 h-3 text-[#7C8B6F] shrink-0" />
+              {f}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Trust footer */}
-      <div className="mt-5 text-center">
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-[#B5A68C]">
+      <div className="text-center">
+        <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-[#B5A68C]">
           <span className="flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-            Sichere Zahlung via Stripe
+            Stripe
           </span>
           <span>Keine Abos</span>
-          <span>Keine versteckten Kosten</span>
-          <span>Sofort verfügbar</span>
+          <span>Sofort verf&uuml;gbar</span>
         </div>
       </div>
     </div>

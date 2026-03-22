@@ -19,7 +19,7 @@ export const INVESTMENT_GOALS = {
     color: 'zinc-300'
   },
   vermoegensaufbau: {
-    label: 'Vermoegensaufbau',
+    label: 'Verm\u00f6gensaufbau',
     icon: '',
     description: 'Langfristiger Wertzuwachs',
     color: 'zinc-300'
@@ -49,19 +49,19 @@ export const RISK_PROFILES = {
   konservativ: {
     label: 'Konservativ',
     icon: '',
-    description: 'Sicherheit vor Rendite, geringe Risiken',
+    description: 'Sicherheit vor Rendite',
     multiplier: 0.8
   },
   ausgewogen: {
     label: 'Ausgewogen',
     icon: '',
-    description: 'Balance zwischen Sicherheit und Rendite',
+    description: 'Sicherheit und Rendite',
     multiplier: 1.0
   },
   risikofreudig: {
     label: 'Risikofreudig',
     icon: '',
-    description: 'Hohe Rendite, hoehere Risiken akzeptiert',
+    description: 'Hohe Rendite, mehr Risiko',
     multiplier: 1.2
   }
 };
@@ -69,28 +69,28 @@ export const RISK_PROFILES = {
 // Erfahrungslevel
 export const EXPERIENCE_LEVELS = {
   anfaenger: {
-    label: 'Anfaenger',
+    label: 'Anf\u00e4nger',
     icon: '',
-    description: '0-2 Immobilien, wenig Erfahrung',
+    description: '0-2 Immobilien',
     warningLevel: 'high'
   },
   fortgeschritten: {
     label: 'Fortgeschritten',
     icon: '',
-    description: '3-5 Immobilien, solide Grundlagen',
+    description: '3-5 Immobilien',
     warningLevel: 'medium'
   },
   profi: {
     label: 'Profi',
     icon: '',
-    description: '6+ Immobilien, tiefes Verstaendnis',
+    description: '6+ Immobilien',
     warningLevel: 'low'
   }
 };
 
 // Default-Profile
 const DEFAULT_PROFILE = {
-  goal: 'cashflow',
+  goals: ['cashflow'],
   riskProfile: 'ausgewogen',
   experience: 'anfaenger',
   // Finanzielle Situation
@@ -245,7 +245,8 @@ export const UserProfileProvider = ({ children }) => {
     }
 
     // Cashflow-Ziel Warnungen
-    if (profile.goal === 'cashflow') {
+    const goals = Array.isArray(profile.goals) ? profile.goals : (profile.goal ? [profile.goal] : ['cashflow']);
+    if (goals.includes('cashflow')) {
       const cfAnalysis = analysisResult.cashflow_analyse;
       if (cfAnalysis) {
         if (cfAnalysis.bruttorendite_prozent < 4) {

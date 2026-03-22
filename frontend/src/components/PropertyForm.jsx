@@ -24,7 +24,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
   // Profile toggle: 'default' uses global profile, 'custom' uses local overrides
   const [profileMode, setProfileMode] = useState('default');
   const [customProfile, setCustomProfile] = useState({
-    goal: investorProfile.goal || 'cashflow',
+    goals: investorProfile.goals || (investorProfile.goal ? [investorProfile.goal] : ['cashflow']),
     riskProfile: investorProfile.riskProfile || 'ausgewogen',
     eigenkapital: investorProfile.eigenkapital || 50000,
     mindestRendite: investorProfile.mindestRendite || 4,
@@ -45,7 +45,8 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
       return customProfile;
     }
     return {
-      goal: investorProfile.goal,
+      goals: investorProfile.goals || (investorProfile.goal ? [investorProfile.goal] : ['cashflow']),
+      goal: Array.isArray(investorProfile.goals) ? investorProfile.goals[0] : (investorProfile.goal || 'cashflow'),
       riskProfile: investorProfile.riskProfile,
       eigenkapital: investorProfile.eigenkapital,
       mindestRendite: investorProfile.mindestRendite,
@@ -198,7 +199,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                 {isProfileComplete ? (
                   <div className="flex flex-col md:flex-row md:items-center gap-3">
                     <div className="flex items-center gap-2 flex-1 flex-wrap">
-                      <span className="text-[#7C8B6F] font-semibold text-[14px]">{INVESTMENT_GOALS[investorProfile.goal]?.label}</span>
+                      <span className="text-[#7C8B6F] font-semibold text-[14px]">{(Array.isArray(investorProfile.goals) ? investorProfile.goals : [investorProfile.goal || 'cashflow']).map(g => INVESTMENT_GOALS[g]?.label).filter(Boolean).join(', ')}</span>
                       <span className="text-[#B5A68C]">|</span>
                       <span className="text-[#5C4F3D] text-[14px]">{RISK_PROFILES[investorProfile.riskProfile]?.label}</span>
                       <span className="text-[#B5A68C]">|</span>
@@ -224,22 +225,30 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
               <div className="space-y-4">
                 {/* Investment-Ziel */}
                 <div>
-                  <label className="block text-[12px] font-medium text-[#5C4F3D] mb-2">Investment-Ziel</label>
+                  <label className="block text-[12px] font-medium text-[#5C4F3D] mb-2">Investment-Ziele (mehrere m&ouml;glich)</label>
                   <div className="flex flex-wrap gap-2">
-                    {Object.entries(INVESTMENT_GOALS).map(([key, goal]) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setCustomProfile(prev => ({ ...prev, goal: key }))}
-                        className={`py-2 px-4 rounded-[10px] border text-[13px] font-medium transition-all ${
-                          customProfile.goal === key
-                            ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]'
-                            : 'border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
-                        }`}
-                      >
-                        {goal.label}
-                      </button>
-                    ))}
+                    {Object.entries(INVESTMENT_GOALS).map(([key, goal]) => {
+                      const goals = customProfile.goals || [];
+                      const isSelected = goals.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setCustomProfile(prev => {
+                            const current = prev.goals || [];
+                            const updated = current.includes(key) ? current.filter(g => g !== key) : [...current, key];
+                            return { ...prev, goals: updated.length > 0 ? updated : current };
+                          })}
+                          className={`py-2 px-4 rounded-[10px] border text-[13px] font-medium transition-all ${
+                            isSelected
+                              ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]'
+                              : 'border-[#E8E0D4] text-[#8C7E6A] hover:border-[#B5A68C]'
+                          }`}
+                        >
+                          {goal.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

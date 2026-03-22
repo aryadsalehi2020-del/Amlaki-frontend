@@ -63,20 +63,20 @@ function Library() {
     });
 
   return (
-    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20 max-w-[900px]">
+    <div className="px-4 md:px-16 lg:px-20 py-6 md:py-20 max-w-[900px]">
       {/* Header */}
-      <div className="flex items-end justify-between mb-12 fade-in">
+      <div className="flex items-end justify-between mb-6 md:mb-12 fade-in">
         <div>
-          <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">Library</h1>
-          <p className="text-[#8C7E6A] text-[14px] mt-2">{analyses.length} Analysen</p>
+          <h1 className="text-[26px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">Bibliothek</h1>
+          <p className="text-[#8C7E6A] text-[13px] mt-1">{analyses.length} Analysen</p>
         </div>
-        <Link to="/analyze" className="px-5 py-2.5 bg-[#7C8B6F] text-white text-[14px] font-semibold rounded-full hover:bg-[#6B7A5E] transition-all active:scale-[0.98]">
+        <Link to="/analyze" className="px-4 md:px-5 py-2 md:py-2.5 bg-[#7C8B6F] text-white text-[13px] md:text-[14px] font-semibold rounded-full hover:bg-[#6B7A5E] transition-all active:scale-[0.98]">
           Neue Analyse
         </Link>
       </div>
 
       {/* Search + Filter */}
-      <div className="mb-10 space-y-4 fade-in fade-in-delay-1">
+      <div className="mb-6 md:mb-10 space-y-3 md:space-y-4 fade-in fade-in-delay-1">
         <input
           type="text" placeholder="Suchen..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all"

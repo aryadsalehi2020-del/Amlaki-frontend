@@ -296,7 +296,7 @@ function ProjectionCharts({ analysisData }) {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-[#7C8B6F] rounded" />
-                <span className="text-[#8C7E6A] text-sm">Ihr Eigenkapital</span>
+                <span className="text-[#8C7E6A] text-sm">Dein Eigenkapital</span>
               </div>
             </>
           )}
@@ -323,7 +323,7 @@ function ProjectionCharts({ analysisData }) {
           <p className="text-xs text-[#8C7E6A]">Immobilienwert</p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-[#E8E0D4]">
-          <p className="text-[#B5A68C] text-xs uppercase tracking-wider mb-1">Ihr Vermögen</p>
+          <p className="text-[#B5A68C] text-xs uppercase tracking-wider mb-1">Dein Verm&ouml;gen</p>
           <p className="text-2xl font-bold text-[#7C8B6F]">{formatCurrency(projection.zusammenfassung.eigenkapitalImObjekt)}</p>
           <p className="text-xs text-[#8C7E6A]">Eigenkapital im Objekt</p>
         </div>
@@ -353,7 +353,7 @@ function ProjectionCharts({ analysisData }) {
             </p>
             <p className="text-[#8C7E6A]">
               Das ist ein Vermögenszuwachs von {formatCurrency(projection.zusammenfassung.vermoegenszuwachs)} -
-              oder {(projection.zusammenfassung.renditeGesamt / 30).toFixed(1)}% p.a. auf Ihr Eigenkapital.
+              oder {(projection.zusammenfassung.renditeGesamt / 30).toFixed(1)}% p.a. auf dein Eigenkapital.
             </p>
           </div>
         </div>

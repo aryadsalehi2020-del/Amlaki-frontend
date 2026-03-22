@@ -59,7 +59,7 @@ function PaywallModal({ onClose, token }) {
           </div>
           <h2 className="text-[22px] font-bold text-[#2C2418] mb-2">Analyse-Credits kaufen</h2>
           <p className="text-[14px] text-[#8C7E6A]">
-            Schalte die vollstaendige Immobilienanalyse frei -- mit Szenarien, Foerderungen und Verbesserungsvorschlaegen.
+            Schalte die vollst&auml;ndige Immobilienanalyse frei -- mit Szenarien, F&ouml;rderungen und Verbesserungsvorschl&auml;gen.
           </p>
         </div>
 
@@ -173,7 +173,8 @@ function Analyze() {
       const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung, besichtigt: besichtigt, besichtigungs_notizen: besichtigungsNotizen || null };
       if (investmentProfile) {
         requestBody.investment_profile = {
-          goal: investmentProfile.goal,
+          goal: Array.isArray(investmentProfile.goals) ? investmentProfile.goals[0] : (investmentProfile.goal || 'cashflow'),
+          goals: investmentProfile.goals || (investmentProfile.goal ? [investmentProfile.goal] : ['cashflow']),
           risk_profile: investmentProfile.riskProfile,
           eigenkapital: investmentProfile.eigenkapital,
           mindest_rendite: investmentProfile.mindestRendite,
@@ -240,12 +241,11 @@ function Analyze() {
     <div className="px-6 md:px-16 lg:px-20 py-3 md:py-5">
       <div className="max-w-[900px]">
         {step === 'upload' && (
-          <header className="text-center mb-6 fade-in">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <h1 className="text-[32px] md:text-[40px] font-bold tracking-tight text-[#2C2418]">Neue Analyse</h1>
+          <header className="text-center mb-4 md:mb-6 fade-in">
+            <div className="flex items-center justify-center gap-3 mb-1">
+              <h1 className="text-[24px] md:text-[40px] font-bold tracking-tight text-[#2C2418]">Neue Analyse</h1>
               <CreditsBadge credits={credits} />
             </div>
-            <p className="text-[#8C7E6A] text-[15px] max-w-md mx-auto font-light">Expose hochladen oder Daten manuell eingeben</p>
           </header>
         )}
 

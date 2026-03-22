@@ -311,9 +311,9 @@ export default function Chat() {
       });
       if (res.ok) {
         const data = await res.json();
-        setConversations(
-          Array.isArray(data) ? data : data.conversations || []
-        );
+        const convs = Array.isArray(data) ? data : data.conversations || [];
+        setConversations(convs);
+        window.dispatchEvent(new Event('conversations-updated'));
       }
     } catch {
       // silent
@@ -678,48 +678,14 @@ export default function Chat() {
 
   return (
     <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[#FAF7F2] overflow-hidden">
-      {/* ── Desktop sidebar ──────────────────────────── */}
-      <div className="hidden md:flex flex-col w-[280px] bg-[#F5F0E8] border-r border-[#E8E0D4] shrink-0">
-        {sidebarContent}
-      </div>
+      {/* Desktop sidebar is now in main Sidebar.jsx */}
 
-      {/* ── Mobile sidebar overlay ───────────────────── */}
-      {sidebarOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-[#2C2418]/20 backdrop-blur-sm z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      <div
-        className={`md:hidden fixed top-0 left-0 bottom-0 w-[280px] bg-[#F5F0E8] border-r border-[#E8E0D4] z-50 transform transition-transform duration-300 ease-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        {sidebarContent}
-      </div>
+      {/* Mobile sidebar is now in main Sidebar.jsx */}
 
       {/* ── Main chat area ───────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <div className="flex items-center gap-3 px-4 md:px-6 py-3 border-b border-[#E8E0D4] bg-white/60 backdrop-blur-sm shrink-0">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="md:hidden text-[#8C7E6A] hover:text-[#2C2418] transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-              />
-            </svg>
-          </button>
+        {/* Top bar (desktop only - mobile uses main navbar) */}
+        <div className="hidden md:flex items-center gap-3 px-4 md:px-6 py-3 border-b border-[#E8E0D4] bg-white/60 backdrop-blur-sm shrink-0">
           {editingTitle ? (
             <input
               autoFocus
@@ -758,82 +724,82 @@ export default function Chat() {
             <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto">
               {/* Welcome Banner for new users */}
               {showWelcomeBanner && (
-                <div className="w-full mb-6 p-4 bg-[#7C8B6F]/[0.08] border border-[#7C8B6F]/20 rounded-2xl relative">
+                <div className="w-full mb-4 md:mb-6 p-3 md:p-4 bg-[#7C8B6F]/[0.08] border border-[#7C8B6F]/20 rounded-xl md:rounded-2xl relative">
                   <button
                     onClick={dismissWelcome}
-                    className="absolute top-3 right-3 text-[#8C7E6A] hover:text-[#2C2418] transition-colors text-lg leading-none"
+                    className="absolute top-2.5 right-2.5 text-[#8C7E6A] hover:text-[#2C2418] transition-colors text-lg leading-none"
                     aria-label="Schliessen"
                   >
                     &times;
                   </button>
-                  <h3 className="text-[15px] font-semibold text-[#2C2418] mb-1">
-                    Willkommen bei AmlakiAI{user?.username ? `, ${user.username}` : ''}!
+                  <h3 className="text-[14px] font-semibold text-[#2C2418] mb-0.5">
+                    Willkommen{user?.username ? `, ${user.username}` : ''}!
                   </h3>
-                  <p className="text-[13px] text-[#5C4F3D] mb-3 pr-6">
-                    Richte dein Investoren-Profil ein, damit ich dich personalisiert beraten kann -- abgestimmt auf deine Ziele, Risikobereitschaft und finanzielle Situation.
+                  <p className="text-[12px] md:text-[13px] text-[#5C4F3D] mb-2 pr-6 leading-snug">
+                    Richte dein Profil ein f&uuml;r personalisierte Beratung.
                   </p>
                   <button
                     onClick={() => navigate('/settings')}
-                    className="text-[13px] font-medium text-[#7C8B6F] hover:text-[#5C4F3D] transition-colors"
+                    className="text-[12px] md:text-[13px] font-medium text-[#7C8B6F] hover:text-[#5C4F3D] transition-colors"
                   >
                     Profil einrichten &rarr;
                   </button>
                 </div>
               )}
-              <div className="mb-8 text-center">
-                <h2 className="text-[22px] font-bold text-[#2C2418] mb-2">
+              <div className="mb-5 md:mb-8 text-center">
+                <h2 className="text-[20px] md:text-[22px] font-bold text-[#2C2418] mb-1">
                   Wie kann ich helfen?
                 </h2>
-                <p className="text-[14px] text-[#8C7E6A]">
-                  Dein KI-Berater fuer den Immobilienkauf im DACH-Raum
+                <p className="text-[13px] text-[#8C7E6A]">
+                  Dein KI-Berater f&uuml;r den Immobilienkauf im DACH-Raum
                 </p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full pb-4">
                 {/* Primary: Analyze */}
                 <button
                   onClick={() => navigate('/analyze')}
-                  className="text-left p-4 bg-[#7C8B6F] border border-[#6B7A5E] rounded-2xl hover:bg-[#6B7A5E] transition-all duration-200 group"
+                  className="text-left p-3.5 md:p-4 bg-[#7C8B6F] border border-[#6B7A5E] rounded-xl md:rounded-2xl hover:bg-[#6B7A5E] transition-all duration-200 group"
                 >
-                  <p className="text-[13px] font-semibold text-white mb-1">
+                  <p className="text-[13px] font-semibold text-white mb-0.5">
                     Neue Immobilie analysieren
                   </p>
-                  <p className="text-[12px] text-white/70 leading-relaxed">
-                    Expose hochladen oder Daten eingeben
+                  <p className="text-[11px] md:text-[12px] text-white/70">
+                    Expos&eacute; hochladen oder Daten eingeben
                   </p>
                 </button>
                 {/* Secondary: Library */}
                 <button
                   onClick={() => navigate('/library')}
-                  className="text-left p-4 bg-white border border-[#E8E0D4] rounded-2xl hover:border-[#B5A68C] hover:shadow-sm transition-all duration-200 group"
+                  className="text-left p-3.5 md:p-4 bg-white border border-[#E8E0D4] rounded-xl md:rounded-2xl hover:border-[#B5A68C] hover:shadow-sm transition-all duration-200 group"
                 >
-                  <p className="text-[13px] font-semibold text-[#2C2418] mb-1 group-hover:text-[#7C8B6F] transition-colors">
+                  <p className="text-[13px] font-semibold text-[#2C2418] mb-0.5 group-hover:text-[#7C8B6F] transition-colors">
                     Objekt aus Bibliothek laden
                   </p>
-                  <p className="text-[12px] text-[#8C7E6A] leading-relaxed">
+                  <p className="text-[11px] md:text-[12px] text-[#8C7E6A]">
                     Gespeicherte Analysen aufrufen
                   </p>
                 </button>
                 {/* Tertiary: General question */}
                 <button
                   onClick={() => setInput('Ich habe eine allgemeine Frage: ')}
-                  className="text-left p-4 bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl hover:border-[#B5A68C] transition-all duration-200 group"
+                  className="text-left p-3.5 md:p-4 bg-[#FAF7F2] border border-[#E8E0D4] rounded-xl md:rounded-2xl hover:border-[#B5A68C] transition-all duration-200 group"
                 >
-                  <p className="text-[13px] font-semibold text-[#5C4F3D] mb-1 group-hover:text-[#7C8B6F] transition-colors">
+                  <p className="text-[13px] font-semibold text-[#5C4F3D] mb-0.5 group-hover:text-[#7C8B6F] transition-colors">
                     Allgemeine Frage stellen
                   </p>
-                  <p className="text-[12px] text-[#8C7E6A] leading-relaxed">
+                  <p className="text-[11px] md:text-[12px] text-[#8C7E6A]">
                     Finanzierung, Steuern, Recht
                   </p>
                 </button>
                 {/* Tertiary: Tools */}
                 <button
                   onClick={() => navigate('/tools')}
-                  className="text-left p-4 bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl hover:border-[#B5A68C] transition-all duration-200 group"
+                  className="text-left p-3.5 md:p-4 bg-[#FAF7F2] border border-[#E8E0D4] rounded-xl md:rounded-2xl hover:border-[#B5A68C] transition-all duration-200 group"
                 >
-                  <p className="text-[13px] font-semibold text-[#5C4F3D] mb-1 group-hover:text-[#7C8B6F] transition-colors">
+                  <p className="text-[13px] font-semibold text-[#5C4F3D] mb-0.5 group-hover:text-[#7C8B6F] transition-colors">
                     Rechner verwenden
                   </p>
-                  <p className="text-[12px] text-[#8C7E6A] leading-relaxed">
+                  <p className="text-[11px] md:text-[12px] text-[#8C7E6A]">
                     Projektion, Szenarien, Fairer Preis
                   </p>
                 </button>

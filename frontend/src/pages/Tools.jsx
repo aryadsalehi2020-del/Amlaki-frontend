@@ -29,7 +29,7 @@ function ToolInputPanel({ data, onChange, showFinancing = true }) {
           })}
           className="text-[12px] text-[#8C7E6A] hover:text-[#7C8B6F] transition-colors"
         >
-          Zurucksetzen
+          Zur&uuml;cksetzen
         </button>
       </div>
 
@@ -39,7 +39,7 @@ function ToolInputPanel({ data, onChange, showFinancing = true }) {
           <input type="number" value={data.kaufpreis} onChange={(e) => onChange({ ...data, kaufpreis: parseFloat(e.target.value) || 0 })} className={inputClass} step="10000" />
         </div>
         <div>
-          <label className={labelClass}>Wohnflache (m2)</label>
+          <label className={labelClass}>Wohnfl&auml;che (m&sup2;)</label>
           <input type="number" value={data.wohnflaeche} onChange={(e) => onChange({ ...data, wohnflaeche: parseFloat(e.target.value) || 0 })} className={inputClass} />
         </div>
         <div>
@@ -108,9 +108,9 @@ function Tools() {
   const [fairpriceData, setFairpriceData] = useState({ kaufpreis: 350000, kaltmiete: 1200, hausgeld: 350, wohnflaeche: 95, eigenkapital: 60000, zinssatz: 4.0, tilgung: 1.25, vergleichspreisProQm: 4000 });
 
   const tools = [
-    { id: 'projection', name: '30-Jahres-Projektion', description: 'Cashflow, Vermogensaufbau und Tilgung uber Zeit' },
-    { id: 'scenario', name: 'Szenarien-Simulator', description: '"Was ware wenn" Analysen fur verschiedene Situationen' },
-    { id: 'fairprice', name: 'Fairer Preis', description: 'Berechnen Sie den objektiven Marktwert' }
+    { id: 'projection', name: '30-Jahres-Projektion', description: 'Cashflow, Verm\u00f6gensaufbau und Tilgung \u00fcber Zeit' },
+    { id: 'scenario', name: 'Szenarien-Simulator', description: '"Was w\u00e4re wenn" Analysen f\u00fcr verschiedene Situationen' },
+    { id: 'fairprice', name: 'Fairer Preis', description: 'Berechne den objektiven Marktwert' }
   ];
 
   const getCurrentToolData = () => {
@@ -125,15 +125,15 @@ function Tools() {
   const currentToolData = getCurrentToolData();
 
   return (
-    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
-      <div className="max-w-[900px] space-y-6">
+    <div className="px-4 md:px-16 lg:px-20 py-6 md:py-20">
+      <div className="max-w-[900px] space-y-5">
         {/* Header */}
         <div className="fade-in">
-          <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">
+          <h1 className="text-[26px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">
             Profi-Tools
           </h1>
-          <p className="text-[#8C7E6A] text-[14px] mt-2">
-            Machtige Werkzeuge fur fundierte Immobilienentscheidungen
+          <p className="text-[#8C7E6A] text-[13px] mt-1">
+            M&auml;chtige Werkzeuge f&uuml;r fundierte Immobilienentscheidungen
           </p>
         </div>
 
@@ -173,7 +173,7 @@ function Tools() {
             {showInputPanel ? 'Eingaben ausblenden' : 'Eingaben anzeigen'}
           </button>
           <p className="text-[12px] text-[#8C7E6A]">
-            Passen Sie die Werte an Ihre Immobilie an
+            Passe die Werte an deine Immobilie an
           </p>
         </div>
 

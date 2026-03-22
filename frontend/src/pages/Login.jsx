@@ -24,7 +24,7 @@ function Login() {
       <div className="w-full max-w-[320px]">
         {/* Logo */}
         <div className="text-center mb-12 fade-in">
-          <h1 className="text-[32px] font-bold tracking-tight mb-1">
+          <h1 className="text-[32px] font-bold tracking-tight mb-1 cursor-pointer" onClick={() => navigate('/')}>
             <span className="font-extrabold text-[#7C8B6F]">A</span>
             <span className="text-[#2C2418]">mlak</span>
             <span className="font-extrabold text-[#7C8B6F]">I</span>
@@ -69,6 +69,12 @@ function Login() {
             Neu hier?{' '}
             <Link to="/register" className="text-[#7C8B6F] hover:text-[#6B7A5E] font-medium transition-colors">
               Account erstellen
+            </Link>
+          </p>
+
+          <p className="mt-3 text-center">
+            <Link to="/" className="text-[12px] text-[#B5A68C] hover:text-[#7C8B6F] transition-colors">
+              Zur Startseite
             </Link>
           </p>
         </div>

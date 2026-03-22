@@ -91,32 +91,32 @@ const FEATURES = [
   {
     icon: TrendingUp,
     title: 'Marktwertanalyse',
-    description: 'Bewertung auf Basis realer Transaktionsdaten, Bodenrichtwerte und aktueller Marktentwicklungen \u2013 nach anerkannten Verfahren der Immobilienwirtschaft.',
+    description: 'Bewertung auf Basis realer Transaktionsdaten und Bodenrichtwerte \u2013 nach anerkannten Verfahren.',
   },
   {
     icon: MessageSquare,
     title: 'Verhandlungsberatung',
-    description: 'Datengest\u00fctzte Verhandlungsstrategien mit konkreten Argumenten \u2013 entwickelt aus der Analyse tausender erfolgreicher Immobilientransaktionen.',
+    description: 'Datengest\u00fctzte Strategien mit konkreten Argumenten f\u00fcr deine Preisverhandlung.',
   },
   {
     icon: ClipboardCheck,
     title: 'Besichtigungsprotokoll',
-    description: 'Systematische Pr\u00fcfung aller relevanten Gewerke \u2013 von Dachkonstruktion bis Elektrik. Basierend auf den Pr\u00fcfstandards zertifizierter Bausachverst\u00e4ndiger.',
+    description: 'Systematische Pr\u00fcfung aller Gewerke \u2013 von Dach bis Elektrik, nach Sachverst\u00e4ndigen-Standard.',
   },
   {
     icon: Scale,
     title: 'Steuer- und AfA-Optimierung',
-    description: 'Berechnung der steuerlichen Vorteile durch AfA, Zinsabzug und F\u00f6rderungen. Cashflow vor und nach Steuer auf einen Blick.',
+    description: 'AfA, Zinsabzug und F\u00f6rderungen berechnet. Cashflow vor und nach Steuer auf einen Blick.',
   },
   {
     icon: Brain,
     title: 'Pers\u00f6nliche KI-Beratung',
-    description: 'Trainiert mit dem Fachwissen erfahrener Immobilienberater, Gutachter und Finanzexperten. Beantwortet komplexe Fragen auf dem Niveau eines Branchenprofis.',
+    description: 'Fachwissen erfahrener Immobilienberater und Gutachter \u2013 jederzeit abrufbar.',
   },
   {
     icon: Coins,
     title: 'Finanzierungsanalyse',
-    description: 'Vollst\u00e4ndige Kostenaufstellung inkl. Kaufnebenkosten, Instandhaltungsr\u00fccklagen und Cashflow-Prognosen \u2013 nach bankkonformen Berechnungsstandards.',
+    description: 'Kaufnebenkosten, R\u00fccklagen und Cashflow-Prognosen nach bankkonformen Standards.',
   },
 ];
 
@@ -139,27 +139,27 @@ const STEPS = [
 ];
 
 const STATS = [
-  { value: '2026', label: 'Marktdaten aktualisiert' },
-  { value: '30 Sek', label: 'Analyse in Sekunden' },
-  { value: '15+', label: 'St\u00e4dte im Fast-Path' },
-  { value: '24/7', label: 'Verf\u00fcgbarkeit' },
+  { value: '2026', label: 'Marktdaten' },
+  { value: '30 Sek', label: 'pro Analyse' },
+  { value: '15+', label: 'St\u00e4dte abgedeckt' },
+  { value: '24/7', label: 'Verf\u00fcgbar' },
 ];
 
 const PROBLEMS = [
   {
     icon: Shield,
-    title: 'Interessenkonflikt bei klassischer Beratung',
-    description: 'Makler werden vom Verk\u00e4ufer beauftragt und \u00fcber die Provision verg\u00fctet. Eine unabh\u00e4ngige Bewertung im Interesse des K\u00e4ufers findet dabei selten statt.',
+    title: 'Interessenkonflikt',
+    description: 'Makler arbeiten f\u00fcr den Verk\u00e4ufer. Unabh\u00e4ngige Bewertung im K\u00e4uferinteresse fehlt.',
   },
   {
     icon: BarChart3,
-    title: 'Informationsasymmetrie am Immobilienmarkt',
-    description: 'Ohne Zugang zu Transaktionsdaten, Bodenrichtwerten und Marktanalysen fehlt K\u00e4ufern die Grundlage f\u00fcr eine fundierte Preiseinsch\u00e4tzung.',
+    title: 'Informationsasymmetrie',
+    description: 'Ohne Transaktionsdaten und Marktanalysen fehlt die Grundlage f\u00fcr faire Preiseinsch\u00e4tzungen.',
   },
   {
     icon: Building2,
-    title: 'Komplexit\u00e4t des Kaufprozesses',
-    description: 'Bewertungsverfahren, WEG-Recht, F\u00f6rderprogramme, steuerliche Aspekte \u2013 der Immobilienkauf erfordert Fachwissen aus \u00fcber einem Dutzend Disziplinen.',
+    title: 'Komplexit\u00e4t',
+    description: 'WEG-Recht, F\u00f6rderungen, Steuern \u2013 der Kaufprozess erfordert Fachwissen aus \u00fcber einem Dutzend Disziplinen.',
   },
 ];
 
@@ -169,6 +169,13 @@ const PROBLEMS = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const scrollTo = useCallback((id) => {
     const el = document.getElementById(id);
@@ -205,7 +212,7 @@ export default function LandingPage() {
     >
       {/* ===== NAVBAR ===== */}
       <nav
-        style={{ background: 'rgba(250,247,242,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.khakiLight}40` }}
+        style={{ background: 'rgba(250,247,242,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.khakiLight}40`, boxShadow: scrolled ? '0 2px 12px rgba(44,36,24,0.06)' : 'none', transition: 'box-shadow 0.3s ease' }}
         className="fixed top-0 left-0 right-0 z-50"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-5 h-16 flex items-center justify-between">
@@ -320,7 +327,7 @@ export default function LandingPage() {
               className="text-base sm:text-lg md:text-xl leading-relaxed mb-7 md:mb-8 max-w-xl mx-auto"
               style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}
             >
-              Exposé hochladen, in 30 Sekunden wissen ob sich das Objekt lohnt. Cashflow, fairer Preis, Steuervorteile, Förderungen und Finanzierungsstrategie -- alles auf einen Blick.
+              Exposé hochladen, in 30 Sekunden wissen ob sich das Objekt lohnt -- Cashflow, fairer Preis und Finanzierung auf einen Blick.
             </p>
           </FadeInSection>
 
@@ -376,7 +383,7 @@ export default function LandingPage() {
       </header>
 
       {/* ===== PROBLEM ===== */}
-      <section className="py-14 md:py-24 px-4 sm:px-5" style={{ background: C.bgAlt }}>
+      <section className="py-20 md:py-28 px-4 sm:px-5" style={{ background: C.bgAlt }}>
         <div className="max-w-5xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-10 md:mb-12">
@@ -430,7 +437,7 @@ export default function LandingPage() {
       </div>
 
       {/* ===== FEATURES ===== */}
-      <section id="features" className="py-14 md:py-24 px-4 sm:px-5" style={{ background: C.bg }}>
+      <section id="features" className="py-20 md:py-28 px-4 sm:px-5" style={{ background: C.bg }}>
         <div className="max-w-5xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-10 md:mb-12">
@@ -482,11 +489,27 @@ export default function LandingPage() {
               </FadeInSection>
             ))}
           </div>
+
+          {/* Mid-page CTA */}
+          <FadeInSection delay={0.2}>
+            <div className="text-center mt-10 md:mt-14">
+              <button
+                onClick={() => navigate('/register')}
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
+                style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = C.olive)}
+              >
+                Jetzt kostenlos testen
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </FadeInSection>
         </div>
       </section>
 
       {/* ===== HOW IT WORKS ===== */}
-      <section id="how" className="py-14 md:py-24 px-4 sm:px-5" style={{ background: C.bgAlt }}>
+      <section id="how" className="py-20 md:py-28 px-4 sm:px-5" style={{ background: C.bgAlt }}>
         <div className="max-w-4xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-10 md:mb-14">
@@ -505,12 +528,12 @@ export default function LandingPage() {
             </div>
           </FadeInSection>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8 md:gap-6">
             {STEPS.map(({ number, title, description }, i) => (
               <FadeInSection key={number} delay={i * 0.12}>
-                <div className="text-center md:text-left">
+                <div className="text-left md:text-left">
                   <span
-                    className="inline-block text-4xl sm:text-5xl font-extrabold mb-3"
+                    className="inline-block text-3xl sm:text-4xl font-extrabold mb-2"
                     style={{ color: C.khaki, letterSpacing: '-0.04em' }}
                   >
                     {number}
@@ -521,6 +544,9 @@ export default function LandingPage() {
                   <p className="text-sm leading-relaxed" style={{ color: C.body }}>
                     {description}
                   </p>
+                  {i < STEPS.length - 1 && (
+                    <div className="md:hidden mt-6 mb-2" style={{ borderBottom: `1px solid ${C.border}` }} />
+                  )}
                   {i < STEPS.length - 1 && (
                     <ChevronRight
                       size={24}
@@ -541,7 +567,7 @@ export default function LandingPage() {
       </div>
 
       {/* ===== STATS / TRUST ===== */}
-      <section className="py-14 md:py-20 px-4 sm:px-5" style={{ background: C.bg }}>
+      <section className="py-20 md:py-24 px-4 sm:px-5" style={{ background: C.bg }}>
         <div className="max-w-4xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-8 md:mb-10">
@@ -581,7 +607,7 @@ export default function LandingPage() {
       </section>
 
       {/* ===== PRICING ===== */}
-      <section id="pricing" className="py-14 md:py-24 px-4 sm:px-5" style={{ background: C.bgAlt }}>
+      <section id="pricing" className="py-20 md:py-28 px-4 sm:px-5" style={{ background: C.bgAlt }}>
         <div className="max-w-4xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-10 md:mb-12">
@@ -595,7 +621,7 @@ export default function LandingPage() {
                 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
                 style={{ color: C.heading, letterSpacing: '-0.025em' }}
               >
-                Professionelle Analyse ab 9 EUR
+                Professionelle Analyse ab 9 €
               </h2>
               <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
                 Erste Analyse gratis. Keine Abos, keine versteckten Kosten.
@@ -607,7 +633,7 @@ export default function LandingPage() {
             {[
               { name: 'Free', price: '0', unit: '', desc: 'Zum Kennenlernen', credits: '1 Analyse', features: ['Score und Bewertung', 'Cashflow-Berechnung', 'Grundlegende Kennzahlen', 'KI-Chat'], cta: 'Kostenlos starten', popular: false },
               { name: 'Basic', price: '9', unit: '', desc: '1 vollständige Analyse', credits: '1 Analyse', features: ['Alles aus Free', 'Szenarien-Vergleich', 'Förderungen und AfA', 'Fairer Preis Berechnung', 'Verbesserungsvorschläge'], cta: '1 Credit kaufen', popular: false },
-              { name: 'Plus', price: '35', unit: '', desc: 'Mehrere Objekte vergleichen', credits: '5 Analysen (7/St.)', features: ['Alles aus Basic', '5 vollständige Analysen', 'Mengenrabatt 22%', 'Ideal zum Vergleichen'], cta: '5 Credits kaufen', popular: true },
+              { name: 'Plus', price: '35', unit: '', desc: 'Mehrere Objekte vergleichen', credits: '5 Analysen (7€/St.)', features: ['Alles aus Basic', '5 vollständige Analysen', 'Mengenrabatt 22%', 'Ideal zum Vergleichen'], cta: '5 Credits kaufen', popular: true },
             ].map((plan, i) => (
               <FadeInSection key={plan.name} delay={i * 0.1}>
                 <div
@@ -626,7 +652,7 @@ export default function LandingPage() {
                   <p className="text-xs mb-4" style={{ color: C.khaki }}>{plan.desc}</p>
                   <div className="mb-1">
                     <span className="text-3xl font-bold" style={{ color: C.heading }}>{plan.price}</span>
-                    {plan.price !== '0' && <span className="text-lg font-bold" style={{ color: C.heading }}> EUR</span>}
+                    <span className="text-lg font-bold" style={{ color: C.heading }}> €</span>
                   </div>
                   <p className="text-sm mb-5" style={{ color: C.khaki }}>{plan.credits}</p>
                   <ul className="space-y-2.5 mb-6 flex-1">
@@ -658,7 +684,7 @@ export default function LandingPage() {
 
           <FadeInSection delay={0.3}>
             <p className="text-center text-xs mt-6" style={{ color: C.khaki }}>
-              Sichere Zahlung via Stripe. Auch 10er-Paket verfügbar (50 EUR / 5 EUR pro Analyse).
+              Sichere Zahlung via Stripe. Keine Abos, keine versteckten Kosten.
             </p>
           </FadeInSection>
         </div>

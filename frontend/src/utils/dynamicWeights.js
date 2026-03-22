@@ -30,7 +30,7 @@ export const GOAL_WEIGHT_MODIFIERS = {
     }
   },
   vermoegensaufbau: {
-    name: 'Vermoegensaufbau',
+    name: 'Verm\u00f6gensaufbau',
     description: 'Fokus auf Wertsteigerung und gute Lagen',
     modifiers: {
       cashflow_rendite: -10,

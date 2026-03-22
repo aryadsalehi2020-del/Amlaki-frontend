@@ -129,7 +129,7 @@ function Profile() {
               <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4]">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="text-[13px] text-[#5C4F3D] bg-[#F5F0E8] border border-[#E8E0D4] px-3 py-1.5 rounded-full font-medium">
-                    {INVESTMENT_GOALS[investorProfile.goal]?.label}
+                    {(Array.isArray(investorProfile.goals) ? investorProfile.goals : [investorProfile.goal || 'cashflow']).map(g => INVESTMENT_GOALS[g]?.label).filter(Boolean).join(', ')}
                   </span>
                   <span className="text-[13px] text-[#5C4F3D] bg-[#F5F0E8] border border-[#E8E0D4] px-3 py-1.5 rounded-full font-medium">
                     {RISK_PROFILES[investorProfile.riskProfile]?.label}

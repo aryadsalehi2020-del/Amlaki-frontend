@@ -51,19 +51,18 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
 
   return (
     <div className="fade-in">
-      <div className="bg-white rounded-[20px] p-6 md:p-8 border border-[#E8E0D4]">
-        <h2 className="text-[24px] font-bold text-[#2C2418] mb-1 text-center">Neue Analyse</h2>
-        <p className="text-[#8C7E6A] text-center text-[13px] mb-5">Expose hochladen, Link einfuegen oder manuell eingeben</p>
+      <div className="bg-white rounded-[20px] p-5 md:p-8 border border-[#E8E0D4]">
+        <p className="text-[#8C7E6A] text-center text-[13px] mb-4">Expos&eacute; hochladen, Link einf&uuml;gen oder manuell eingeben</p>
 
         {/* URL Import */}
         <div className="mb-5">
-          <label className="text-[13px] font-medium text-[#5C4F3D] mb-2 block">Inserat-Link oder Expose-Text einfügen</label>
+          <label className="text-[13px] font-medium text-[#5C4F3D] mb-2 block">Inserat-Link oder Expos&eacute;-Text einf&uuml;gen</label>
           <div className="flex gap-2">
             <input
               type="text"
               value={url}
               onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
-              placeholder="https://www.immobilienscout24.de/expose/... oder Text einfügen"
+              placeholder="https://www.kleinanzeigen.de/s-anzeige/..."
               className="flex-1 px-4 py-3 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[12px] text-[14px] text-[#2C2418] placeholder-[#B5A68C] focus:border-[#7C8B6F] focus:outline-none focus:ring-2 focus:ring-[#7C8B6F]/10"
               onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
             />
@@ -76,7 +75,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
             </button>
           </div>
           {urlError && <p className="text-[12px] text-[#B85C5C] mt-2">{urlError}</p>}
-          <p className="text-[11px] text-[#B5A68C] mt-1.5">Kleinanzeigen Links funktionieren direkt. Bei ImmoScout24/Immowelt: Expose-Text kopieren und einfügen.</p>
+          <p className="text-[11px] text-[#B5A68C] mt-1.5">Kleinanzeigen Links funktionieren direkt. Bei ImmoScout24/Immowelt: Expos&eacute;-Text kopieren und einf&uuml;gen.</p>
         </div>
 
         <div className="flex items-center my-4">
@@ -87,7 +86,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
 
         {/* PDF Upload */}
         <div
-          className={`border-2 border-dashed rounded-[16px] p-5 md:p-8 text-center cursor-pointer transition-all duration-300
+          className={`border-2 border-dashed rounded-[16px] p-4 md:p-8 text-center cursor-pointer transition-all duration-300
             ${isDragging ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 scale-[1.02]' : 'border-[#E8E0D4] hover:border-[#B5A68C] hover:bg-[#FAF7F2]'}
             ${selectedFile ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : ''}`}
           onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={handleBrowseClick}
@@ -109,7 +108,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
                 <svg className="w-6 h-6 text-[#B5A68C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
               </div>
               <div>
-                <p className="font-medium text-[#2C2418] text-[15px]">PDF-Expose hier ablegen</p>
+                <p className="font-medium text-[#2C2418] text-[15px]">PDF-Expos&eacute; hier ablegen</p>
                 <p className="text-[12px] text-[#8C7E6A] mt-1">oder klicken zum Durchsuchen</p>
               </div>
             </div>
@@ -120,7 +119,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
           <button onClick={handleUploadClick} className="mt-6 w-full py-4 bg-[#7C8B6F] text-white font-semibold rounded-full text-[16px] hover:bg-[#6B7A5E] transition-all active:scale-[0.98]">
             <span className="flex items-center justify-center gap-3">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              Expose analysieren
+              Expos&eacute; analysieren
             </span>
           </button>
         )}
@@ -139,15 +138,15 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3 mt-5">
+      <div className="grid grid-cols-3 gap-2 md:gap-3 mt-3">
         {[
-          { title: 'Transparente Regeln', desc: 'Klare Bewertungskriterien und nachvollziehbare Scores' },
-          { title: 'Unabhaengig', desc: 'Objektive Analyse ohne Interessenskonflikte' },
-          { title: 'KI-Powered', desc: 'Intelligente Analyse in Sekundenschnelle' }
+          { title: 'Transparent', desc: 'Nachvollziehbare Scores' },
+          { title: 'Unabh\u00e4ngig', desc: 'Ohne Interessenskonflikte' },
+          { title: 'KI-Powered', desc: 'Analyse in Sekunden' }
         ].map((card, i) => (
-          <div key={i} className="bg-white rounded-[12px] p-4 border border-[#E8E0D4]">
-            <h3 className="font-semibold text-[#2C2418] mb-1 text-[13px]">{card.title}</h3>
-            <p className="text-[11px] text-[#8C7E6A] leading-relaxed">{card.desc}</p>
+          <div key={i} className="bg-white rounded-[10px] p-2 md:p-3 border border-[#E8E0D4] text-center">
+            <h3 className="font-semibold text-[#2C2418] text-[11px] mb-0.5">{card.title}</h3>
+            <p className="text-[9px] md:text-[11px] text-[#8C7E6A]">{card.desc}</p>
           </div>
         ))}
       </div>

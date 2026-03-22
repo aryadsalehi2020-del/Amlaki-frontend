@@ -189,12 +189,11 @@ function ScenarioSimulator({ analysisData }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold text-[#2C2418] flex items-center gap-3">
-            <span className="w-10 h-10 bg-[#F5F0E8] rounded-xl flex items-center justify-center text-xl border border-[#E8E0D4]"></span>
-            <span className="text-[#2C2418]">Was wäre wenn...</span>
+          <h3 className="text-xl font-bold text-[#2C2418]">
+            Was w&auml;re wenn...
           </h3>
           <p className="text-[#8C7E6A] text-sm mt-1">
-            Simulieren Sie verschiedene Szenarien und sehen Sie die Auswirkungen
+            Simuliere verschiedene Szenarien und sieh die Auswirkungen
           </p>
         </div>
       </div>
@@ -270,11 +269,11 @@ function ScenarioSimulator({ analysisData }) {
       </div>
 
       {/* Scenarios Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4">
         {filteredScenarios.map((scenario, idx) => (
           <div
             key={idx}
-            className={`bg-white rounded-xl p-5 border transition-all ${
+            className={`bg-white rounded-xl p-3 md:p-5 border transition-all ${
               scenario.category === 'basis'
                 ? 'border-[#7C8B6F]/30 bg-[#7C8B6F]/5'
                 : scenario.category === 'stress'
@@ -284,26 +283,23 @@ function ScenarioSimulator({ analysisData }) {
                     : 'border-[#E8E0D4] hover:border-[#E8E0D4]'
             }`}
           >
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-2xl">{scenario.icon}</span>
-              <div>
-                <h4 className="font-bold text-[#2C2418]">{scenario.name}</h4>
-                <p className="text-xs text-[#B5A68C]">{scenario.description}</p>
-              </div>
+            <div className="mb-2">
+              <h4 className="font-bold text-[#2C2418] text-[13px] md:text-[15px]">{scenario.name}</h4>
+              <p className="text-[10px] md:text-xs text-[#B5A68C] leading-snug">{scenario.description}</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-[#8C7E6A]">Cashflow/Monat</span>
-                <span className={`font-bold ${scenario.cashflow >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
+                <span className="text-[11px] md:text-sm text-[#8C7E6A]">Cashflow</span>
+                <span className={`font-bold text-[13px] md:text-base ${scenario.cashflow >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
                   {formatCurrency(scenario.cashflow)}
                 </span>
               </div>
 
               {scenario.name !== 'Basisfall' && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#8C7E6A]">Veränderung</span>
-                  <span className={`font-bold text-sm px-2 py-0.5 rounded ${
+                  <span className="text-[11px] md:text-sm text-[#8C7E6A]">Diff</span>
+                  <span className={`font-bold text-[11px] md:text-sm px-1.5 py-0.5 rounded ${
                     scenario.change > 0
                       ? 'bg-[#7C8B6F]/10 text-[#7C8B6F]'
                       : scenario.change < 0
@@ -316,25 +312,18 @@ function ScenarioSimulator({ analysisData }) {
               )}
 
               <div className="flex justify-between items-center">
-                <span className="text-sm text-[#8C7E6A]">Bruttorendite</span>
-                <span className="text-[#2C2418] font-medium">{scenario.rendite.toFixed(2)}%</span>
+                <span className="text-[11px] md:text-sm text-[#8C7E6A]">Rendite</span>
+                <span className="text-[#2C2418] font-medium text-[12px] md:text-sm">{scenario.rendite.toFixed(2)}%</span>
               </div>
             </div>
 
             {/* Visual indicator */}
-            <div className="mt-4 pt-3 border-t border-[#E8E0D4]">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">
-                  {scenario.cashflow >= 100 ? '' :
-                   scenario.cashflow >= 0 ? '' :
-                   scenario.cashflow >= -200 ? '' : ''}
-                </span>
-                <span className="text-xs text-[#B5A68C]">
-                  {scenario.cashflow >= 100 ? 'Sehr gut' :
-                   scenario.cashflow >= 0 ? 'Tragbar' :
-                   scenario.cashflow >= -200 ? 'Belastend' : 'Kritisch'}
-                </span>
-              </div>
+            <div className="mt-2 pt-2 border-t border-[#E8E0D4]">
+              <span className="text-[10px] md:text-xs text-[#B5A68C]">
+                {scenario.cashflow >= 100 ? 'Sehr gut' :
+                 scenario.cashflow >= 0 ? 'Tragbar' :
+                 scenario.cashflow >= -200 ? 'Belastend' : 'Kritisch'}
+              </span>
             </div>
           </div>
         ))}
@@ -352,9 +341,9 @@ function ScenarioSimulator({ analysisData }) {
               {scenarios.find(s => s.name === 'WORST CASE')?.cashflow >= 0 ? (
                 <span className="text-[#7C8B6F]">✓ Diese Immobilie trägt sich auch im Worst-Case-Szenario! Das ist ein robustes Investment.</span>
               ) : scenarios.find(s => s.name === 'WORST CASE')?.cashflow >= -200 ? (
-                <span className="text-[#B5A68C]">⚠ Im Worst Case negativer Cashflow. Halten Sie eine Liquiditätsreserve von mindestens {formatCurrency(Math.abs(scenarios.find(s => s.name === 'WORST CASE')?.cashflow || 0) * 12)} pro Jahr vor.</span>
+                <span className="text-[#B5A68C]">⚠ Im Worst Case negativer Cashflow. Halte eine Liquidit&auml;tsreserve von mindestens {formatCurrency(Math.abs(scenarios.find(s => s.name === 'WORST CASE')?.cashflow || 0) * 12)} pro Jahr vor.</span>
               ) : (
-                <span className="text-[#B85C5C]">⚠ Hohes Risiko im Worst Case. Prüfen Sie Preisverhandlung oder höheres Eigenkapital.</span>
+                <span className="text-[#B85C5C]">⚠ Hohes Risiko im Worst Case. Pr&uuml;fe Preisverhandlung oder h&ouml;heres Eigenkapital.</span>
               )}
             </p>
           </div>

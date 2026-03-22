@@ -15,7 +15,7 @@ function Settings() {
     default_tilgung: user?.default_tilgung || 1.25
   });
   const [profileData, setProfileData] = useState({
-    goal: investorProfile.goal || 'cashflow',
+    goals: Array.isArray(investorProfile.goals) ? investorProfile.goals : (investorProfile.goal ? [investorProfile.goal] : ['cashflow']),
     riskProfile: investorProfile.riskProfile || 'ausgewogen',
     experience: investorProfile.experience || 'anfaenger',
     eigenkapital: investorProfile.eigenkapital || 50000,
@@ -53,14 +53,14 @@ function Settings() {
   };
 
   return (
-    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20 max-w-[900px]">
+    <div className="px-4 md:px-16 lg:px-20 py-6 md:py-20 max-w-[900px]">
       {/* Header */}
-      <div className="mb-10 fade-in">
-        <h1 className="text-[40px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">
+      <div className="mb-6 md:mb-10 fade-in">
+        <h1 className="text-[26px] md:text-[48px] font-bold tracking-tight text-[#2C2418] leading-[1.05]">
           Einstellungen
         </h1>
-        <p className="text-[#8C7E6A] text-[14px] mt-2">
-          Passen Sie Ihr Profil und Standardwerte an
+        <p className="text-[#8C7E6A] text-[13px] mt-1">
+          Passe dein Profil und Standardwerte an
         </p>
       </div>
 
@@ -106,7 +106,7 @@ function Settings() {
                   disabled
                   className="w-full px-4 py-3 bg-[#F5F0E8] border border-[#E8E0D4] rounded-[12px] text-[#8C7E6A] cursor-not-allowed text-[15px]"
                 />
-                <p className="text-[12px] text-[#8C7E6A] mt-1">E-Mail kann nicht geandert werden</p>
+                <p className="text-[12px] text-[#8C7E6A] mt-1">E-Mail kann nicht ge&auml;ndert werden</p>
               </div>
 
               <div>
@@ -119,13 +119,13 @@ function Settings() {
                   disabled
                   className="w-full px-4 py-3 bg-[#F5F0E8] border border-[#E8E0D4] rounded-[12px] text-[#8C7E6A] cursor-not-allowed text-[15px]"
                 />
-                <p className="text-[12px] text-[#8C7E6A] mt-1">Username kann nicht geandert werden</p>
+                <p className="text-[12px] text-[#8C7E6A] mt-1">Username kann nicht ge&auml;ndert werden</p>
               </div>
             </div>
 
             <div>
               <label className="block text-[13px] font-medium text-[#5C4F3D] mb-2">
-                Vollstandiger Name
+                Vollst&auml;ndiger Name
               </label>
               <input
                 type="text"
@@ -145,7 +145,7 @@ function Settings() {
             Standard-Analysewerte
           </h2>
           <p className="text-[#8C7E6A] text-[13px] mb-6">
-            Diese Werte werden als Standard fur neue Analysen verwendet
+            Diese Werte werden als Standard f&uuml;r neue Analysen verwendet
           </p>
 
           <div className="space-y-6">
@@ -219,7 +219,7 @@ function Settings() {
                 <div className="text-[13px]">
                   <p className="text-[#5C4F3D] font-medium mb-1">Info</p>
                   <p className="text-[#8C7E6A] leading-relaxed">
-                    Die Gesamtrate (Zins + Tilgung) von <span className="text-[#5C4F3D] font-semibold">{(formData.default_zinssatz + formData.default_tilgung).toFixed(2)}%</span> wird fur Cashflow-Berechnungen verwendet. Sie konnen diese Werte jederzeit bei einzelnen Analysen anpassen.
+                    Die Gesamtrate (Zins + Tilgung) von <span className="text-[#5C4F3D] font-semibold">{(formData.default_zinssatz + formData.default_tilgung).toFixed(2)}%</span> wird f&uuml;r Cashflow-Berechnungen verwendet. Du kannst diese Werte jederzeit bei einzelnen Analysen anpassen.
                   </p>
                 </div>
               </div>
@@ -238,34 +238,44 @@ function Settings() {
             )}
           </div>
           <p className="text-[#8C7E6A] text-[13px] mb-6">
-            Dein Standard-Investmentprofil fuer neue Analysen
+            Dein Standard-Investmentprofil f&uuml;r neue Analysen
           </p>
 
-          {/* Investitionsziel */}
+          {/* Investitionsziel (Multi-Select) */}
           <div className="mb-6">
-            <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
-              Investitionsziel
+            <label className="block text-[13px] font-medium text-[#5C4F3D] mb-1">
+              Investitionsziele
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {Object.entries(INVESTMENT_GOALS).map(([key, goal]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setProfileData(prev => ({ ...prev, goal: key }))}
-                  className={`py-3 px-4 rounded-[12px] border-2 text-left transition-all ${
-                    profileData.goal === key
-                      ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
-                      : 'border-[#E8E0D4] hover:border-[#B5A68C]'
-                  }`}
-                >
-                  <span className={`text-[14px] font-medium block ${
-                    profileData.goal === key ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
-                  }`}>{goal.label}</span>
-                  <span className={`text-[11px] block mt-0.5 ${
-                    profileData.goal === key ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
-                  }`}>{goal.description}</span>
-                </button>
-              ))}
+            <p className="text-[11px] text-[#8C7E6A] mb-3">Mehrere ausw&auml;hlbar</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {Object.entries(INVESTMENT_GOALS).map(([key, goal]) => {
+                const isSelected = profileData.goals.includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setProfileData(prev => {
+                      const current = prev.goals || [];
+                      const updated = current.includes(key)
+                        ? current.filter(g => g !== key)
+                        : [...current, key];
+                      return { ...prev, goals: updated.length > 0 ? updated : current };
+                    })}
+                    className={`py-2.5 px-2.5 rounded-[12px] border-2 text-left transition-all overflow-hidden ${
+                      isSelected
+                        ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
+                        : 'border-[#E8E0D4] hover:border-[#B5A68C]'
+                    }`}
+                  >
+                    <span className={`text-[12px] font-medium block truncate ${
+                      isSelected ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
+                    }`}>{goal.label}</span>
+                    <span className={`text-[10px] block mt-0.5 leading-snug ${
+                      isSelected ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
+                    }`}>{goal.description}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -274,22 +284,22 @@ function Settings() {
             <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
               Risikoprofil
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {Object.entries(RISK_PROFILES).map(([key, rp]) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setProfileData(prev => ({ ...prev, riskProfile: key }))}
-                  className={`py-3 px-4 rounded-[12px] border-2 text-left transition-all ${
+                  className={`py-2.5 px-2.5 rounded-[12px] border-2 text-left transition-all overflow-hidden ${
                     profileData.riskProfile === key
                       ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
                       : 'border-[#E8E0D4] hover:border-[#B5A68C]'
                   }`}
                 >
-                  <span className={`text-[14px] font-medium block ${
+                  <span className={`text-[12px] font-medium block truncate ${
                     profileData.riskProfile === key ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
                   }`}>{rp.label}</span>
-                  <span className={`text-[11px] block mt-0.5 ${
+                  <span className={`text-[10px] block mt-0.5 leading-snug ${
                     profileData.riskProfile === key ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
                   }`}>{rp.description}</span>
                 </button>
@@ -302,22 +312,22 @@ function Settings() {
             <label className="block text-[13px] font-medium text-[#5C4F3D] mb-3">
               Erfahrungslevel
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {Object.entries(EXPERIENCE_LEVELS).map(([key, exp]) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setProfileData(prev => ({ ...prev, experience: key }))}
-                  className={`py-3 px-4 rounded-[12px] border-2 text-left transition-all ${
+                  className={`py-2.5 px-2.5 rounded-[12px] border-2 text-left transition-all overflow-hidden ${
                     profileData.experience === key
                       ? 'border-[#7C8B6F] bg-[#7C8B6F]/5'
                       : 'border-[#E8E0D4] hover:border-[#B5A68C]'
                   }`}
                 >
-                  <span className={`text-[14px] font-medium block ${
+                  <span className={`text-[12px] font-medium block truncate ${
                     profileData.experience === key ? 'text-[#7C8B6F]' : 'text-[#5C4F3D]'
                   }`}>{exp.label}</span>
-                  <span className={`text-[11px] block mt-0.5 ${
+                  <span className={`text-[10px] block mt-0.5 leading-snug ${
                     profileData.experience === key ? 'text-[#7C8B6F]/70' : 'text-[#8C7E6A]'
                   }`}>{exp.description}</span>
                 </button>
@@ -333,11 +343,11 @@ function Settings() {
             <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <label className="text-[12px] text-[#8C7E6A]">Verfuegbares Eigenkapital</label>
+                  <label className="text-[12px] text-[#8C7E6A]">Verf&uuml;gbares Eigenkapital</label>
                   <div className="group relative">
                     <span className="text-[#B5A68C] cursor-help text-[11px] border border-[#E8E0D4] rounded-full w-4 h-4 inline-flex items-center justify-center">i</span>
                     <div className="hidden group-hover:block absolute bottom-6 left-0 w-56 bg-white border border-[#E8E0D4] rounded-[10px] p-3 text-[11px] text-[#5C4F3D] shadow-lg z-10">
-                      Das Geld, das du fuer den Kauf einsetzen kannst. Bei den meisten Banken brauchst du mindestens die Kaufnebenkosten (ca. 10-15%) als Eigenkapital.
+                      Das Geld, das du f&uuml;r den Kauf einsetzen kannst. Bei den meisten Banken brauchst du mindestens die Kaufnebenkosten (ca. 10-15%) als Eigenkapital.
                     </div>
                   </div>
                 </div>
@@ -374,7 +384,7 @@ function Settings() {
                   <div className="group relative">
                     <span className="text-[#B5A68C] cursor-help text-[11px] border border-[#E8E0D4] rounded-full w-4 h-4 inline-flex items-center justify-center">i</span>
                     <div className="hidden group-hover:block absolute bottom-6 left-0 w-56 bg-white border border-[#E8E0D4] rounded-[10px] p-3 text-[11px] text-[#5C4F3D] shadow-lg z-10">
-                      Der Betrag, den du maximal pro Monat fuer die Immobilie ausgeben moechtest (Kreditrate + Nebenkosten). Faustregel: nicht mehr als 35% deines Nettoeinkommens.
+                      Der Betrag, den du maximal pro Monat f&uuml;r die Immobilie ausgeben m&ouml;chtest (Kreditrate + Nebenkosten). Faustregel: nicht mehr als 35% deines Nettoeinkommens.
                     </div>
                   </div>
                 </div>
