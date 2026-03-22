@@ -268,21 +268,15 @@ function Analyze() {
           {step === 'result' && analysisResult && (
             <>
               {savedAnalysisId && (
-                <div className="mb-6 bg-white border border-[#E8E0D4] rounded-[16px] p-5 fade-in">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#7C8B6F]/10 rounded-[12px] flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-5 h-5 text-[#7C8B6F]" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[14px] font-semibold text-[#2C2418]">Analyse gespeichert</p>
-                      <p className="text-[12px] text-[#8C7E6A] mt-0.5">Mit dem Berater besprechen?</p>
-                    </div>
+                <div className="mb-4 bg-white border border-[#E8E0D4] rounded-[12px] p-3 fade-in">
+                  <div className="flex items-center gap-3">
+                    <p className="text-[13px] text-[#8C7E6A] flex-1">Analyse gespeichert. Mit dem Berater besprechen?</p>
                     <button
                       onClick={() => navigate(`/chat?analysis_id=${savedAnalysisId}`)}
-                      className="px-5 py-2.5 bg-[#7C8B6F] text-white font-medium rounded-[10px] hover:bg-[#6B7A5E] transition-all text-[13px] flex items-center gap-2"
+                      className="px-4 py-2 bg-[#7C8B6F] text-white font-medium rounded-[10px] hover:bg-[#6B7A5E] transition-all text-[12px] flex items-center gap-1.5 shrink-0"
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      Berater starten
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      Chat
                     </button>
                   </div>
                 </div>

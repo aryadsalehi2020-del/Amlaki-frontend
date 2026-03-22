@@ -68,12 +68,12 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-48 h-48">
+      <div className="relative w-32 h-32 md:w-48 md:h-48">
         {/* Outer glow ring */}
         <div className="absolute inset-0 rounded-full animate-glow opacity-30"
              style={{ background: `radial-gradient(circle, ${getScoreColor(displayScore)}40, transparent)` }}></div>
 
-        <svg className="w-full h-full transform -rotate-90">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 192 192">
           {/* Background circle */}
           <circle
             cx="96"
@@ -104,7 +104,7 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
 
         {/* Score number - centered in circle */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-5xl font-black" style={{ color: getScoreColor(displayScore) }}>
+          <span className="text-3xl md:text-5xl font-black" style={{ color: getScoreColor(displayScore) }}>
             {Math.round(displayScore)}
           </span>
         </div>
@@ -207,12 +207,12 @@ function CriterionBar({ criterion, weightDiff = null, showAdjusted = false }) {
 
 // Tab configuration
 const TABS = [
-  { id: 'uebersicht', label: 'Übersicht', icon: '\u{1F3E0}' },
-  { id: 'tipps', label: 'Tipps & Förderungen', icon: '\u{1F4A1}' },
-  { id: 'projektionen', label: 'Projektionen', icon: '\u{1F4C8}' },
-  { id: 'szenarien', label: 'Szenarien', icon: '\u{1F3AD}' },
-  { id: 'optionen', label: 'Optionen', icon: '\u{1F4B3}' },
-  { id: 'vergleich', label: 'Vergleich', icon: '\u{2696}\u{FE0F}' }
+  { id: 'uebersicht', label: 'Übersicht', icon: '' },
+  { id: 'tipps', label: 'Tipps & Förderungen', icon: '' },
+  { id: 'projektionen', label: 'Projektionen', icon: '' },
+  { id: 'szenarien', label: 'Szenarien', icon: '' },
+  { id: 'optionen', label: 'Optionen', icon: '' },
+  { id: 'vergleich', label: 'Vergleich', icon: '' }
 ];
 
 function PremiumLock({ onUpgrade }) {
@@ -300,17 +300,17 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
   const activeTilgungsplan = selectedScenario?.tilgungsplan || result.tilgungsplan;
 
   return (
-    <div className="fade-in space-y-8">
+    <div className="fade-in space-y-5 md:space-y-8">
       {/* Header Card with Score */}
-      <div className="bg-white rounded-3xl p-10 border border-[#E8E0D4]">
-        <div className="flex flex-col md:flex-row items-center gap-10">
+      <div className="bg-white rounded-3xl p-4 md:p-10 border border-[#E8E0D4]">
+        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
           <ScoreCircle
             score={result.gesamtscore}
             adjustedScore={dynamicData.adjustedScore}
             showAdjusted={showPersonalized && isProfileComplete}
           />
 
-          <div className="flex-1 text-center md:text-left">
+          <div className="flex-1 text-left">
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {/* Verwendungszweck Toggle */}
               <div className="inline-flex items-center rounded-full border border-[#E8E0D4] p-1">
@@ -349,7 +349,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               )}
             </div>
 
-            <h2 className="text-3xl font-bold text-[#2C2418] mb-4">
+            <h2 className="text-[20px] md:text-[28px] font-bold text-[#2C2418] mb-4">
               Bewertungsergebnis
             </h2>
 
@@ -402,11 +402,11 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-4 mt-8 pt-8 border-t border-slate/10">
+        <div className="grid md:grid-cols-2 gap-4 mt-5 md:mt-8 pt-5 md:pt-8 border-t border-slate/10">
           <button
             onClick={onNewAnalysis}
-            className="py-4 bg-gradient-gold text-[#2C2418] font-bold rounded-xl
-              btn-premium shadow-lg text-lg"
+            className="py-3 md:py-4 bg-gradient-gold text-[#2C2418] font-bold rounded-xl
+              btn-premium shadow-lg text-[14px] md:text-lg"
           >
             <span className="flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,8 +417,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           </button>
           <button
             onClick={onEditData}
-            className="py-4 border-2 border-slate/30 text-[#2C2418] font-semibold rounded-xl
-              hover:border-accent hover:bg-accent/5 transition-all text-lg"
+            className="py-3 md:py-4 border-2 border-slate/30 text-[#2C2418] font-semibold rounded-xl
+              hover:border-accent hover:bg-accent/5 transition-all text-[14px] md:text-lg"
           >
             <span className="flex items-center justify-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -432,22 +432,21 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
       {/* Tab Navigation - Only show if extended data is available and it's kapitalanlage */}
       {hasExtendedData && result.verwendungszweck === 'kapitalanlage' && (
-        <div className="bg-white border border-[#E8E0D4] rounded-2xl shadow-lg p-2">
-          <div className="flex gap-2 overflow-x-auto">
+        <div className="bg-white border border-[#E8E0D4] rounded-xl p-1">
+          <div className="flex gap-1 overflow-x-auto">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all whitespace-nowrap
+                  px-4 py-2.5 rounded-lg text-[13px] font-medium transition-all whitespace-nowrap
                   ${activeTab === tab.id
-                    ? 'bg-[#7C8B6F]/15 text-[#2C2418] border border-[#7C8B6F]/30 font-semibold'
+                    ? 'bg-[#7C8B6F]/15 text-[#2C2418] font-semibold'
                     : 'text-[#8C7E6A]/70 hover:bg-[#FAF7F2] hover:text-[#2C2418]'
                   }
                 `}
               >
-                <span className="text-xl">{tab.icon}</span>
-                <span>{tab.label}</span>
+                {tab.label}
               </button>
             ))}
           </div>
@@ -459,11 +458,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
         <>
           {/* Personalized Warnings */}
           {isProfileComplete && dynamicData.warnings.length > 0 && showPersonalized && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 fade-in card-hover border-2 border-[#E8E0D4]">
-              <h3 className="text-xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="w-10 h-10 bg-[#F5F0E8] rounded-xl flex items-center justify-center text-xl">
-                  
-                </span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 fade-in card-hover border-2 border-[#E8E0D4]">
+              <h3 className="text-xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Personalisierte Hinweise
                 <span className="text-xs bg-[#F5F0E8] text-[#5C4F3D] px-2 py-1 rounded-full ml-2">
                   {INVESTMENT_GOALS[profile.goal]?.label}
@@ -505,11 +501,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Mietschätzung Hinweis (NEU) */}
           {result.mietschaetzung && result.mietschaetzung.ist_geschaetzt && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-8 fade-in border-2 border-[#B5A68C]/30">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in border-2 border-[#B5A68C]/30">
               <h3 className="text-xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
-                <span className="w-12 h-12 bg-[#B5A68C]/20 rounded-xl flex items-center justify-center text-2xl">
-                  
-                </span>
                 <span className="text-[#8C7E6A]">Geschätzte Mieteinnahmen</span>
               </h3>
 
@@ -522,13 +515,13 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 </div>
                 <div className="p-4 bg-[#F5F0E8] rounded-xl border border-[#E8E0D4] text-center">
                   <p className="text-[#B5A68C] text-sm mb-1">Marktmiete/m²</p>
-                  <p className="text-2xl font-bold text-[#2C2418]">
+                  <p className="text-[18px] md:text-2xl font-bold text-[#2C2418]">
                     {result.mietschaetzung.geschaetzte_miete_qm?.toFixed(2)} €
                   </p>
                 </div>
                 <div className="p-4 bg-[#F5F0E8] rounded-xl border border-[#E8E0D4] text-center">
                   <p className="text-[#B5A68C] text-sm mb-1">Wohnfläche</p>
-                  <p className="text-2xl font-bold text-[#2C2418]">
+                  <p className="text-[18px] md:text-2xl font-bold text-[#2C2418]">
                     {result.mietschaetzung.wohnflaeche} m²
                   </p>
                 </div>
@@ -544,7 +537,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Neuvermietungs-Potenzial */}
           {result.neuvermietung_potenzial && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-8 fade-in">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in">
               <h3 className="text-xl font-bold text-[#2C2418] mb-2">
                 Mietoptimierung
               </h3>
@@ -555,7 +548,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 <div className="flex items-center justify-between p-4 bg-[#FAF7F2] rounded-xl border border-[#E8E0D4]">
                   <div>
                     <p className="text-[14px] font-medium text-[#2C2418]">Neuvermietung<InfoTip text="Aktuelle Angebotsmiete bei Neuvermietung. Mietpreisbremse erlaubt max. 10% über ortsüblicher Vergleichsmiete." /></p>
-                    <p className="text-[12px] text-[#8C7E6A]">{result.neuvermietung_potenzial.neuvermietung_qm?.toFixed(2)} EUR/m²</p>
+                    <p className="text-[12px] text-[#8C7E6A]">{result.neuvermietung_potenzial.neuvermietung_qm?.toFixed(2)} €/m²</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[18px] font-bold text-[#2C2418]">{formatCurrency(result.neuvermietung_potenzial.neuvermietung)}/Monat</p>
@@ -603,15 +596,12 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Energie-Analyse (bei schlechter Energieklasse) */}
           {result.no_go_check?.energie_analyse && (
-            <div className={`bg-white border border-[#E8E0D4] rounded-3xl p-8 fade-in border-2 ${
+            <div className={`bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in border-2 ${
               result.no_go_check.energie_analyse.lohnt_sich_sanierung
                 ? 'border-[#7C8B6F]/20'
                 : 'border-[#B85C5C]/20'
             }`}>
               <h3 className="text-xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
-                <span className="w-12 h-12 bg-[#B5A68C]/20 rounded-xl flex items-center justify-center text-2xl">
-                  
-                </span>
                 <span className={result.no_go_check.energie_analyse.lohnt_sich_sanierung ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}>
                   Energieeffizienz-Analyse (Klasse {result.no_go_check.energie_analyse.energieklasse})
                 </span>
@@ -688,12 +678,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Kaufnebenkosten Übersicht */}
           {result.kaufnebenkosten && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-8 fade-in card-hover">
-              <h3 className="text-xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="w-12 h-12 bg-[#7C8B6F]/10 rounded-xl flex items-center justify-center text-2xl">
-                  🧾
-                </span>
-                <span>Kaufnebenkosten</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in card-hover">
+              <h3 className="text-xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
+                Kaufnebenkosten
               </h3>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -746,12 +733,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Cashflow Analysis (for investment) */}
           {result.cashflow_analyse && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-10 fade-in-delay-1 card-hover">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-                <h3 className="text-2xl font-bold text-[#2C2418] flex items-center gap-3">
-                  <span className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center text-2xl">
-                    {'\u{1F4B0}'}
-                  </span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 fade-in-delay-1 card-hover">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-5 md:mb-8">
+                <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] flex items-center gap-3">
                   Cashflow-Analyse
                 </h3>
 
@@ -804,7 +788,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-10">
+              <div className="grid md:grid-cols-2 gap-6 md:gap-10">
                 <div>
                   <h4 className="font-bold text-[#2C2418] mb-6 text-lg">Monatliche Berechnung</h4>
                   <div className="space-y-4">
@@ -911,11 +895,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Criteria Breakdown */}
-          <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-10 fade-in-delay-2 card-hover">
-            <h3 className="text-2xl font-bold text-[#2C2418] mb-8 flex items-center gap-3">
-              <span className="w-12 h-12 bg-secondary/20 rounded-xl flex items-center justify-center text-2xl">
-                {'\u{1F4CA}'}
-              </span>
+          <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 fade-in-delay-2 card-hover">
+            <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-5 md:mb-8 flex items-center gap-3">
               Detailbewertung
               {isProfileComplete && showPersonalized && Object.keys(dynamicData.weightDiffs).length > 0 && (
                 <span className="text-xs bg-[#F5F0E8] text-[#5C4F3D] px-2 py-1 rounded-full ml-2">
@@ -949,8 +930,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Strengths and Weaknesses */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-xl p-8 fade-in-delay-3 card-hover border-2 border-[#7C8B6F]/20">
-              <h3 className="text-xl font-bold text-[#7C8B6F] mb-6 flex items-center gap-3">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-xl p-4 md:p-8 fade-in-delay-3 card-hover border-2 border-[#7C8B6F]/20">
+              <h3 className="text-xl font-bold text-[#7C8B6F] mb-4 flex items-center gap-3">
                 <span className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-6 h-6 text-[#2C2418]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -968,8 +949,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               </ul>
             </div>
 
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-xl p-8 fade-in-delay-3 card-hover border-2 border-[#B85C5C]/20">
-              <h3 className="text-xl font-bold text-[#B85C5C] mb-6 flex items-center gap-3">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-xl p-4 md:p-8 fade-in-delay-3 card-hover border-2 border-[#B85C5C]/20">
+              <h3 className="text-xl font-bold text-[#B85C5C] mb-4 flex items-center gap-3">
                 <span className="w-10 h-10 bg-gradient-to-br from-red-400 to-rose-500 rounded-xl flex items-center justify-center shadow-lg">
                   <svg className="w-6 h-6 text-[#2C2418]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -990,11 +971,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* V3.0 Kennzahlen & Markt-Vergleich */}
           {result.kennzahlen && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 fade-in-delay-3 card-hover border-2 border-[#E8E0D4]">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="w-12 h-12 bg-[#7C8B6F] rounded-xl flex items-center justify-center text-2xl shadow-lg">
-                  
-                </span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 fade-in-delay-3 card-hover border-2 border-[#E8E0D4]">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Markt-Vergleich (Live-Daten)
                 {result.kennzahlen.marktdaten_quelle === 'live_web_search_v3' && (
                   <span className="text-xs bg-[#7C8B6F]/10 text-[#7C8B6F] px-2 py-1 rounded-full ml-2">✓ Live</span>
@@ -1005,7 +983,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 {/* Preis pro qm */}
                 <div className="p-5 bg-gradient-to-br from-slate/5 to-slate/10 rounded-2xl border border-slate/20">
                   <p className="text-sm text-[#8C7E6A]/70 mb-2 font-medium">Objekt-Preis</p>
-                  <p className="text-2xl font-bold text-[#2C2418]">
+                  <p className="text-[18px] md:text-2xl font-bold text-[#2C2418]">
                     {result.kennzahlen.preis_pro_qm?.toLocaleString('de-DE')} €/m²
                   </p>
                 </div>
@@ -1013,7 +991,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 {/* Markt-Durchschnitt */}
                 <div className="p-5 bg-gradient-to-br from-slate/5 to-slate/10 rounded-2xl border border-slate/20">
                   <p className="text-sm text-[#8C7E6A]/70 mb-2 font-medium">Markt-Durchschnitt</p>
-                  <p className="text-2xl font-bold text-[#2C2418]">
+                  <p className="text-[18px] md:text-2xl font-bold text-[#2C2418]">
                     {result.kennzahlen.markt_durchschnitt_qm?.toLocaleString('de-DE') || '---'} €/m²
                   </p>
                 </div>
@@ -1081,11 +1059,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Market Data */}
           {result.marktdaten && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-10 fade-in-delay-3 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-8 flex items-center gap-3">
-                <span className="w-12 h-12 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-xl flex items-center justify-center text-2xl shadow-lg">
-                  {'\u{1F4C8}'}
-                </span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 fade-in-delay-3 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-5 md:mb-8 flex items-center gap-3">
                 Marktdaten & Prognose
               </h3>
 
@@ -1103,10 +1078,10 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 <div className="p-6 bg-gradient-to-br from-slate/5 to-slate/10 rounded-2xl border border-slate/20">
                   <p className="text-sm text-[#8C7E6A]/70 mb-3 font-medium">Miete / m²</p>
                   <p className="text-xl font-bold text-[#2C2418] mb-2">
-                    {result.marktdaten.miete_qm_von?.toFixed(2)}\u20AC - {result.marktdaten.miete_qm_bis?.toFixed(2)}\u20AC
+                    {result.marktdaten.miete_qm_von?.toFixed(2)}€ - {result.marktdaten.miete_qm_bis?.toFixed(2)}€
                   </p>
                   <p className="text-sm text-[#B5A68C] font-semibold">
-                    Ø {result.marktdaten.miete_qm_durchschnitt?.toFixed(2)}\u20AC
+                    Ø {result.marktdaten.miete_qm_durchschnitt?.toFixed(2)}€
                   </p>
                 </div>
 
@@ -1150,32 +1125,31 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
       {/* Tipps & Förderungen Tab */}
       {activeTab === 'tipps' && (
         result.is_premium === false ? <PremiumLock onUpgrade={onUpgrade} /> :
-        <div className="space-y-8">
+        <div className="space-y-5 md:space-y-8">
           {/* Fairer Preis */}
           {result.fairer_preis && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="text-3xl">{'\u{2696}\u{FE0F}'}</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Fairer Preis Analyse
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-[#7C8B6F]/5 border border-[#E8E0D4] rounded-2xl p-6 text-center">
-                  <p className="text-[#8C7E6A] text-sm mb-2">Aktueller Preis</p>
-                  <p className="text-2xl font-bold text-[#2C2418]">{formatCurrency(result.fairer_preis.aktueller_preis)}</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-[#7C8B6F]/5 border border-[#E8E0D4] rounded-xl p-3 text-center">
+                  <p className="text-[#8C7E6A] text-[11px] mb-1">Aktueller Preis</p>
+                  <p className="text-[16px] md:text-xl font-bold text-[#2C2418]">{formatCurrency(result.fairer_preis.aktueller_preis)}</p>
                 </div>
-                <div className="bg-green-500/10 border border-[#7C8B6F]/20 rounded-2xl p-6 text-center">
-                  <p className="text-[#8C7E6A] text-sm mb-2">Fairer Preis</p>
-                  <p className="text-2xl font-bold text-[#7C8B6F]">{formatCurrency(result.fairer_preis.fairer_preis)}</p>
+                <div className="bg-green-500/10 border border-[#7C8B6F]/20 rounded-xl p-3 text-center">
+                  <p className="text-[#8C7E6A] text-[11px] mb-1">Fairer Preis</p>
+                  <p className="text-[16px] md:text-xl font-bold text-[#7C8B6F]">{formatCurrency(result.fairer_preis.fairer_preis)}</p>
                 </div>
-                <div className={`rounded-2xl p-6 text-center ${result.fairer_preis.differenz_prozent > 0 ? 'bg-[#B85C5C]/5 border border-[#B85C5C]/20' : 'bg-green-500/10 border border-[#7C8B6F]/20'}`}>
-                  <p className="text-[#8C7E6A] text-sm mb-2">Differenz</p>
-                  <p className={`text-2xl font-bold ${result.fairer_preis.differenz_prozent > 0 ? 'text-[#B85C5C]' : 'text-[#7C8B6F]'}`}>
+                <div className={`rounded-xl p-3 text-center ${result.fairer_preis.differenz_prozent > 0 ? 'bg-[#B85C5C]/5 border border-[#B85C5C]/20' : 'bg-green-500/10 border border-[#7C8B6F]/20'}`}>
+                  <p className="text-[#8C7E6A] text-[11px] mb-1">Differenz</p>
+                  <p className={`text-[16px] md:text-xl font-bold ${result.fairer_preis.differenz_prozent > 0 ? 'text-[#B85C5C]' : 'text-[#7C8B6F]'}`}>
                     {result.fairer_preis.differenz_prozent > 0 ? '+' : ''}{result.fairer_preis.differenz_prozent}%
                   </p>
                 </div>
-                <div className="bg-[#B5A68C]/10 border border-[#B5A68C]/30 rounded-2xl p-6 text-center">
-                  <p className="text-[#8C7E6A] text-sm mb-2">Bewertung</p>
-                  <p className="text-2xl font-bold text-[#8C7E6A] capitalize">{result.fairer_preis.bewertung}</p>
+                <div className="bg-[#B5A68C]/10 border border-[#B5A68C]/30 rounded-xl p-3 text-center">
+                  <p className="text-[#8C7E6A] text-[11px] mb-1">Bewertung</p>
+                  <p className="text-[16px] md:text-xl font-bold text-[#8C7E6A] capitalize">{result.fairer_preis.bewertung}</p>
                 </div>
               </div>
               <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
@@ -1197,9 +1171,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Verbesserungsvorschläge */}
           {result.verbesserungsvorschlaege && result.verbesserungsvorschlaege.length > 0 && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="text-3xl">{'\u{1F4A1}'}</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Verbesserungsvorschläge
               </h3>
               <div className="space-y-4">
@@ -1239,9 +1212,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Förderungen */}
           {result.foerderungen && result.foerderungen.length > 0 && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="text-3xl">{'\u{1F3E6}'}</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Passende Förderungen
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1289,9 +1261,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* AfA Berechnung */}
           {result.afa_berechnung && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="text-3xl">{'\u{1F4CA}'}</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 AfA (Abschreibung)
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1323,9 +1294,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Leverage Effekt */}
           {result.leverage_effekt && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="text-3xl">{'\u{1F4B9}'}</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Leverage-Effekt (Hebel)
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1361,9 +1331,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Quick Check */}
           {result.quick_check_result && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-6 flex items-center gap-3">
-                <span className="text-3xl">{'\u{2714}\u{FE0F}'}</span>
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Quick-Check
               </h3>
               <div className="flex items-center justify-between mb-6">
@@ -1387,11 +1356,11 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Verhandlungsnachricht */}
           {result.verhandlungsmail && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
                 Verhandlungsnachricht
               </h3>
-              <p className="text-[13px] text-[#8C7E6A] mb-5">Fertige Nachricht an den Verkaeufer/Makler - basierend auf deiner Analyse. Kopieren und anpassen.</p>
+              <p className="text-[13px] text-[#8C7E6A] mb-5">Fertige Nachricht an den Verk&auml;ufer/Makler - basierend auf deiner Analyse. Kopieren und anpassen.</p>
               <div className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-6 relative">
                 <button
                   onClick={() => {
@@ -1411,15 +1380,15 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Besichtigungs-Roadmap */}
           {result.besichtigungs_roadmap && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-8 card-hover">
-              <h3 className="text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
+              <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
                 Dein Besichtigungs-Leitfaden
               </h3>
               <p className="text-[13px] text-[#8C7E6A] mb-6">Personalisiert fuer dieses Objekt -- worauf du achten solltest, was du fragen kannst und wie du dich positionierst.</p>
 
               {/* Checkliste */}
               {result.besichtigungs_roadmap.checkliste && (
-                <div className="mb-8">
+                <div className="mb-5 md:mb-8">
                   <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Checkliste fuer die Besichtigung</h4>
                   <div className="space-y-4">
                     {result.besichtigungs_roadmap.checkliste.map((kat, i) => (
@@ -1443,10 +1412,10 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 </div>
               )}
 
-              {/* Fragen an Verkaeufer */}
+              {/* Fragen an Verk&auml;ufer */}
               {result.besichtigungs_roadmap.fragen_an_verkaeufer && (
-                <div className="mb-8">
-                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Fragen an den Verkaeufer / Makler</h4>
+                <div className="mb-5 md:mb-8">
+                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Fragen an den Verk&auml;ufer / Makler</h4>
                   <div className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-5">
                     <ul className="space-y-3">
                       {result.besichtigungs_roadmap.fragen_an_verkaeufer.map((frage, i) => (
@@ -1462,7 +1431,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
               {/* Verhalten Tipps */}
               {result.besichtigungs_roadmap.verhalten_tipps && (
-                <div className="mb-8">
+                <div className="mb-5 md:mb-8">
                   <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">So positionierst du dich richtig</h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-2xl p-5">
@@ -1544,15 +1513,15 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           />
 
           {/* Charts */}
-          <div className="bg-white rounded-2xl p-8 border border-[#E8E0D4]">
+          <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
             <CashflowChart szenarien={result.szenarien} />
           </div>
 
-          <div className="bg-white rounded-2xl p-8 border border-[#E8E0D4]">
+          <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
             <TilgungsChart tilgungsplan={activeTilgungsplan} />
           </div>
 
-          <div className="bg-white rounded-2xl p-8 border border-[#E8E0D4]">
+          <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
             <ZinsTilgungChart tilgungsplan={activeTilgungsplan} />
           </div>
         </div>
@@ -1562,7 +1531,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
       {activeTab === 'szenarien' && hasExtendedData && (
         result.is_premium === false ? <PremiumLock onUpgrade={onUpgrade} /> :
         <div className="space-y-8">
-          <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-10 card-hover">
+          <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 card-hover">
             <ScenarioComparison
               szenarien={result.szenarien}
               onSelectScenario={setSelectedScenario}
@@ -1571,7 +1540,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
           {/* Show selected scenario details */}
           {selectedScenario && (
-            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-10 card-hover">
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 card-hover">
               <h4 className="text-lg font-bold text-[#2C2418] mb-6">
                 Details: {selectedScenario.name} Szenario
               </h4>
@@ -1623,21 +1592,11 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
       {/* Disclaimer */}
       <div className="glass border-2 border-accent/30 rounded-2xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-[#B5A68C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-[#B5A68C] font-bold mb-2">Rechtlicher Hinweis</p>
-            <p className="text-[#8C7E6A] text-sm leading-relaxed">
-              Diese Analyse basiert auf den eingegebenen Daten und KI-gestützten Schätzungen.
-              Sie ersetzt keine professionelle Immobilienbewertung, Rechts- oder Finanzberatung.
-              Die tatsächlichen Marktbedingungen und individuellen Umstände können erheblich abweichen.
-            </p>
-          </div>
-        </div>
+        <p className="text-[#B5A68C] font-semibold text-[12px] mb-1">Rechtlicher Hinweis</p>
+        <p className="text-[#8C7E6A] text-[11px] leading-relaxed">
+          Diese Analyse basiert auf den eingegebenen Daten und KI-gest&uuml;tzten Sch&auml;tzungen.
+          Diese ersetzt keine professionelle Immobilienbewertung, Rechts- oder Finanzberatung.
+        </p>
       </div>
     </div>
   );

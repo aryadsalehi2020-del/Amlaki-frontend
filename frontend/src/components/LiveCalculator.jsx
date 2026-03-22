@@ -219,7 +219,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
               onChange={(e) => setCustomMiete(parseFloat(e.target.value) || 0)}
               className="w-28 px-3 py-2 bg-white border border-[#E8E0D4] rounded-[10px] text-[14px] text-[#2C2418] focus:outline-none focus:border-[#7C8B6F]"
             />
-            <span className="text-[12px] text-[#8C7E6A]">EUR/Monat</span>
+            <span className="text-[12px] text-[#8C7E6A]">€/Monat</span>
             {customMiete !== null && (
               <button onClick={() => setCustomMiete(null)} className="text-[11px] text-[#B5A68C] hover:text-[#5C4F3D]">Zurücksetzen</button>
             )}
@@ -492,7 +492,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
       {/* 10-Year Projection */}
       <div className="bg-white rounded-2xl p-6 border border-[#E8E0D4]">
         <h4 className="text-lg font-bold text-[#2C2418] mb-6 flex items-center gap-2">
-          <span className="text-xl">📅</span> 10-Jahres-Projektion
+          10-Jahres-Projektion
         </h4>
 
         <div className="overflow-x-auto">

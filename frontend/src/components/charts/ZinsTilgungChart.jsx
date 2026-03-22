@@ -141,13 +141,13 @@ function ZinsTilgungChart({ tilgungsplan }) {
           </div>
           <p className="text-2xl font-bold text-green-600">{formatCurrency(totalTilgung)}</p>
           <p className="text-xs text-green-500 mt-1">
-            Das wird zu Ihrem Eigenkapital
+            Das wird zu deinem Eigenkapital
           </p>
         </div>
       </div>
 
       <p className="text-xs text-slate/60 mt-4 text-center">
-        Im Laufe der Zeit verschiebt sich das Verhältnis: Anfangs zahlen Sie mehr Zinsen, später mehr Tilgung.
+        Im Laufe der Zeit verschiebt sich das Verh&auml;ltnis: Anfangs zahlst du mehr Zinsen, sp&auml;ter mehr Tilgung.
       </p>
     </div>
   );
