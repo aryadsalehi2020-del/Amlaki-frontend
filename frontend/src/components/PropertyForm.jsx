@@ -12,7 +12,9 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     objekttyp: initialData?.objekttyp || '', zustand: initialData?.zustand || '', ausstattung: initialData?.ausstattung || '',
     balkon_terrasse: initialData?.balkon_terrasse || false, keller: initialData?.keller || false,
     stellplatz: initialData?.stellplatz || '', vermietet: initialData?.vermietet || false,
-    aktuelle_miete: initialData?.aktuelle_miete || '', verkaufertyp: initialData?.verkaufertyp || '', provision: initialData?.provision || '',
+    aktuelle_miete: initialData?.aktuelle_miete || '',
+    verkaufertyp: initialData?.verkaufertyp || initialData?.['verkäufertyp'] || (initialData?.provision ? 'Makler' : ''),
+    provision: initialData?.provision || '',
   });
 
   const [verwendungszweck, setVerwendungszweck] = useState('kapitalanlage');
@@ -57,30 +59,26 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     e.preventDefault(); setValidationError(null);
     const kaufpreis = formData.kaufpreis ? parseFloat(formData.kaufpreis) : 0;
     const wohnflaeche = formData.wohnflaeche ? parseFloat(formData.wohnflaeche) : 0;
-    if (!kaufpreis || kaufpreis < 1000) { setValidationError('Bitte geben Sie einen gultigen Kaufpreis ein (min. 1.000)'); return; }
-    if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte geben Sie eine gultige Wohnflache ein (min. 5 m2)'); return; }
+    if (!kaufpreis || kaufpreis < 1000) { setValidationError('Bitte gib einen g\u00fcltigen Kaufpreis ein (min. 1.000)'); return; }
+    if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte gib eine g\u00fcltige Wohnfl\u00e4che ein (min. 5 m\u00b2)'); return; }
     const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, hausgeld_nicht_umlagefaehig: formData.hausgeld_nicht_umlagefaehig ? parseFloat(formData.hausgeld_nicht_umlagefaehig) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
     const activeProfile = verwendungszweck === 'kapitalanlage' ? getActiveProfile() : null;
     onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile, besichtigt, besichtigungsNotizen);
   }, [formData, verwendungszweck, finanzierung, onAnalyze, getActiveProfile]);
 
-  const inputClass = "w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[15px]";
-  const labelClass = "block text-[13px] font-medium text-[#5C4F3D] mb-2";
-  const selectClass = "w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[15px]";
-  const sectionTitle = (label) => <h3 className="text-[18px] font-semibold text-[#2C2418] mb-6">{label}</h3>;
+  const inputClass = "w-full px-3 py-2.5 bg-white border border-[#E8E0D4] rounded-[10px] focus:outline-none focus:border-[#7C8B6F] focus:ring-2 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[14px]";
+  const labelClass = "block text-[12px] font-medium text-[#5C4F3D] mb-1";
+  const selectClass = "w-full px-3 py-2.5 bg-white border border-[#E8E0D4] rounded-[10px] focus:outline-none focus:border-[#7C8B6F] focus:ring-2 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] text-[14px]";
+  const sectionTitle = (label) => <h3 className="text-[14px] font-semibold text-[#2C2418] mb-3 mt-2">{label}</h3>;
 
   return (
     <div className="fade-in">
-      <div className="bg-white rounded-[20px] p-8 md:p-10 border border-[#E8E0D4]">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-[28px] font-bold text-[#2C2418] mb-2">Objektdaten</h2>
-            <p className="text-[#8C7E6A] text-[14px]">Geben Sie die Immobiliendaten ein</p>
-          </div>
-          <button onClick={onBack} className="px-4 py-2 border border-[#E8E0D4] text-[#8C7E6A] font-medium rounded-[10px] hover:border-[#B5A68C] hover:text-[#5C4F3D] transition-all flex items-center gap-2 text-[14px]">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Zuruck
+      <div className="bg-white rounded-[20px] p-4 md:p-10 border border-[#E8E0D4]">
+        <div className="mb-4 md:mb-8">
+          <button onClick={onBack} className="text-[#8C7E6A] hover:text-[#5C4F3D] transition-colors text-[13px] mb-2 flex items-center gap-1">
+            &larr; Zur&uuml;ck
           </button>
+          <h2 className="text-[20px] md:text-[28px] font-bold text-[#2C2418] text-center">Objektdaten</h2>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -94,64 +92,50 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
           )}
 
           {/* Verwendungszweck */}
-          <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
-            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Verwendungszweck wahlen</label>
-            <p className="text-[13px] text-[#8C7E6A] mb-4">Die KI-Bewertung andert sich je nach Ziel</p>
-            <div className="grid md:grid-cols-2 gap-4">
+          <div className="mb-6 p-4 bg-[#FAF7F2] rounded-[14px] border border-[#E8E0D4]">
+            <label className="text-[13px] font-semibold text-[#2C2418] block mb-2">Verwendungszweck</label>
+            <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setVerwendungszweck('kapitalanlage')}
-                className={`py-5 px-6 rounded-[16px] border-2 font-medium transition-all text-left ${verwendungszweck === 'kapitalanlage' ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
-                <span className={`text-[16px] block mb-2 ${verwendungszweck === 'kapitalanlage' ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Kapitalanlage</span>
-                <div className={`text-[12px] space-y-1 ${verwendungszweck === 'kapitalanlage' ? 'text-[#7C8B6F]/80' : 'text-[#8C7E6A]'}`}>
-                  <p>Rendite & Cashflow: 30%</p><p>Einkaufspreis: 20% | Lage & Potenzial: 25%</p><p>Zustand, Energie & Mietpotenzial: 25%</p>
-                </div>
+                className={`py-2.5 px-3 rounded-[10px] border-2 font-medium transition-all text-center ${verwendungszweck === 'kapitalanlage' ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]' : 'border-[#E8E0D4] text-[#5C4F3D] hover:border-[#B5A68C]'}`}>
+                <span className="text-[13px]">Kapitalanlage</span>
               </button>
               <button type="button" onClick={() => setVerwendungszweck('eigennutzung')}
-                className={`py-5 px-6 rounded-[16px] border-2 font-medium transition-all text-left ${verwendungszweck === 'eigennutzung' ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
-                <span className={`text-[16px] block mb-2 ${verwendungszweck === 'eigennutzung' ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Eigennutzung</span>
-                <div className={`text-[12px] space-y-1 ${verwendungszweck === 'eigennutzung' ? 'text-[#7C8B6F]/80' : 'text-[#8C7E6A]'}`}>
-                  <p>Lage & Umfeld: 25% | Grundriss: 20%</p><p>Zustand: 15% | Zukunftspotenzial: 15%</p><p>Wohnqualitaet & Lebensstandard</p>
-                </div>
+                className={`py-2.5 px-3 rounded-[10px] border-2 font-medium transition-all text-center ${verwendungszweck === 'eigennutzung' ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]' : 'border-[#E8E0D4] text-[#5C4F3D] hover:border-[#B5A68C]'}`}>
+                <span className="text-[13px]">Eigennutzung</span>
               </button>
             </div>
-            {verwendungszweck === 'kapitalanlage' && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Bei Kapitalanlage wird Cashflow, Rendite und Mietpotenzial priorisiert</p>}
-            {verwendungszweck === 'eigennutzung' && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Bei Eigennutzung wird Wohnqualitat, Lage und Zustand priorisiert</p>}
           </div>
 
           {/* Besichtigung */}
-          <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
-            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Warst du schon bei der Besichtigung?</label>
-            <p className="text-[13px] text-[#8C7E6A] mb-4">Wir passen die Analyse an deinen aktuellen Stand an</p>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="mb-6 p-4 bg-[#FAF7F2] rounded-[14px] border border-[#E8E0D4]">
+            <label className="text-[13px] font-semibold text-[#2C2418] block mb-2">Schon besichtigt?</label>
+            <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setBesichtigt(true)}
-                className={`py-4 px-5 rounded-[16px] border-2 font-medium transition-all text-center ${besichtigt === true ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
-                <span className={`text-[15px] block ${besichtigt === true ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Ja, war ich schon</span>
+                className={`py-2 px-3 rounded-[10px] border-2 font-medium transition-all text-center text-[13px] ${besichtigt === true ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]' : 'border-[#E8E0D4] text-[#5C4F3D] hover:border-[#B5A68C]'}`}>
+                Ja
               </button>
               <button type="button" onClick={() => setBesichtigt(false)}
-                className={`py-4 px-5 rounded-[16px] border-2 font-medium transition-all text-center ${besichtigt === false ? 'border-[#7C8B6F] bg-[#7C8B6F]/5' : 'border-[#E8E0D4] hover:border-[#B5A68C]'}`}>
-                <span className={`text-[15px] block ${besichtigt === false ? 'text-[#7C8B6F] font-semibold' : 'text-[#5C4F3D]'}`}>Nein, noch nicht</span>
+                className={`py-2 px-3 rounded-[10px] border-2 font-medium transition-all text-center text-[13px] ${besichtigt === false ? 'border-[#7C8B6F] bg-[#7C8B6F]/5 text-[#7C8B6F]' : 'border-[#E8E0D4] text-[#5C4F3D] hover:border-[#B5A68C]'}`}>
+                Nein
               </button>
             </div>
-            {besichtigt === false && <p className="mt-3 text-[12px] text-[#7C8B6F] bg-[#7C8B6F]/5 px-3 py-2 rounded-[8px]">Du erhältst eine personalisierte Besichtigungs-Checkliste mit deiner Analyse</p>}
             {besichtigt === true && (
-              <div className="mt-4">
-                <label className="block text-[13px] font-medium text-[#5C4F3D] mb-2">Notizen von der Besichtigung (optional)</label>
+              <div className="mt-3">
                 <textarea
                   value={besichtigungsNotizen}
                   onChange={(e) => setBesichtigungsNotizen(e.target.value)}
-                  placeholder="z.B. Keller war feucht, Heizung ist von 2005, Nachbarn waren laut, Dach sah gut aus..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-white border border-[#E8E0D4] rounded-[12px] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[14px] resize-none"
+                  placeholder="Notizen: z.B. Keller feucht, Heizung 2005..."
+                  rows={2}
+                  className="w-full px-3 py-2 bg-white border border-[#E8E0D4] rounded-[10px] focus:outline-none focus:border-[#7C8B6F] transition-all text-[#2C2418] placeholder:text-[#B5A68C] text-[13px] resize-none"
                 />
-                <p className="mt-1.5 text-[11px] text-[#8C7E6A]">Deine Beobachtungen fließen in die Analyse ein</p>
               </div>
             )}
           </div>
 
           {/* Investoren-Profil / Wohnprofil */}
           {verwendungszweck === 'eigennutzung' ? (
-          <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
-            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Deine Prioritaeten</label>
-            <p className="text-[13px] text-[#8C7E6A] mb-4">Die Bewertung wird auf dein Wohnprofil abgestimmt</p>
+          <div className="mb-6 p-4 bg-[#FAF7F2] rounded-[14px] border border-[#E8E0D4]">
+            <label className="text-[13px] font-semibold text-[#2C2418] block mb-2">Bewertungs-Gewichtung</label>
             <div className="bg-[#7C8B6F]/5 rounded-[12px] p-4 border border-[#7C8B6F]/20">
               <div className="grid grid-cols-2 gap-3 text-[13px]">
                 <div><span className="text-[#7C8B6F] font-medium">Lage & Umfeld</span><span className="text-[#8C7E6A] ml-1">25%</span></div>
@@ -164,9 +148,8 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
             </div>
           </div>
           ) : (
-          <div className="mb-10 p-6 bg-[#FAF7F2] rounded-[16px] border border-[#E8E0D4]">
-            <label className="text-[16px] font-semibold text-[#2C2418] block mb-1">Dein Investment-Profil</label>
-            <p className="text-[13px] text-[#8C7E6A] mb-4">Verwende dein Standardprofil oder passe es fuer diese Analyse an</p>
+          <div className="mb-6 p-4 bg-[#FAF7F2] rounded-[14px] border border-[#E8E0D4]">
+            <label className="text-[13px] font-semibold text-[#2C2418] block mb-2">Investment-Profil</label>
 
             {/* Toggle */}
             <div className="flex mb-4 bg-white rounded-[10px] border border-[#E8E0D4] p-1">
@@ -203,10 +186,10 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                       <span className="text-[#B5A68C]">|</span>
                       <span className="text-[#5C4F3D] text-[14px]">{RISK_PROFILES[investorProfile.riskProfile]?.label}</span>
                       <span className="text-[#B5A68C]">|</span>
-                      <span className="text-[#5C4F3D] text-[14px]">{Number(investorProfile.eigenkapital).toLocaleString('de-DE')} EUR EK</span>
+                      <span className="text-[#5C4F3D] text-[14px]">{Number(investorProfile.eigenkapital).toLocaleString('de-DE')} € EK</span>
                     </div>
                     <Link to="/settings" className="px-4 py-2 bg-white border border-[#E8E0D4] text-[#5C4F3D] rounded-[10px] font-medium hover:bg-[#F5F0E8] transition-all text-[13px] shrink-0">
-                      Standard andern
+                      Standard &auml;ndern
                     </Link>
                   </div>
                 ) : (
@@ -277,11 +260,11 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <label className="text-[12px] font-medium text-[#5C4F3D]">Eigenkapital fuer dieses Objekt</label>
+                      <label className="text-[12px] font-medium text-[#5C4F3D]">Eigenkapital f&uuml;r dieses Objekt</label>
                       <div className="group relative">
                         <span className="text-[#B5A68C] cursor-help text-[10px] border border-[#E8E0D4] rounded-full w-3.5 h-3.5 inline-flex items-center justify-center">i</span>
                         <div className="hidden group-hover:block absolute bottom-5 left-0 w-52 bg-white border border-[#E8E0D4] rounded-[10px] p-2.5 text-[11px] text-[#5C4F3D] shadow-lg z-10">
-                          Wie viel eigenes Geld du fuer diesen Kauf einsetzen willst.
+                          Wie viel eigenes Geld du f&uuml;r diesen Kauf einsetzen willst.
                         </div>
                       </div>
                     </div>
@@ -314,69 +297,69 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                   </div>
                 </div>
 
-                <p className="text-[11px] text-[#8C7E6A]">Diese Einstellungen gelten nur fuer diese Analyse und ueberschreiben nicht dein Standardprofil.</p>
+                <p className="text-[11px] text-[#8C7E6A]">Diese Einstellungen gelten nur f&uuml;r diese Analyse und &uuml;berschreiben nicht dein Standardprofil.</p>
               </div>
             )}
           </div>
           )}
 
           {/* Hauptdaten */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div><label className={labelClass}>Kaufpreis (EUR) *</label><input type="number" name="kaufpreis" value={formData.kaufpreis} onChange={handleChange} required placeholder="z.B. 350000" className={inputClass} /></div>
-            <div><label className={labelClass}>Wohnflache (m2) *</label><input type="number" name="wohnflaeche" value={formData.wohnflaeche} onChange={handleChange} required placeholder="z.B. 75" className={inputClass} /></div>
-            <div><label className={labelClass}>Zimmer</label><input type="number" step="0.5" name="zimmer" value={formData.zimmer} onChange={handleChange} placeholder="z.B. 3" className={inputClass} /></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+            <div><label className={labelClass}>Kaufpreis (&euro;) *</label><input type="number" name="kaufpreis" value={formData.kaufpreis} onChange={handleChange} required placeholder="350000" className={inputClass} /></div>
+            <div><label className={labelClass}>Wohnfl&auml;che (m&sup2;) *</label><input type="number" name="wohnflaeche" value={formData.wohnflaeche} onChange={handleChange} required placeholder="75" className={inputClass} /></div>
+            <div><label className={labelClass}>Zimmer</label><input type="number" step="0.5" name="zimmer" value={formData.zimmer} onChange={handleChange} placeholder="3" className={inputClass} /></div>
           </div>
 
           {sectionTitle('Lage')}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
-            <div><label className={labelClass}>Stadt *</label><input type="text" name="stadt" value={formData.stadt} onChange={handleChange} required placeholder="z.B. Munchen" className={inputClass} /></div>
-            <div><label className={labelClass}>Stadtteil</label><input type="text" name="stadtteil" value={formData.stadtteil} onChange={handleChange} placeholder="z.B. Schwabing" className={inputClass} /></div>
-            <div><label className={labelClass}>Adresse</label><input type="text" name="adresse" value={formData.adresse} onChange={handleChange} placeholder="z.B. Musterstrasse 12" className={inputClass} /></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+            <div><label className={labelClass}>Stadt *</label><input type="text" name="stadt" value={formData.stadt} onChange={handleChange} required placeholder="M&uuml;nchen" className={inputClass} /></div>
+            <div><label className={labelClass}>Stadtteil</label><input type="text" name="stadtteil" value={formData.stadtteil} onChange={handleChange} placeholder="Schwabing" className={inputClass} /></div>
+            <div className="col-span-2 md:col-span-1"><label className={labelClass}>Adresse</label><input type="text" name="adresse" value={formData.adresse} onChange={handleChange} placeholder="Musterstra&szlig;e 12" className={inputClass} /></div>
           </div>
 
           {sectionTitle('Objektdetails')}
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
             <div><label className={labelClass}>Baujahr</label><input type="number" name="baujahr" value={formData.baujahr} onChange={handleChange} placeholder="z.B. 1985" className={inputClass} /></div>
             <div><label className={labelClass}>Etage</label><input type="text" name="etage" value={formData.etage} onChange={handleChange} placeholder="z.B. 2. OG" className={inputClass} /></div>
-            <div><label className={labelClass}>Objekttyp</label><select name="objekttyp" value={formData.objekttyp} onChange={handleChange} className={selectClass}><option value="">Bitte wahlen</option><option value="Eigentumswohnung">Eigentumswohnung</option><option value="Einfamilienhaus">Einfamilienhaus</option><option value="Doppelhaushalfte">Doppelhaushalfte</option><option value="Reihenhaus">Reihenhaus</option><option value="Mehrfamilienhaus">Mehrfamilienhaus</option></select></div>
-            <div><label className={labelClass}>Zustand</label><select name="zustand" value={formData.zustand} onChange={handleChange} className={selectClass}><option value="">Bitte wahlen</option><option value="Neubau">Neubau</option><option value="Neuwertig">Neuwertig</option><option value="Modernisiert">Modernisiert</option><option value="Gepflegt">Gepflegt</option><option value="Renovierungsbedurftig">Renovierungsbedurftig</option></select></div>
+            <div><label className={labelClass}>Objekttyp</label><select name="objekttyp" value={formData.objekttyp} onChange={handleChange} className={selectClass}><option value="">Bitte w&auml;hlen</option><option value="Eigentumswohnung">Eigentumswohnung</option><option value="Einfamilienhaus">Einfamilienhaus</option><option value="Doppelhaushälfte">Doppelhaush&auml;lfte</option><option value="Reihenhaus">Reihenhaus</option><option value="Mehrfamilienhaus">Mehrfamilienhaus</option></select></div>
+            <div><label className={labelClass}>Zustand</label><select name="zustand" value={formData.zustand} onChange={handleChange} className={selectClass}><option value="">Bitte w&auml;hlen</option><option value="Neubau">Neubau</option><option value="Neuwertig">Neuwertig</option><option value="Modernisiert">Modernisiert</option><option value="Gepflegt">Gepflegt</option><option value="Renovierungsbedürftig">Renovierungsbed&uuml;rftig</option></select></div>
           </div>
 
           {sectionTitle('Energie')}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div><label className={labelClass}>Energieklasse</label><select name="energieklasse" value={formData.energieklasse} onChange={handleChange} className={selectClass}><option value="">Bitte wahlen</option>{['A+','A','B','C','D','E','F','G','H'].map(k => <option key={k} value={k}>{k}</option>)}</select></div>
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div><label className={labelClass}>Energieklasse</label><select name="energieklasse" value={formData.energieklasse} onChange={handleChange} className={selectClass}><option value="">Bitte w&auml;hlen</option>{['A+','A','B','C','D','E','F','G','H'].map(k => <option key={k} value={k}>{k}</option>)}</select></div>
             <div><label className={labelClass}>Heizungsart</label><input type="text" name="heizungsart" value={formData.heizungsart} onChange={handleChange} placeholder="z.B. Gas-Zentralheizung" className={inputClass} /></div>
           </div>
 
           {sectionTitle('Kosten')}
-          <div className="grid md:grid-cols-2 gap-6 mb-4">
-            <div><label className={labelClass}>Hausgeld / Monat (EUR)</label><input type="number" name="hausgeld" value={formData.hausgeld} onChange={handleChange} placeholder="z.B. 250" className={inputClass} /></div>
-            <div><label className={labelClass}>Davon nicht umlagefähig (EUR)</label><input type="number" name="hausgeld_nicht_umlagefaehig" value={formData.hausgeld_nicht_umlagefaehig} onChange={handleChange} placeholder="Steht oft im Exposé, sonst leer" className={inputClass} /><p className="text-[11px] text-[#B5A68C] mt-1">Wenn nicht bekannt, schätzen wir ca. 30% des Hausgelds</p></div>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div><label className={labelClass}>Hausgeld / Monat (&euro;)</label><input type="number" name="hausgeld" value={formData.hausgeld} onChange={handleChange} placeholder="z.B. 250" className={inputClass} /></div>
+            <div><label className={labelClass}>Davon nicht umlagef&auml;hig (&euro;)</label><input type="number" name="hausgeld_nicht_umlagefaehig" value={formData.hausgeld_nicht_umlagefaehig} onChange={handleChange} placeholder="Steht oft im Exposé, sonst leer" className={inputClass} /><p className="text-[11px] text-[#B5A68C] mt-1">Wenn nicht bekannt, schätzen wir ca. 30% des Hausgelds</p></div>
           </div>
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div><label className={labelClass}>Verkäufertyp</label><select name="verkaufertyp" value={formData.verkaufertyp} onChange={handleChange} className={selectClass}><option value="">Bitte wählen</option><option value="Privat">Privat</option><option value="Makler">Makler</option></select></div>
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div><label className={labelClass}>Verk&auml;ufertyp</label><select name="verkaufertyp" value={formData.verkaufertyp} onChange={handleChange} className={selectClass}><option value="">Bitte wählen</option><option value="Privat">Privat</option><option value="Makler">Makler</option></select></div>
             <div><label className={labelClass}>Provision</label><input type="text" name="provision" value={formData.provision} onChange={handleChange} placeholder="z.B. 3,57% oder provisionsfrei" className={inputClass} /></div>
           </div>
 
           {sectionTitle('Ausstattung')}
-          <div className="flex flex-wrap gap-6 mb-8">
+          <div className="flex flex-wrap gap-4 mb-5">
             <label className="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="balkon_terrasse" checked={formData.balkon_terrasse} onChange={handleChange} className="w-5 h-5 rounded bg-white border-[#E8E0D4] text-[#7C8B6F] focus:ring-[#7C8B6F]/50" /><span className="text-[#5C4F3D] group-hover:text-[#2C2418] transition-colors text-[14px]">Balkon / Terrasse</span></label>
             <label className="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="keller" checked={formData.keller} onChange={handleChange} className="w-5 h-5 rounded bg-white border-[#E8E0D4] text-[#7C8B6F] focus:ring-[#7C8B6F]/50" /><span className="text-[#5C4F3D] group-hover:text-[#2C2418] transition-colors text-[14px]">Keller</span></label>
-            <div className="flex items-center gap-3"><label className="text-[13px] text-[#5C4F3D]">Stellplatz:</label><select name="stellplatz" value={formData.stellplatz} onChange={handleChange} className="px-3 py-2 bg-white border border-[#E8E0D4] rounded-[8px] text-[13px] focus:border-[#7C8B6F] focus:outline-none text-[#2C2418]"><option value="">Keiner</option><option value="Tiefgarage">Tiefgarage</option><option value="Aussenstellplatz">Aussenstellplatz</option><option value="Garage">Garage</option></select></div>
+            <div className="flex items-center gap-3"><label className="text-[13px] text-[#5C4F3D]">Stellplatz:</label><select name="stellplatz" value={formData.stellplatz} onChange={handleChange} className="px-3 py-2 bg-white border border-[#E8E0D4] rounded-[8px] text-[13px] focus:border-[#7C8B6F] focus:outline-none text-[#2C2418]"><option value="">Keiner</option><option value="Tiefgarage">Tiefgarage</option><option value="Außenstellplatz">Au&szlig;enstellplatz</option><option value="Garage">Garage</option></select></div>
           </div>
 
           {verwendungszweck === 'kapitalanlage' && (
             <>
               {sectionTitle('Vermietung')}
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-2 gap-3 mb-5">
                 <div><label className="flex items-center gap-3 cursor-pointer group"><input type="checkbox" name="vermietet" checked={formData.vermietet} onChange={handleChange} className="w-5 h-5 rounded bg-white border-[#E8E0D4] text-[#7C8B6F] focus:ring-[#7C8B6F]/50" /><span className="text-[#5C4F3D] group-hover:text-[#2C2418] transition-colors text-[14px]">Aktuell vermietet</span></label></div>
-                <div><label className={labelClass}>Aktuelle Kaltmiete / Monat (EUR)</label><input type="number" name="aktuelle_miete" value={formData.aktuelle_miete} onChange={handleChange} placeholder="z.B. 850" className={inputClass} /></div>
+                <div><label className={labelClass}>Aktuelle Kaltmiete / Monat (&euro;)</label><input type="number" name="aktuelle_miete" value={formData.aktuelle_miete} onChange={handleChange} placeholder="z.B. 850" className={inputClass} /></div>
               </div>
 
               {sectionTitle('Finanzierung')}
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
                 <div>
-                  <label className={labelClass}>Eigenkapital (EUR)</label>
+                  <label className={labelClass}>Eigenkapital (&euro;)</label>
                   <input type="number" name="eigenkapital" value={finanzierung.eigenkapital} onChange={handleFinanzierungChange} placeholder="0 = 100% Finanzierung" className={inputClass} />
                   {formData.kaufpreis > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -401,7 +384,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
             </>
           )}
 
-          <button type="submit" className="w-full py-4 bg-[#7C8B6F] text-white font-semibold rounded-full text-[16px] hover:bg-[#6B7A5E] transition-all mt-4 active:scale-[0.98]">
+          <button type="submit" className="w-full py-3.5 bg-[#7C8B6F] text-white font-semibold rounded-full text-[15px] hover:bg-[#6B7A5E] transition-all mt-3 active:scale-[0.98]">
             <span className="flex items-center justify-center gap-3">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               Immobilie bewerten
