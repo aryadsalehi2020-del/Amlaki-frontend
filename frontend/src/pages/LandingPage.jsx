@@ -105,8 +105,8 @@ const FEATURES = [
   },
   {
     icon: Scale,
-    title: 'Notar- und Vertragsbegleitung',
-    description: 'Verst\u00e4ndliche Aufbereitung aller notariellen Schritte \u2013 Auflassung, Grundbucheintragung, Belastungsvollmacht \u2013 damit du jeden Schritt nachvollziehen kannst.',
+    title: 'Steuer- und AfA-Optimierung',
+    description: 'Berechnung der steuerlichen Vorteile durch AfA, Zinsabzug und F\u00f6rderungen. Cashflow vor und nach Steuer auf einen Blick.',
   },
   {
     icon: Brain,
@@ -139,9 +139,9 @@ const STEPS = [
 ];
 
 const STATS = [
-  { value: '2026', label: 'Datenstand aktualisiert' },
-  { value: 'DACH', label: 'DE \u00b7 AT \u00b7 CH Marktabdeckung' },
-  { value: '13+', label: 'Fachgebiete integriert' },
+  { value: '2026', label: 'Marktdaten aktualisiert' },
+  { value: '30 Sek', label: 'Analyse in Sekunden' },
+  { value: '15+', label: 'St\u00e4dte im Fast-Path' },
   { value: '24/7', label: 'Verf\u00fcgbarkeit' },
 ];
 
@@ -300,7 +300,7 @@ export default function LandingPage() {
               style={{ background: `${C.khaki}12`, color: C.khaki, border: `1px solid ${C.khaki}30` }}
             >
               <Sparkles size={14} style={{ color: C.khaki }} />
-              Spezialisierte KI-Beratung f&uuml;r Immobilienkäufer im DACH-Raum
+              KI-Immobilienanalyse f&uuml;r Käufer und Investoren
             </div>
           </FadeInSection>
 
@@ -309,9 +309,9 @@ export default function LandingPage() {
               className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-4 md:mb-5"
               style={{ color: C.heading, letterSpacing: '-0.035em', lineHeight: 1.1 }}
             >
-              Immobilienberatung
+              Dein Immobilienkauf.
               <br />
-              <span style={{ color: C.olive }}>auf Expertenniveau.</span>
+              <span style={{ color: C.olive }}>Fundiert analysiert.</span>
             </h1>
           </FadeInSection>
 
@@ -320,7 +320,7 @@ export default function LandingPage() {
               className="text-base sm:text-lg md:text-xl leading-relaxed mb-7 md:mb-8 max-w-xl mx-auto"
               style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}
             >
-              AmlakI vereint das Fachwissen von Immobiliengutachtern, Finanzberatern und Juristen in einer KI, die speziell f&uuml;r den DACH-Immobilienmarkt trainiert wurde. Jede Analyse basiert auf aktuellen Marktdaten, anerkannten Bewertungsverfahren und geltendem Recht.
+              Exposé hochladen, in 30 Sekunden wissen ob sich das Objekt lohnt. Cashflow, fairer Preis, Steuervorteile, Förderungen und Finanzierungsstrategie -- alles auf einen Blick.
             </p>
           </FadeInSection>
 
@@ -357,25 +357,15 @@ export default function LandingPage() {
             </p>
           </FadeInSection>
 
-          {/* Icon grid – subtle feature preview */}
+          {/* Removed icon grid - was too generic */}
           <FadeInSection delay={0.45}>
-            <div className="mt-10 md:mt-14 grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-5 max-w-sm sm:max-w-lg md:max-w-2xl mx-auto">
-              {[
-                [TrendingUp, 'Marktwert'],
-                [MessageSquare, 'Verhandlung'],
-                [ClipboardCheck, 'Besichtigung'],
-                [Scale, 'Notar'],
-                [Brain, 'KI-Beratung'],
-                [Coins, 'Finanzierung'],
-              ].map(([Icon, label]) => (
+            <div className="mt-10 md:mt-14 hidden">
+              {[].map(([Icon, label]) => (
                 <div key={label} className="flex flex-col items-center gap-2">
-                  <div
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center"
-                    style={{ background: C.bgAlt, border: `1px solid ${C.border}` }}
-                  >
-                    <Icon size={20} style={{ color: C.olive }} />
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center">
+                    <span>{label}</span>
                   </div>
-                  <span className="text-xs font-medium text-center" style={{ color: C.khaki }}>
+                  <span className="text-xs font-medium text-center">
                     {label}
                   </span>
                 </div>
@@ -562,7 +552,7 @@ export default function LandingPage() {
                 Fachlich fundiert. Kontinuierlich aktualisiert.
               </h2>
               <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
-                Unsere KI wurde mit dem Fachwissen aus Immobilienbewertung, Miet- und WEG-Recht, Steueroptimierung, F&ouml;rderprogrammen und Finanzierung trainiert &ndash; und wird fortlaufend mit aktuellen Markt- und Rechtsdaten aus dem DACH-Raum aktualisiert.
+                Unsere KI wurde mit dem Fachwissen aus Immobilienbewertung, Miet- und WEG-Recht, Steueroptimierung, F&ouml;rderprogrammen und Finanzierung trainiert &ndash; und wird fortlaufend mit aktuellen Markt- und Rechtsdaten aktualisiert.
               </p>
             </div>
           </FadeInSection>
@@ -681,7 +671,7 @@ export default function LandingPage() {
             <div>
               <Logo />
               <p className="text-sm mt-2" style={{ color: C.khaki }}>
-                Dein KI-Immobilienberater f&uuml;r den DACH-Raum.
+                Dein KI-Immobilienberater.
               </p>
             </div>
 
