@@ -15,8 +15,8 @@ const getApiBase = () => {
     return 'https://amlaki-backend.onrender.com';
   }
 
-  // Sonst (z.B. vom Handy im gleichen Netzwerk), verwende die gleiche IP wie das Frontend
-  return `http://${window.location.hostname}:8000`;
+  // Sonst (z.B. vom Handy im gleichen Netzwerk), verwende HTTPS
+  return `https://${window.location.hostname}:8000`;
 };
 
 export const API_BASE = getApiBase();
