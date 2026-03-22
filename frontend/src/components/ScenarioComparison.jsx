@@ -60,7 +60,6 @@ function ScenarioComparison({ szenarien, onSelectScenario }) {
   return (
     <div>
       <h4 className="text-lg font-bold text-[#2C2418] mb-6 flex items-center gap-2">
-        <span className="text-2xl">🎭</span>
         Szenario-Vergleich
       </h4>
 
@@ -173,8 +172,8 @@ function ScenarioComparison({ szenarien, onSelectScenario }) {
       {/* Legend */}
       <div className="mt-6 p-4 bg-[#F5F0E8] rounded-xl">
         <p className="text-xs text-[#8C7E6A]">
-          <span className="font-bold text-[#2C2418]">Tipp:</span> Klicken Sie auf ein Szenario, um es in den Charts oben anzuzeigen.
-          Das <span className="text-[#7C8B6F] font-medium">realistische Szenario</span> basiert auf Ihren aktuellen Parametern.
+          <span className="font-bold text-[#2C2418]">Tipp:</span> Klicke auf ein Szenario, um es in den Charts anzuzeigen.
+          Das <span className="text-[#7C8B6F] font-medium">realistische Szenario</span> basiert auf deinen aktuellen Parametern.
         </p>
       </div>
     </div>

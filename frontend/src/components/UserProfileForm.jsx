@@ -59,8 +59,8 @@ function UserProfileForm({ profile, onProfileChange }) {
 
       {/* Bestehendes Vermogen */}
       <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4]">
-        <h3 className="text-[18px] font-semibold text-[#2C2418] mb-2">Bestehendes Vermogen (EK-Ersatz)</h3>
-        <p className="text-[#8C7E6A] text-[13px] mb-6">Diese Werte konnen als Eigenkapital-Ersatz dienen und verbessern Ihre Kreditchancen</p>
+        <h3 className="text-[18px] font-semibold text-[#2C2418] mb-2">Bestehendes Verm&ouml;gen (EK-Ersatz)</h3>
+        <p className="text-[#8C7E6A] text-[13px] mb-6">Diese Werte k&ouml;nnen als Eigenkapital-Ersatz dienen und verbessern deine Kreditchancen</p>
         <div className="space-y-4">
           {[
             { name: 'hatDepot', label: 'Wertpapierdepot vorhanden', valueName: 'depotWert', hint: 'Lombardkredit moglich: bis 70% beleihbar', placeholder: 'Depotwert in EUR' },

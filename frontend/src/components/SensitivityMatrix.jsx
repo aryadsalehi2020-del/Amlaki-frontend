@@ -213,7 +213,7 @@ function SensitivityMatrix({ sensitivity }) {
 
       {/* Explanation */}
       <p className="text-xs text-slate/50 mt-4 text-center">
-        Die markierte Zelle zeigt Ihre aktuelle Konfiguration. Grüne Zellen = positiver Cashflow, rote = Zuzahlung nötig.
+        Die markierte Zelle zeigt deine aktuelle Konfiguration. Gr&uuml;ne Zellen = positiver Cashflow, rote = Zuzahlung n&ouml;tig.
       </p>
     </div>
   );

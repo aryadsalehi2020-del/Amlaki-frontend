@@ -21,17 +21,16 @@ function FinancingOptions({ optionen }) {
   };
 
   const optionStyles = [
-    { bg: 'from-blue-50 to-blue-100', border: 'border-blue-200', text: 'text-blue-700', icon: '🐢' },
-    { bg: 'from-green-50 to-green-100', border: 'border-green-200', text: 'text-green-700', icon: '⭐' },
-    { bg: 'from-amber-50 to-amber-100', border: 'border-amber-200', text: 'text-amber-700', icon: '🏃' },
+    { bg: 'from-blue-50 to-blue-100', border: 'border-blue-200', text: 'text-blue-700', icon: '' },
+    { bg: 'from-green-50 to-green-100', border: 'border-green-200', text: 'text-green-700', icon: '' },
+    { bg: 'from-amber-50 to-amber-100', border: 'border-amber-200', text: 'text-amber-700', icon: '' },
     { bg: 'from-purple-50 to-purple-100', border: 'border-purple-200', text: 'text-purple-700', icon: '' },
     { bg: 'from-red-50 to-red-100', border: 'border-red-200', text: 'text-red-700', icon: '' },
   ];
 
   return (
     <div className="p-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-lg border border-slate/20">
-      <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
-        <span className="text-2xl"></span>
+      <h4 className="text-lg font-bold text-primary mb-2">
         Finanzierungsoptionen im Vergleich
       </h4>
       <p className="text-sm text-slate/60 mb-6">
