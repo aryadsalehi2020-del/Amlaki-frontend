@@ -1152,20 +1152,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   <p className="text-[16px] md:text-xl font-bold text-[#8C7E6A] capitalize">{result.fairer_preis.bewertung}</p>
                 </div>
               </div>
-              <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
-                <div className="bg-slate/5 rounded-xl p-4">
-                  <p className="text-[#8C7E6A] mb-1">Nach Ertragswert</p>
-                  <p className="font-semibold text-[#2C2418]">{formatCurrency(result.fairer_preis.nach_rendite)}</p>
-                </div>
-                <div className="bg-slate/5 rounded-xl p-4">
-                  <p className="text-[#8C7E6A] mb-1">Nach Faktor 22</p>
-                  <p className="font-semibold text-[#2C2418]">{formatCurrency(result.fairer_preis.nach_faktor)}</p>
-                </div>
-                <div className="bg-slate/5 rounded-xl p-4">
-                  <p className="text-[#8C7E6A] mb-1">Nach Cashflow</p>
-                  <p className="font-semibold text-[#2C2418]">{formatCurrency(result.fairer_preis.nach_cashflow)}</p>
-                </div>
-              </div>
+              {result.fairer_preis.begruendung && (
+                <p className="mt-4 text-[13px] text-[#8C7E6A] bg-[#FAF7F2] p-3 rounded-xl">{result.fairer_preis.begruendung}</p>
+              )}
             </div>
           )}
 

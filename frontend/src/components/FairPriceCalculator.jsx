@@ -76,15 +76,15 @@ function FairPriceCalculator({ analysisData }) {
     const nachVergleich = Math.round(vergleichspreisProQm * wohnflaeche);
 
     // Methode 4: Für Cashflow-Neutralität
-    const nichtUmlagefaehig = hausgeld * 0.30;
+    const nichtUmlagefaehig = hausgeld * 0.35;
     const verfuegbarFuerRate = kaltmiete - nichtUmlagefaehig;
     const jahresRate = verfuegbarFuerRate * 12;
     const maxKreditFuerCashflow0 = jahresRate / (zinssatz / 100 + tilgungssatz / 100);
     const nachCashflow = Math.round(maxKreditFuerCashflow0 * 0.88); // 12% Nebenkosten abziehen
 
-    // Gewichteter Durchschnitt
+    // Gewichteter Durchschnitt -- Marktvergleich am staerksten (wie Backend)
     const fairerPreis = Math.round(
-      (nachRendite * 0.3 + nachFaktor * 0.3 + nachVergleich * 0.2 + nachCashflow * 0.2)
+      (nachVergleich * 0.40 + nachRendite * 0.25 + nachFaktor * 0.25 + nachCashflow * 0.10)
     );
 
     // Differenz zum aktuellen Preis
@@ -381,16 +381,7 @@ function FairPriceCalculator({ analysisData }) {
                               calculation.empfehlungFarbe === 'orange-400' ? 'rgba(251, 146, 60, 0.05)' :
                               'rgba(248, 113, 113, 0.05)'
            }}>
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-               style={{
-                 backgroundColor: calculation.empfehlungFarbe === 'olive' ? 'rgba(124, 139, 111, 0.2)' :
-                                  calculation.empfehlungFarbe === 'accent' ? 'rgba(251, 191, 36, 0.2)' :
-                                  calculation.empfehlungFarbe === 'orange-400' ? 'rgba(251, 146, 60, 0.2)' :
-                                  'rgba(248, 113, 113, 0.2)'
-               }}>
-            {calculation.differenzProzent <= 5 ? '' : calculation.differenzProzent <= 15 ? '' : ''}
-          </div>
+        <div>
           <div>
             <p className="font-bold text-[#2C2418] text-lg">{calculation.empfehlung}</p>
             {calculation.differenz > 0 && (
