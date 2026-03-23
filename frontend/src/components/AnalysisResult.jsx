@@ -68,7 +68,7 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-32 h-32 md:w-48 md:h-48">
+      <div className="relative w-24 h-24 md:w-40 md:h-40">
         {/* Outer glow ring */}
         <div className="absolute inset-0 rounded-full animate-glow opacity-30"
              style={{ background: `radial-gradient(circle, ${getScoreColor(displayScore)}40, transparent)` }}></div>
@@ -111,7 +111,7 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
       </div>
 
       {/* Label below circle */}
-      <span className="text-sm font-bold text-[#B5A68C] mt-4 px-4 py-1.5 bg-accent/10 rounded-full">
+      <span className="text-[12px] font-semibold text-[#B5A68C] mt-2 px-3 py-1 bg-[#F5F0E8] rounded-full">
         {getScoreLabel(displayScore)}
       </span>
     </div>
@@ -341,7 +341,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
             </div>
 
         {/* Titel + Score nebeneinander */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-[20px] md:text-[28px] font-bold text-[#2C2418]">
             Bewertungsergebnis
           </h2>
