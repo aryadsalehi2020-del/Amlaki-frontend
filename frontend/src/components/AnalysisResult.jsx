@@ -303,16 +303,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
     <div className="fade-in space-y-5 md:space-y-8">
       {/* Header Card with Score */}
       <div className="bg-white rounded-3xl p-4 md:p-10 border border-[#E8E0D4]">
-        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-          <ScoreCircle
-            score={result.gesamtscore}
-            adjustedScore={dynamicData.adjustedScore}
-            showAdjusted={showPersonalized && isProfileComplete}
-          />
-
-          <div className="flex-1 text-left">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {/* Verwendungszweck Toggle */}
+        {/* Verwendungszweck Tags */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {/* Verwendungszweck Toggle */}
               <div className="inline-flex items-center rounded-full border border-[#E8E0D4] p-1">
                 <button
                   onClick={() => onSwitchVerwendungszweck && result.verwendungszweck !== 'kapitalanlage' && onSwitchVerwendungszweck('kapitalanlage')}
@@ -323,8 +316,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   }`}
                   disabled={!onSwitchVerwendungszweck}
                 >
-                  <span className="text-lg"></span>
-                  <span className="font-semibold text-sm">Kapitalanlage</span>
+                  <span className="font-semibold text-[12px]">Kapitalanlage</span>
                 </button>
                 <button
                   onClick={() => onSwitchVerwendungszweck && result.verwendungszweck !== 'eigennutzung' && onSwitchVerwendungszweck('eigennutzung')}
@@ -335,8 +327,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   }`}
                   disabled={!onSwitchVerwendungszweck}
                 >
-                  <span className="text-lg"></span>
-                  <span className="font-semibold text-sm">Eigennutzung</span>
+                  <span className="font-semibold text-[12px]">Eigennutzung</span>
                 </button>
               </div>
               {isProfileComplete && profile && (
@@ -349,12 +340,22 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               )}
             </div>
 
-            <h2 className="text-[20px] md:text-[28px] font-bold text-[#2C2418] mb-4">
+        {/* Score + Bewertung nebeneinander */}
+        <div className="flex items-start gap-4 md:gap-8">
+          <div className="shrink-0">
+            <ScoreCircle
+              score={result.gesamtscore}
+              adjustedScore={dynamicData.adjustedScore}
+              showAdjusted={showPersonalized && isProfileComplete}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-[18px] md:text-[24px] font-bold text-[#2C2418] mb-2">
               Bewertungsergebnis
             </h2>
 
-            <p className="text-[#8C7E6A] text-lg leading-relaxed">{result.zusammenfassung?.replace(/\s*Dies ist eine datenbasierte Einschätzung[^.]*\.?\s*$/, '')}</p>
-            <p className="text-[#B5A68C] text-[11px] mt-3">Dies ist eine datenbasierte Einschätzung und ersetzt keine individuelle Anlageberatung.</p>
+            <p className="text-[#8C7E6A] text-[13px] md:text-[15px] leading-relaxed">{result.zusammenfassung?.replace(/\s*Dies ist eine datenbasierte Einsch.*$/, '')}</p>
+            <p className="text-[#B5A68C] text-[10px] mt-2">Datenbasierte Einsch&auml;tzung, keine Anlageberatung.</p>
 
             {/* Personalized Recommendation */}
             {isProfileComplete && dynamicData.recommendation && (
