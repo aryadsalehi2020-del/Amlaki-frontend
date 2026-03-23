@@ -158,7 +158,7 @@ function Analyze() {
     setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
     const fd = new FormData(); fd.append('file', file);
     try {
-      const res = await fetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd });
+      const res = await fetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd, headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       setPropertyData(await res.json()); setStep('form');
     } catch (err) { setError(err.message); setStep('upload'); }
