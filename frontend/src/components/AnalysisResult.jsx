@@ -340,8 +340,11 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               )}
             </div>
 
-        {/* Score + Bewertung nebeneinander */}
-        <div className="flex items-start gap-4 md:gap-8">
+        {/* Titel + Score nebeneinander */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[20px] md:text-[28px] font-bold text-[#2C2418]">
+            Bewertungsergebnis
+          </h2>
           <div className="shrink-0">
             <ScoreCircle
               score={result.gesamtscore}
@@ -349,12 +352,11 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               showAdjusted={showPersonalized && isProfileComplete}
             />
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-[18px] md:text-[24px] font-bold text-[#2C2418] mb-2">
-              Bewertungsergebnis
-            </h2>
+        </div>
 
-            <p className="text-[#8C7E6A] text-[13px] md:text-[15px] leading-relaxed">{result.zusammenfassung?.replace(/\s*Dies ist eine datenbasierte Einsch.*$/, '')}</p>
+        {/* Bewertungstext volle Breite */}
+        <div>
+            <p className="text-[#8C7E6A] text-[15px] md:text-[16px] leading-relaxed">{result.zusammenfassung?.replace(/\s*Dies ist eine datenbasierte Einsch.*$/, '')}</p>
             <p className="text-[#B5A68C] text-[10px] mt-2">Datenbasierte Einsch&auml;tzung, keine Anlageberatung.</p>
 
             {/* Personalized Recommendation */}
@@ -372,7 +374,6 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 <span className="font-medium">{dynamicData.recommendation.text}</span>
               </div>
             )}
-          </div>
         </div>
 
         {/* Personalized Toggle - nur bei Kapitalanlage sinnvoll */}
