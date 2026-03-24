@@ -2,8 +2,8 @@ import React from 'react';
 
 function ConfirmDialog({
   isOpen, onClose, onConfirm,
-  title = 'Bestatigung', message = 'Mochten Sie fortfahren?',
-  confirmText = 'Bestatigen', cancelText = 'Abbrechen',
+  title = 'Best\u00e4tigung', message = 'M\u00f6chten Sie fortfahren?',
+  confirmText = 'Best\u00e4tigen', cancelText = 'Abbrechen',
   variant = 'danger'
 }) {
   if (!isOpen) return null;

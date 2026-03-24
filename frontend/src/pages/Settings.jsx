@@ -365,7 +365,7 @@ function Settings() {
                   <div className="group relative">
                     <span className="text-[#B5A68C] cursor-help text-[11px] border border-[#E8E0D4] rounded-full w-4 h-4 inline-flex items-center justify-center">i</span>
                     <div className="hidden group-hover:block absolute bottom-6 left-0 w-56 bg-white border border-[#E8E0D4] rounded-[10px] p-3 text-[11px] text-[#5C4F3D] shadow-lg z-10">
-                      Wie viel Prozent Gewinn du dir pro Jahr wuenschst. Ueblich sind 3-6%. Wir zeigen dir nur Objekte, die dein Ziel erreichen koennen.
+                      Wie viel Prozent Gewinn du dir pro Jahr w\u00fcnschst. \u00dcblich sind 3-6%. Wir zeigen dir nur Objekte, die dein Ziel erreichen k\u00f6nnen.
                     </div>
                   </div>
                 </div>

@@ -282,7 +282,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
                       <div className="group relative">
                         <span className="text-[#B5A68C] cursor-help text-[10px] border border-[#E8E0D4] rounded-full w-3.5 h-3.5 inline-flex items-center justify-center">i</span>
                         <div className="hidden group-hover:block absolute bottom-5 left-0 w-52 bg-white border border-[#E8E0D4] rounded-[10px] p-2.5 text-[11px] text-[#5C4F3D] shadow-lg z-10">
-                          Wie viel Prozent Gewinn du dir pro Jahr wuenschst. 3-6% ist ein guter Richtwert.
+                          Wie viel Prozent Gewinn du dir pro Jahr w\u00fcnschst. 3-6% ist ein guter Richtwert.
                         </div>
                       </div>
                     </div>

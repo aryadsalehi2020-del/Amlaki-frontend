@@ -15,11 +15,11 @@ const QUICK_QUESTIONS = [
     'Was bedeutet Annuitat?',
     'Wann lohnt sich ein Forward-Darlehen?'
   ]},
-  { category: 'Forderungen', questions: [
+  { category: 'F\u00f6rderungen', questions: [
     'Welche KfW-Programme gibt es 2025?',
-    'Was ist KfW 300 Wohneigentum fur Familien?',
+    'Was ist KfW 300 Wohneigentum f\u00fcr Familien?',
     'Wie funktioniert Jung kauft Alt?',
-    'Welche Landesforderungen gibt es?'
+    'Welche Landesf\u00f6rderungen gibt es?'
   ]},
   { category: 'Steuern', questions: [
     'Wie funktioniert die AfA bei Vermietung?',
@@ -28,9 +28,9 @@ const QUICK_QUESTIONS = [
     'Was ist der Unterschied zwischen linearer und degressiver AfA?'
   ]},
   { category: 'Recht', questions: [
-    'Wie funktioniert eine Mieterhohung?',
+    'Wie funktioniert eine Mieterh\u00f6hung?',
     'Was ist die Mietpreisbremse?',
-    'Welche Kundigungsfristen gelten?',
+    'Welche K\u00fcndigungsfristen gelten?',
     'Was muss ich bei WEG beachten?'
   ]},
   { category: 'Bewertung', questions: [
@@ -51,12 +51,12 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
       const score = analysisContext.gesamtscore ? `${Math.round(analysisContext.gesamtscore)}/100` : '';
       return {
         role: 'assistant',
-        content: `Ich bin Ihr Berater fur **diese Immobilie** in ${stadt} (${kaufpreis})!\n\n` +
+        content: `Ich bin Ihr Berater f\u00fcr **diese Immobilie** in ${stadt} (${kaufpreis})!\n\n` +
           (score ? `Aktueller Score: **${score}**\n\n` : '') +
           `Frag mich zu diesem Objekt:\n` +
           `- "Ist der Preis angemessen?"\n` +
           `- "Wie kann ich den Cashflow verbessern?"\n` +
-          `- "Welche Forderungen passen hier?"\n` +
+          `- "Welche F\u00f6rderungen passen hier?"\n` +
           `- "Was sind die Risiken bei dieser Immobilie?"`
       };
     }
@@ -93,7 +93,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
         const data = await response.json();
         let responseText = data.response;
         if (data.marktdaten_verwendet) {
-          responseText = `*Live-Daten fur ${data.recherche_standort}*\n\n${responseText}`;
+          responseText = `*Live-Daten f\u00fcr ${data.recherche_standort}*\n\n${responseText}`;
         }
         setMessages(prev => [...prev, { role: 'assistant', content: responseText, liveData: data.marktdaten_verwendet, standort: data.recherche_standort }]);
       } else {
@@ -106,8 +106,8 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
 
   const generateLocalResponse = (question) => {
     const q = question.toLowerCase();
-    if (q.includes('eigenkapital') || q.includes('ek')) return `**Eigenkapital-Anforderungen:**\n\nDie meisten Banken erwarten mindestens die **Kaufnebenkosten** (ca. 10-12%) als Eigenkapital.\n\n**Szenarien:**\n- **20%+ EK:** Beste Konditionen, 95% Bewilligungschance\n- **10-20% EK:** Gute Konditionen, 80% Chance\n- **Nur Nebenkosten:** Moglich, aber hohere Zinsen (+0,2-0,5%)\n- **110% Finanzierung:** Nur bei sehr guter Bonitat`;
-    if (q.includes('kfw') || q.includes('forderung')) return `**KfW-Forderungen 2025:**\n\n**KfW 300 - Wohneigentum fur Familien:**\n- Zinssatz: nur **1,12%**\n- Kredit: 170.000-270.000 je nach Kinderzahl\n- Einkommensgrenze: 90.000 + 10.000/Kind`;
+    if (q.includes('eigenkapital') || q.includes('ek')) return `**Eigenkapital-Anforderungen:**\n\nDie meisten Banken erwarten mindestens die **Kaufnebenkosten** (ca. 10-12%) als Eigenkapital.\n\n**Szenarien:**\n- **20%+ EK:** Beste Konditionen, 95% Bewilligungschance\n- **10-20% EK:** Gute Konditionen, 80% Chance\n- **Nur Nebenkosten:** M\u00f6glich, aber h\u00f6here Zinsen (+0,2-0,5%)\n- **110% Finanzierung:** Nur bei sehr guter Bonit\u00e4t`;
+    if (q.includes('kfw') || q.includes('forderung')) return `**KfW-F\u00f6rderungen 2025:**\n\n**KfW 300 - Wohneigentum f\u00fcr Familien:**\n- Zinssatz: nur **1,12%**\n- Kredit: 170.000-270.000 je nach Kinderzahl\n- Einkommensgrenze: 90.000 + 10.000/Kind`;
     return `Ich helfe dir bei:\n\n**Finanzierung** - Eigenkapital, Bankenvergleich\n**F\u00f6rderungen** - KfW, Landesf\u00f6rderungen\n**Steuern** - AfA, Werbungskosten\n**Recht** - Mietrecht, WEG\n\nStell mir eine konkrete Frage!`;
   };
 

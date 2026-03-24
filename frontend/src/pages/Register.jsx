@@ -13,7 +13,7 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setError('');
-    if (formData.password !== formData.confirmPassword) { setError('Passwoerter stimmen nicht ueberein'); return; }
+    if (formData.password !== formData.confirmPassword) { setError('Passw\u00f6rter stimmen nicht \u00fcberein'); return; }
     if (formData.password.length < 8) { setError('Passwort muss mindestens 8 Zeichen lang sein'); return; }
     if (!/[0-9]/.test(formData.password)) { setError('Passwort muss mindestens eine Zahl enthalten'); return; }
     if (formData.username.length < 3) { setError('Benutzername muss mindestens 3 Zeichen lang sein'); return; }
@@ -28,7 +28,7 @@ function Register() {
     { name: 'username', type: 'text', ph: 'Benutzername', auto: 'username' },
     { name: 'fullName', type: 'text', ph: 'Name (optional)', auto: 'name', req: false },
     { name: 'password', type: 'password', ph: 'Passwort (min. 8 Zeichen + Zahl)', auto: 'new-password' },
-    { name: 'confirmPassword', type: 'password', ph: 'Passwort bestaetigen', auto: 'new-password' },
+    { name: 'confirmPassword', type: 'password', ph: 'Passwort best\u00e4tigen', auto: 'new-password' },
   ];
 
   return (

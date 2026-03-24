@@ -255,7 +255,7 @@ function AnalyseNudgeBanner() {
         </div>
         <div className="flex-1">
           <p className="text-[12px] text-[#5C4F3D]">
-            <span className="font-medium">Tipp:</span> Erstelle eine Objektanalyse fuer eine detaillierte, personalisierte Beratung.
+            <span className="font-medium">Tipp:</span> Erstelle eine Objektanalyse f&uuml;r eine detaillierte, personalisierte Beratung.
           </p>
         </div>
         <Link

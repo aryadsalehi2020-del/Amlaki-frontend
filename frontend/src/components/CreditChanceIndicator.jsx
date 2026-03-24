@@ -14,42 +14,42 @@ function CreditChanceIndicator({ profile, kaufpreis }) {
     if (ekQuote >= 30) { basisChance += 20; faktoren.push({ text: 'Sehr gute EK-Quote (30%+)', effekt: +20, typ: 'positiv' }); }
     else if (ekQuote >= 20) { basisChance += 15; faktoren.push({ text: 'Gute EK-Quote (20%+)', effekt: +15, typ: 'positiv' }); }
     else if (ekQuote >= 10) { basisChance += 5; faktoren.push({ text: 'EK-Quote 10-20%', effekt: +5, typ: 'neutral' }); }
-    else if (ekQuote > 0) { basisChance -= 5; faktoren.push({ text: 'Niedrige EK-Quote (<10%)', effekt: -5, typ: 'negativ' }); tipps.push({ titel: 'Eigenkapital erhohen', text: 'Mit bestehendem Vermogen konnen Sie Ihr EK aufstocken' }); }
-    else { basisChance -= 15; faktoren.push({ text: 'Kein Eigenkapital', effekt: -15, typ: 'negativ' }); tipps.push({ titel: '100% Finanzierung moglich', text: 'Einige Banken finanzieren 100% bei guter Bonitat. KfW-Kredit als EK-Ersatz prufen!' }); }
+    else if (ekQuote > 0) { basisChance -= 5; faktoren.push({ text: 'Niedrige EK-Quote (<10%)', effekt: -5, typ: 'negativ' }); tipps.push({ titel: 'Eigenkapital erh\u00f6hen', text: 'Mit bestehendem Verm\u00f6gen k\u00f6nnen Sie Ihr EK aufstocken' }); }
+    else { basisChance -= 15; faktoren.push({ text: 'Kein Eigenkapital', effekt: -15, typ: 'negativ' }); tipps.push({ titel: '100% Finanzierung m\u00f6glich', text: 'Einige Banken finanzieren 100% bei guter Bonit\u00e4t. KfW-Kredit als EK-Ersatz pr\u00fcfen!' }); }
 
-    if (profile.beruf === 'beamte') { basisChance += 15; faktoren.push({ text: 'Beamtenstatus (beste Bonitat)', effekt: +15, typ: 'positiv' }); }
+    if (profile.beruf === 'beamte') { basisChance += 15; faktoren.push({ text: 'Beamtenstatus (beste Bonit\u00e4t)', effekt: +15, typ: 'positiv' }); }
     else if (profile.beruf === 'angestellt') { basisChance += 10; faktoren.push({ text: 'Unbefristete Anstellung', effekt: +10, typ: 'positiv' }); }
-    else if (profile.beruf === 'selbststaendig') { basisChance -= 5; faktoren.push({ text: 'Selbststandig (3 Jahre Steuerbescheide notig)', effekt: -5, typ: 'neutral' }); tipps.push({ titel: 'Selbststandigen-freundliche Banken', text: 'ING, Sparda-Banken und KfW haben keine Aufschlage!' }); }
+    else if (profile.beruf === 'selbststaendig') { basisChance -= 5; faktoren.push({ text: 'Selbstst\u00e4ndig (3 Jahre Steuerbescheide n\u00f6tig)', effekt: -5, typ: 'neutral' }); tipps.push({ titel: 'Selbstst\u00e4ndigen-freundliche Banken', text: 'ING, Sparda-Banken und KfW haben keine Aufschl\u00e4ge!' }); }
     else if (profile.beruf === 'befristet') { basisChance -= 10; faktoren.push({ text: 'Befristete Anstellung', effekt: -10, typ: 'negativ' }); tipps.push({ titel: 'Entfristung anstreben', text: 'Nach Entfristung steigen Ihre Chancen erheblich.' }); }
 
-    if (profile.probezeit) { basisChance -= 20; faktoren.push({ text: 'In der Probezeit', effekt: -20, typ: 'negativ' }); tipps.push({ titel: 'Nach Probezeit warten', text: 'Die meisten Banken lehnen wahrend der Probezeit ab.' }); }
+    if (profile.probezeit) { basisChance -= 20; faktoren.push({ text: 'In der Probezeit', effekt: -20, typ: 'negativ' }); tipps.push({ titel: 'Nach Probezeit warten', text: 'Die meisten Banken lehnen w\u00e4hrend der Probezeit ab.' }); }
 
     if (profile.schufa === 'sehr-gut') { basisChance += 10; faktoren.push({ text: 'Sehr guter SCHUFA-Score', effekt: +10, typ: 'positiv' }); }
     else if (profile.schufa === 'gut') { basisChance += 5; faktoren.push({ text: 'Guter SCHUFA-Score', effekt: +5, typ: 'positiv' }); }
-    else if (profile.schufa === 'mittel') { basisChance -= 10; faktoren.push({ text: 'Mittlerer SCHUFA-Score', effekt: -10, typ: 'negativ' }); tipps.push({ titel: 'SCHUFA bereinigen', text: 'Nicht mehr genutzte Konten kundigen, Selbstauskunft prufen' }); }
-    else if (profile.schufa === 'schlecht') { basisChance -= 25; faktoren.push({ text: 'Problematischer SCHUFA-Score', effekt: -25, typ: 'negativ' }); tipps.push({ titel: 'SCHUFA verbessern', text: 'Alte Eintrage loschen lassen. Von Essen Bank akzeptiert auch schwache SCHUFA.' }); }
+    else if (profile.schufa === 'mittel') { basisChance -= 10; faktoren.push({ text: 'Mittlerer SCHUFA-Score', effekt: -10, typ: 'negativ' }); tipps.push({ titel: 'SCHUFA bereinigen', text: 'Nicht mehr genutzte Konten k\u00fcndigen, Selbstauskunft pr\u00fcfen' }); }
+    else if (profile.schufa === 'schlecht') { basisChance -= 25; faktoren.push({ text: 'Problematischer SCHUFA-Score', effekt: -25, typ: 'negativ' }); tipps.push({ titel: 'SCHUFA verbessern', text: 'Alte Eintr\u00e4ge l\u00f6schen lassen. Von Essen Bank akzeptiert auch schwache SCHUFA.' }); }
 
     const bestehendeKredite = parseFloat(profile.bestehendeKredite) || 0;
     const einkommen = parseFloat(profile.jahreseinkommen) || 0;
     const monatlichesNetto = einkommen * 0.6 / 12;
     if (bestehendeKredite > 0 && monatlichesNetto > 0) {
       const kreditBelastung = (bestehendeKredite / monatlichesNetto) * 100;
-      if (kreditBelastung > 20) { basisChance -= 15; faktoren.push({ text: 'Hohe bestehende Kreditbelastung', effekt: -15, typ: 'negativ' }); tipps.push({ titel: 'Kredite ablosen', text: 'Bestehende Kredite vor Immobilienkauf ablosen.' }); }
+      if (kreditBelastung > 20) { basisChance -= 15; faktoren.push({ text: 'Hohe bestehende Kreditbelastung', effekt: -15, typ: 'negativ' }); tipps.push({ titel: 'Kredite abl\u00f6sen', text: 'Bestehende Kredite vor Immobilienkauf abl\u00f6sen.' }); }
       else if (kreditBelastung > 10) { basisChance -= 5; faktoren.push({ text: 'Moderate bestehende Kredite', effekt: -5, typ: 'neutral' }); }
     }
 
     if (profile.hatDepot && profile.depotWert) { basisChance += 5; faktoren.push({ text: 'Wertpapierdepot als Sicherheit', effekt: +5, typ: 'positiv' }); }
     if (profile.hatLebensversicherung && profile.lvRueckkaufswert) { basisChance += 5; faktoren.push({ text: 'Lebensversicherung als Sicherheit', effekt: +5, typ: 'positiv' }); }
-    if (profile.hatRiester && profile.riesterGuthaben) { basisChance += 3; faktoren.push({ text: 'Wohn-Riester verfugbar', effekt: +3, typ: 'positiv' }); }
+    if (profile.hatRiester && profile.riesterGuthaben) { basisChance += 3; faktoren.push({ text: 'Wohn-Riester verf\u00fcgbar', effekt: +3, typ: 'positiv' }); }
     if (profile.hatBausparvertrag && profile.bausparGuthaben) { basisChance += 5; faktoren.push({ text: 'Bausparvertrag vorhanden', effekt: +5, typ: 'positiv' }); }
 
     const kinder = parseInt(profile.kinder) || 0;
     if (kinder > 0 && einkommen > 0) {
       const kfwGrenze = 90000 + (kinder * 10000);
-      if (einkommen <= kfwGrenze) { basisChance += 10; faktoren.push({ text: `KfW-Forderung moglich (${kinder} Kind${kinder > 1 ? 'er' : ''})`, effekt: +10, typ: 'positiv' }); tipps.push({ titel: 'KfW 300 "Wohneigentum fur Familien"', text: `Sie erfullen die Voraussetzungen! Kredit bis ${170000 + (Math.min(kinder, 5) * 20000)} zu nur 1,12% Zins!` }); }
+      if (einkommen <= kfwGrenze) { basisChance += 10; faktoren.push({ text: `KfW-F\u00f6rderung m\u00f6glich (${kinder} Kind${kinder > 1 ? 'er' : ''})`, effekt: +10, typ: 'positiv' }); tipps.push({ titel: 'KfW 300 "Wohneigentum f\u00fcr Familien"', text: `Sie erf\u00fcllen die Voraussetzungen! Kredit bis ${170000 + (Math.min(kinder, 5) * 20000)} zu nur 1,12% Zins!` }); }
     }
 
-    if (profile.verheiratet) { basisChance += 5; faktoren.push({ text: 'Zwei Kreditnehmer moglich', effekt: +5, typ: 'positiv' }); }
+    if (profile.verheiratet) { basisChance += 5; faktoren.push({ text: 'Zwei Kreditnehmer m\u00f6glich', effekt: +5, typ: 'positiv' }); }
 
     const finalChance = Math.max(0, Math.min(100, basisChance));
     if (finalChance < 50) { tipps.push({ titel: 'Vermittler einschalten', text: 'Interhyp, Dr. Klein oder Baufi24 haben 500+ Bankpartner.' }); }

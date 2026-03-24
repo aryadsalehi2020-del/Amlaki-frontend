@@ -125,7 +125,7 @@ function Admin() {
   };
 
   const deleteUser = async (userId, username) => {
-    if (!confirm(`User "${username}" wirklich loschen? Alle Analysen werden ebenfalls geloscht!`)) return;
+    if (!confirm(`User "${username}" wirklich l\u00f6schen? Alle Analysen werden ebenfalls gel\u00f6scht!`)) return;
     setActionLoading(true);
     try {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });

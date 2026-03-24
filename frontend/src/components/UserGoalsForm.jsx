@@ -93,7 +93,7 @@ function UserGoalsForm({ onComplete, compact = false }) {
         )}
         <div className={`mt-4 p-3 rounded-[8px] ${isProfileComplete ? 'bg-[#7C8B6F]/10 border border-[#7C8B6F]/30' : 'bg-[#F5F0E8] border border-[#E8E0D4]'}`}>
           <p className={`text-[13px] font-medium ${isProfileComplete ? 'text-[#7C8B6F]' : 'text-[#8C7E6A]'}`}>
-            {isProfileComplete ? 'Profil vollstandig - Scores werden personalisiert' : 'Bitte alle Felder ausfullen fur personalisierte Bewertung'}
+            {isProfileComplete ? 'Profil vollst\u00e4ndig - Scores werden personalisiert' : 'Bitte alle Felder ausf\u00fcllen f\u00fcr personalisierte Bewertung'}
           </p>
         </div>
       </div>
@@ -181,7 +181,7 @@ function UserGoalsForm({ onComplete, compact = false }) {
             </div>
             {isProfileComplete && (
               <div className="mt-8 p-6 bg-[#7C8B6F]/10 border border-[#7C8B6F]/30 rounded-[16px] text-center">
-                <h3 className="text-[18px] font-bold text-[#7C8B6F] mb-2">Profil vollstandig!</h3>
+                <h3 className="text-[18px] font-bold text-[#7C8B6F] mb-2">Profil vollst&auml;ndig!</h3>
                 <p className="text-[#5C4F3D] text-[14px] mb-4">Deine Analysen werden jetzt auf <strong>{INVESTMENT_GOALS[profile.goal]?.label}</strong> optimiert</p>
                 {onComplete && (
                   <button onClick={onComplete} className="px-6 py-3 bg-[#7C8B6F] text-white rounded-full font-semibold hover:bg-[#6B7A5E] transition-all text-[14px]">Weiter zur Analyse</button>

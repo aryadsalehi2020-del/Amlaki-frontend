@@ -1375,12 +1375,12 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
                 Dein Besichtigungs-Leitfaden
               </h3>
-              <p className="text-[13px] text-[#8C7E6A] mb-6">Personalisiert fuer dieses Objekt -- worauf du achten solltest, was du fragen kannst und wie du dich positionierst.</p>
+              <p className="text-[13px] text-[#8C7E6A] mb-6">Personalisiert f&uuml;r dieses Objekt -- worauf du achten solltest, was du fragen kannst und wie du dich positionierst.</p>
 
               {/* Checkliste */}
               {result.besichtigungs_roadmap.checkliste && (
                 <div className="mb-5 md:mb-8">
-                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Checkliste fuer die Besichtigung</h4>
+                  <h4 className="text-[16px] font-semibold text-[#2C2418] mb-4">Checkliste f&uuml;r die Besichtigung</h4>
                   <div className="space-y-4">
                     {result.besichtigungs_roadmap.checkliste.map((kat, i) => (
                       <div key={i} className="bg-[#FAF7F2] border border-[#E8E0D4] rounded-2xl p-5">
@@ -1473,7 +1473,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
             </div>
           )}
 
-          {/* Hinweis fuer bereits besichtigte Objekte */}
+          {/* Hinweis f\u00fcr bereits besichtigte Objekte */}
           {result.besichtigt === true && (
             <div className="bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-2xl p-5">
               <p className="text-[13px] text-[#5C4F3D]">

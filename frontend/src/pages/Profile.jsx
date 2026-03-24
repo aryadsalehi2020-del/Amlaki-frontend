@@ -62,7 +62,7 @@ function Profile() {
                 Mein Finanzprofil
               </h1>
               <p className="text-[#8C7E6A] text-[14px] mt-2">
-                Ihr personliches Profil fur optimale Finanzierungs- und Fordertipps
+                Ihr pers&ouml;nliches Profil f&uuml;r optimale Finanzierungs- und F&ouml;rdertipps
               </p>
             </div>
 
@@ -87,7 +87,7 @@ function Profile() {
               <div>
                 <p className="text-[#2C2418] font-medium text-[14px]">Profil-Vollstandigkeit</p>
                 <p className="text-[#8C7E6A] text-[12px]">
-                  {profileStrength >= 70 ? 'Sehr gut ausgefullt' : profileStrength >= 40 ? 'Mehr Details = bessere Tipps' : 'Bitte ausfullen'}
+                  {profileStrength >= 70 ? 'Sehr gut ausgef\u00fcllt' : profileStrength >= 40 ? 'Mehr Details = bessere Tipps' : 'Bitte ausf\u00fcllen'}
                 </p>
               </div>
             </div>
@@ -158,11 +158,11 @@ function Profile() {
               <div className="grid md:grid-cols-2 gap-4 text-[13px] text-[#8C7E6A]">
                 <div className="p-4 bg-[#F5F0E8] rounded-[12px]">
                   <p className="font-medium text-[#5C4F3D] mb-2">Personalisierte Scores</p>
-                  <p>Die Gewichtung der Bewertungskriterien wird auf dein Ziel angepasst. Cashflow-Investoren bekommen andere Scores als Vermogensaufbauer.</p>
+                  <p>Die Gewichtung der Bewertungskriterien wird auf dein Ziel angepasst. Cashflow-Investoren bekommen andere Scores als Verm&ouml;gensaufbauer.</p>
                 </div>
                 <div className="p-4 bg-[#F5F0E8] rounded-[12px]">
                   <p className="font-medium text-[#5C4F3D] mb-2">Smarte Warnungen</p>
-                  <p>Basierend auf deiner Erfahrung und Risikobereitschaft erhaltst du passende Hinweise und Warnungen.</p>
+                  <p>Basierend auf deiner Erfahrung und Risikobereitschaft erh&auml;ltst du passende Hinweise und Warnungen.</p>
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ function Profile() {
                         ? 'Sehr gute EK-Quote - beste Zinskonditionen'
                         : (gesamtEK() / testKaufpreis) >= 0.1
                           ? 'Akzeptable EK-Quote - mittlere Konditionen'
-                          : 'Niedrige EK-Quote - hohere Zinsen oder EK-Ersatz nutzen'}
+                          : 'Niedrige EK-Quote - h\u00f6here Zinsen oder EK-Ersatz nutzen'}
                     </p>
                   </div>
                 )}
@@ -269,7 +269,7 @@ function Profile() {
                   </div>
                   {['F', 'G', 'H'].includes(testImmobilie.energieKlasse) && (
                     <p className="text-[12px] text-[#7C8B6F] mt-2">
-                      KfW 308 "Jung kauft Alt" moglicherweise verfugbar!
+                      KfW 308 "Jung kauft Alt" m&ouml;glicherweise verf&uuml;gbar!
                     </p>
                   )}
                 </div>

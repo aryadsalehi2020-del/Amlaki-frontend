@@ -200,10 +200,10 @@ function LibraryDetail() {
         {/* Profi-Tools Section */}
         <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4] fade-in fade-in-delay-1">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[16px] font-semibold text-[#2C2418]">Profi-Tools fur diese Analyse</h3>
+            <h3 className="text-[16px] font-semibold text-[#2C2418]">Profi-Tools f&uuml;r diese Analyse</h3>
             {activeTool && (
               <button onClick={() => setActiveTool(null)} className="text-[#8C7E6A] hover:text-[#5C4F3D] transition-colors text-[13px] flex items-center gap-1">
-                Schliessen
+                Schlie&szlig;en
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             )}
@@ -212,8 +212,8 @@ function LibraryDetail() {
           {!activeTool && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
-                { id: 'projection', name: '30-Jahre-Projektion', desc: 'Cashflow & Vermogen uber Zeit' },
-                { id: 'scenario', name: 'Szenarien-Simulator', desc: '"Was ware wenn" Analysen' },
+                { id: 'projection', name: '30-Jahre-Projektion', desc: 'Cashflow & Verm\u00f6gen \u00fcber Zeit' },
+                { id: 'scenario', name: 'Szenarien-Simulator', desc: '"Was w\u00e4re wenn" Analysen' },
                 { id: 'fairprice', name: 'Fairer Preis', desc: 'Marktwert & Verhandlungsziel' }
               ].map(tool => (
                 <button key={tool.id} onClick={() => setActiveTool(tool.id)}
@@ -251,7 +251,7 @@ function LibraryDetail() {
       </div>
 
       <ConfirmDialog isOpen={showDeleteDialog} onClose={() => setShowDeleteDialog(false)} onConfirm={confirmDelete}
-        title="Analyse loschen" message="Mochten Sie diese Analyse wirklich unwiderruflich loschen?" confirmText="Loschen" variant="danger" />
+        title="Analyse l\u00f6schen" message="M\u00f6chten Sie diese Analyse wirklich unwiderruflich l\u00f6schen?" confirmText="L\u00f6schen" variant="danger" />
     </div>
   );
 }

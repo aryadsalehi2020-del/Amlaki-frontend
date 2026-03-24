@@ -15,8 +15,8 @@ function ResetPassword() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[#FAF7F2]">
         <div className="text-center">
-          <h2 className="text-[20px] font-semibold text-[#2C2418] mb-2">Ungueltiger Link</h2>
-          <p className="text-[14px] text-[#8C7E6A] mb-4">Dieser Reset-Link ist ungueltig oder abgelaufen.</p>
+          <h2 className="text-[20px] font-semibold text-[#2C2418] mb-2">Ung&uuml;ltiger Link</h2>
+          <p className="text-[14px] text-[#8C7E6A] mb-4">Dieser Reset-Link ist ung&uuml;ltig oder abgelaufen.</p>
           <Link to="/forgot-password" className="text-[#7C8B6F] hover:text-[#6B7A5E] font-medium text-[14px]">Neuen Link anfordern</Link>
         </div>
       </div>
@@ -27,7 +27,7 @@ function ResetPassword() {
     e.preventDefault();
     setError('');
 
-    if (password !== confirmPassword) { setError('Passwoerter stimmen nicht ueberein'); return; }
+    if (password !== confirmPassword) { setError('Passw\u00f6rter stimmen nicht \u00fcberein'); return; }
     if (password.length < 8) { setError('Mindestens 8 Zeichen'); return; }
     if (!/[0-9]/.test(password)) { setError('Mindestens eine Zahl erforderlich'); return; }
 
@@ -66,7 +66,7 @@ function ResetPassword() {
             <div className="w-14 h-14 bg-[#7C8B6F]/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-7 h-7 text-[#7C8B6F]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
             </div>
-            <h2 className="text-[20px] font-semibold text-[#2C2418] mb-2">Passwort geaendert</h2>
+            <h2 className="text-[20px] font-semibold text-[#2C2418] mb-2">Passwort ge&auml;ndert</h2>
             <p className="text-[14px] text-[#8C7E6A] mb-6">Du kannst dich jetzt mit deinem neuen Passwort anmelden.</p>
             <Link to="/login" className="px-6 py-3 bg-[#7C8B6F] text-white font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all text-[14px]">
               Zum Login
@@ -86,12 +86,12 @@ function ResetPassword() {
               />
               <input
                 type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                required placeholder="Passwort bestaetigen"
+                required placeholder="Passwort best\u00e4tigen"
                 className="w-full px-4 py-3.5 bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all"
               />
               <button type="submit" disabled={loading}
                 className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-30">
-                {loading ? 'Wird gespeichert...' : 'Passwort aendern'}
+                {loading ? 'Wird gespeichert...' : 'Passwort \u00e4ndern'}
               </button>
             </form>
           </>

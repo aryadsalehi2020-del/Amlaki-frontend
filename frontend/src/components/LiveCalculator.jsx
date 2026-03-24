@@ -73,7 +73,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
     const geschaetzteZinskosten = finanzierungssumme * (values.zinssatz / 100) * (kreditLaufzeit / 2);
 
     // Break-Even Eigenkapital
-    const verfuegbarFuerKredit = aktiveMiete - nichtUmlagefahig;
+    const verfuegbarFuerKredit = aktiveMiete - nichtUmlagefaehig;
     const maxKreditrate = verfuegbarFuerKredit * 12;
     const maxFinanzierung = maxKreditrate / (gesamtrate / 100);
     const breakEvenEK = Math.max(0, kaufpreis - maxFinanzierung);
