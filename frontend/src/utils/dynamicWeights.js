@@ -319,7 +319,7 @@ export function getProfileBasedRecommendation(score, profile) {
     return {
       action: 'invest',
       emoji: '',
-      text: 'Starkes Investment fuer dein Profil',
+      text: 'Starkes Investment f\u00fcr dein Profil',
       color: 'zinc-200'
     };
   } else if (score >= 55) {
