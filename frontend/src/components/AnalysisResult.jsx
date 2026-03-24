@@ -1582,13 +1582,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
       )}
 
       {/* Disclaimer */}
-      <div className="glass border-2 border-accent/30 rounded-2xl p-6">
-        <p className="text-[#B5A68C] font-semibold text-[12px] mb-1">Rechtlicher Hinweis</p>
-        <p className="text-[#8C7E6A] text-[11px] leading-relaxed">
-          Diese Analyse basiert auf den eingegebenen Daten und KI-gest&uuml;tzten Sch&auml;tzungen.
-          Diese ersetzt keine professionelle Immobilienbewertung, Rechts- oder Finanzberatung.
-        </p>
-      </div>
+      <p className="text-[#B5A68C] text-[10px] text-center mt-4 px-4">
+        Datenbasierte Einsch&auml;tzung. Keine professionelle Immobilienbewertung, Rechts- oder Finanzberatung.
+      </p>
     </div>
   );
 }
