@@ -121,7 +121,7 @@ function LibraryDetail() {
                   <input type="text" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder="Titel eingeben..."
                     className="text-[22px] font-bold text-[#2C2418] bg-transparent border-b-2 border-[#7C8B6F] focus:outline-none" />
                 ) : (
-                  <h1 className="text-[22px] font-bold text-[#2C2418]">{analysis.title || `${analysis.stadt || 'Unbekannt'} - Analyse`}</h1>
+                  <h1 className="text-[16px] md:text-[22px] font-bold text-[#2C2418]">{analysis.title || `${analysis.stadt || 'Unbekannt'} - Analyse`}</h1>
                 )}
                 <p className="text-[#8C7E6A] text-[13px] mt-1">Erstellt am {formatDate(analysis.created_at)}</p>
               </div>
