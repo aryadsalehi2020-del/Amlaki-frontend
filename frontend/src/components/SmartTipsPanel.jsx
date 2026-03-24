@@ -38,7 +38,7 @@ function SmartTipsPanel({ profile, immobilie }) {
     if (eigenkapital < kaufpreis * 0.2 && kaufpreis > 0) {
       if (profile.hatDepot && profile.depotWert) {
         const beleihbar = parseFloat(profile.depotWert) * 0.7;
-        tipps.push({ kategorie: 'Eigenkapital-Ersatz', titel: 'Depot beleihen (Lombardkredit)', prioritaet: 'hoch', ersparnis: beleihbar * 0.015, ersparnisText: `Bis ${formatCurrency(beleihbar)} als EK nutzbar`, zusammenfassung: 'Wertpapiere als Sicherheit nutzen', details: [`Ihr Depot ist bis 70% beleihbar = ${formatCurrency(beleihbar)}`, 'Depot bleibt in Ihrem Besitz', 'Achtung: Bei Kursverlusten Nachschusspflicht'], aktion: 'Broker vergleichen' });
+        tipps.push({ kategorie: 'Eigenkapital-Ersatz', titel: 'Depot beleihen (Lombardkredit)', prioritaet: 'hoch', ersparnis: beleihbar * 0.015, ersparnisText: `Bis ${formatCurrency(beleihbar)} als EK nutzbar`, zusammenfassung: 'Wertpapiere als Sicherheit nutzen', details: [`Dein Depot ist bis 70% beleihbar = ${formatCurrency(beleihbar)}`, 'Depot bleibt in deinem Besitz', 'Achtung: Bei Kursverlusten Nachschusspflicht'], aktion: 'Broker vergleichen' });
       }
     }
 
@@ -81,7 +81,7 @@ function SmartTipsPanel({ profile, immobilie }) {
       {relevanteTipps.length === 0 ? (
         <div className="bg-white p-8 rounded-[16px] border border-[#E8E0D4] text-center">
           <h4 className="text-[16px] font-semibold text-[#2C2418] mb-2">Profil ausf&uuml;llen f&uuml;r Tipps</h4>
-          <p className="text-[#8C7E6A] text-[14px]">F&uuml;llen Sie Ihr Finanzprofil aus, um personalisierte Spar-Tipps zu erhalten</p>
+          <p className="text-[#8C7E6A] text-[14px]">F&uuml;lle dein Finanzprofil aus, um personalisierte Spar-Tipps zu erhalten</p>
         </div>
       ) : (
         <div className="space-y-3">

@@ -10,8 +10,20 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
+const useChartHeight = (desktopH = 300, mobileH = 220) => {
+  const [h, setH] = React.useState(desktopH);
+  React.useEffect(() => {
+    const update = () => setH(window.innerWidth < 768 ? mobileH : desktopH);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [desktopH, mobileH]);
+  return h;
+};
+
 function ZinsTilgungChart({ tilgungsplan }) {
-  const [showYears, setShowYears] = useState(10); // Show first 10 years by default
+  const chartHeight = useChartHeight(300, 220);
+  const [showYears, setShowYears] = useState(10);
 
   if (!tilgungsplan || !tilgungsplan.jahre || tilgungsplan.jahre.length === 0) {
     return (
@@ -91,8 +103,8 @@ function ZinsTilgungChart({ tilgungsplan }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis
             dataKey="jahr"

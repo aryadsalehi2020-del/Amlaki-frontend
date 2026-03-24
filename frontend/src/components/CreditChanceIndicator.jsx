@@ -14,13 +14,13 @@ function CreditChanceIndicator({ profile, kaufpreis }) {
     if (ekQuote >= 30) { basisChance += 20; faktoren.push({ text: 'Sehr gute EK-Quote (30%+)', effekt: +20, typ: 'positiv' }); }
     else if (ekQuote >= 20) { basisChance += 15; faktoren.push({ text: 'Gute EK-Quote (20%+)', effekt: +15, typ: 'positiv' }); }
     else if (ekQuote >= 10) { basisChance += 5; faktoren.push({ text: 'EK-Quote 10-20%', effekt: +5, typ: 'neutral' }); }
-    else if (ekQuote > 0) { basisChance -= 5; faktoren.push({ text: 'Niedrige EK-Quote (<10%)', effekt: -5, typ: 'negativ' }); tipps.push({ titel: 'Eigenkapital erh\u00f6hen', text: 'Mit bestehendem Verm\u00f6gen k\u00f6nnen Sie Ihr EK aufstocken' }); }
+    else if (ekQuote > 0) { basisChance -= 5; faktoren.push({ text: 'Niedrige EK-Quote (<10%)', effekt: -5, typ: 'negativ' }); tipps.push({ titel: 'Eigenkapital erh\u00f6hen', text: 'Mit bestehendem Verm\u00f6gen kannst du dein EK aufstocken' }); }
     else { basisChance -= 15; faktoren.push({ text: 'Kein Eigenkapital', effekt: -15, typ: 'negativ' }); tipps.push({ titel: '100% Finanzierung m\u00f6glich', text: 'Einige Banken finanzieren 100% bei guter Bonit\u00e4t. KfW-Kredit als EK-Ersatz pr\u00fcfen!' }); }
 
     if (profile.beruf === 'beamte') { basisChance += 15; faktoren.push({ text: 'Beamtenstatus (beste Bonit\u00e4t)', effekt: +15, typ: 'positiv' }); }
     else if (profile.beruf === 'angestellt') { basisChance += 10; faktoren.push({ text: 'Unbefristete Anstellung', effekt: +10, typ: 'positiv' }); }
     else if (profile.beruf === 'selbststaendig') { basisChance -= 5; faktoren.push({ text: 'Selbstst\u00e4ndig (3 Jahre Steuerbescheide n\u00f6tig)', effekt: -5, typ: 'neutral' }); tipps.push({ titel: 'Selbstst\u00e4ndigen-freundliche Banken', text: 'ING, Sparda-Banken und KfW haben keine Aufschl\u00e4ge!' }); }
-    else if (profile.beruf === 'befristet') { basisChance -= 10; faktoren.push({ text: 'Befristete Anstellung', effekt: -10, typ: 'negativ' }); tipps.push({ titel: 'Entfristung anstreben', text: 'Nach Entfristung steigen Ihre Chancen erheblich.' }); }
+    else if (profile.beruf === 'befristet') { basisChance -= 10; faktoren.push({ text: 'Befristete Anstellung', effekt: -10, typ: 'negativ' }); tipps.push({ titel: 'Entfristung anstreben', text: 'Nach Entfristung steigen deine Chancen erheblich.' }); }
 
     if (profile.probezeit) { basisChance -= 20; faktoren.push({ text: 'In der Probezeit', effekt: -20, typ: 'negativ' }); tipps.push({ titel: 'Nach Probezeit warten', text: 'Die meisten Banken lehnen w\u00e4hrend der Probezeit ab.' }); }
 
@@ -46,7 +46,7 @@ function CreditChanceIndicator({ profile, kaufpreis }) {
     const kinder = parseInt(profile.kinder) || 0;
     if (kinder > 0 && einkommen > 0) {
       const kfwGrenze = 90000 + (kinder * 10000);
-      if (einkommen <= kfwGrenze) { basisChance += 10; faktoren.push({ text: `KfW-F\u00f6rderung m\u00f6glich (${kinder} Kind${kinder > 1 ? 'er' : ''})`, effekt: +10, typ: 'positiv' }); tipps.push({ titel: 'KfW 300 "Wohneigentum f\u00fcr Familien"', text: `Sie erf\u00fcllen die Voraussetzungen! Kredit bis ${170000 + (Math.min(kinder, 5) * 20000)} zu nur 1,12% Zins!` }); }
+      if (einkommen <= kfwGrenze) { basisChance += 10; faktoren.push({ text: `KfW-F\u00f6rderung m\u00f6glich (${kinder} Kind${kinder > 1 ? 'er' : ''})`, effekt: +10, typ: 'positiv' }); tipps.push({ titel: 'KfW 300 "Wohneigentum f\u00fcr Familien"', text: `Du erf\u00fcllst die Voraussetzungen! Kredit bis ${170000 + (Math.min(kinder, 5) * 20000)} zu nur 1,12% Zins!` }); }
     }
 
     if (profile.verheiratet) { basisChance += 5; faktoren.push({ text: 'Zwei Kreditnehmer m\u00f6glich', effekt: +5, typ: 'positiv' }); }

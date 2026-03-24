@@ -11,7 +11,19 @@ import {
   ReferenceLine
 } from 'recharts';
 
+const useChartHeight = (desktopH = 350, mobileH = 250) => {
+  const [h, setH] = React.useState(desktopH);
+  React.useEffect(() => {
+    const update = () => setH(window.innerWidth < 768 ? mobileH : desktopH);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [desktopH, mobileH]);
+  return h;
+};
+
 function TilgungsChart({ tilgungsplan }) {
+  const chartHeight = useChartHeight(350, 260);
   if (!tilgungsplan || !tilgungsplan.jahre || tilgungsplan.jahre.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 bg-slate/5 rounded-xl">
@@ -72,8 +84,8 @@ function TilgungsChart({ tilgungsplan }) {
         <span className="text-2xl"></span>
         Vermögensaufbau: Schulden vs. Eigenkapital
       </h4>
-      <ResponsiveContainer width="100%" height={350}>
-        <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
             <linearGradient id="colorRestschuld" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
@@ -141,7 +153,7 @@ function TilgungsChart({ tilgungsplan }) {
       </ResponsiveContainer>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-3 gap-2 md:gap-4 mt-6">
         <div className="p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
           <p className="text-xs text-red-600 font-medium">Restschuld nach 30 Jahren</p>
           <p className="text-lg font-bold text-red-700">

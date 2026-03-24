@@ -2,7 +2,7 @@ import React from 'react';
 
 function ConfirmDialog({
   isOpen, onClose, onConfirm,
-  title = 'Best\u00e4tigung', message = 'M\u00f6chten Sie fortfahren?',
+  title = 'Best\u00e4tigung', message = 'M\u00f6chtest du fortfahren?',
   confirmText = 'Best\u00e4tigen', cancelText = 'Abbrechen',
   variant = 'danger'
 }) {

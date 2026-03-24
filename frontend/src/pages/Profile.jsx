@@ -183,7 +183,7 @@ function Profile() {
                   </svg>
                   <div>
                     <p className="text-[#7C8B6F] font-medium text-[13px]">Automatisch gespeichert</p>
-                    <p className="text-[#8C7E6A] text-[12px]">Daten bleiben lokal in Ihrem Browser</p>
+                    <p className="text-[#8C7E6A] text-[12px]">Daten bleiben lokal in deinem Browser</p>
                   </div>
                 </div>
               </div>
@@ -228,7 +228,7 @@ function Profile() {
                 {testKaufpreis > 0 && gesamtEK() > 0 && (
                   <div className="p-4 bg-[#F5F0E8] rounded-[12px]">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-[13px] text-[#5C4F3D]">Ihre EK-Quote</span>
+                      <span className="text-[13px] text-[#5C4F3D]">Deine EK-Quote</span>
                       <span className="text-[16px] font-bold text-[#2C2418]">
                         {((gesamtEK() / testKaufpreis) * 100).toFixed(1)}%
                       </span>

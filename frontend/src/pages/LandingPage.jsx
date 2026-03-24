@@ -382,49 +382,63 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ===== PROBLEM ===== */}
-      <section className="py-20 md:py-28 px-4 sm:px-5" style={{ background: C.bgAlt }}>
+      {/* ===== APP SHOWCASE ===== */}
+      <section className="py-20 md:py-28 px-4 sm:px-5 overflow-hidden" style={{ background: C.bgAlt }}>
         <div className="max-w-5xl mx-auto">
           <FadeInSection>
-            <div className="text-center mb-10 md:mb-12">
+            <div className="text-center mb-10 md:mb-14">
               <span
                 className="inline-block text-xs sm:text-sm font-semibold tracking-wide uppercase mb-3"
                 style={{ color: C.olive }}
               >
-                Ausgangslage
+                So sieht es aus
               </span>
               <h2
                 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
                 style={{ color: C.heading, letterSpacing: '-0.025em' }}
               >
-                Warum K&auml;ufer eine unabh&auml;ngige Beratung brauchen
+                Professionelle Analyse in Sekunden
               </h2>
               <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
-                Der Immobilienkauf ist eine der gr&ouml;&szlig;ten finanziellen Entscheidungen im Leben &ndash; und eine der intransparentesten.
+                Exposé hochladen, KI-Bewertung erhalten, mit deinem persönlichen Berater ins Detail gehen.
               </p>
             </div>
           </FadeInSection>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
-            {PROBLEMS.map(({ icon: Icon, title, description }, i) => (
-              <FadeInSection key={title} delay={i * 0.1}>
+          {/* Phone mockups */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
+            {[
+              { src: '/screenshots/lp_chart_szenarien.png', label: 'Was-wäre-wenn Szenarien', delay: 0 },
+              { src: '/screenshots/lp_score_v2.png', label: 'KI-Bewertung', delay: 0.12, featured: true },
+              { src: '/screenshots/lp_cropped_chat.png', label: 'Persönlicher KI-Berater', delay: 0.24 },
+            ].map(({ src, label, delay, featured }) => (
+              <FadeInSection key={label} delay={delay} className="flex flex-col items-center gap-3">
                 <div
-                  className="rounded-2xl p-5 sm:p-6 h-full"
-                  style={{ background: C.card, border: `1px solid ${C.border}` }}
+                  className="relative rounded-[2rem] overflow-hidden"
+                  style={{
+                    width: featured ? '220px' : '200px',
+                    boxShadow: featured
+                      ? '0 25px 60px rgba(44,36,24,0.18), 0 8px 20px rgba(44,36,24,0.08)'
+                      : '0 15px 40px rgba(44,36,24,0.12), 0 4px 12px rgba(44,36,24,0.06)',
+                    border: `3px solid ${featured ? C.olive + '40' : C.border}`,
+                    transform: featured ? 'scale(1)' : 'scale(0.92)',
+                    background: C.card,
+                  }}
                 >
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
-                    style={{ background: C.bgAlt }}
-                  >
-                    <Icon size={20} style={{ color: C.olive }} />
-                  </div>
-                  <h3 className="text-base sm:text-lg font-semibold mb-2" style={{ color: C.heading }}>
-                    {title}
-                  </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: C.body }}>
-                    {description}
-                  </p>
+                  <img
+                    src={src}
+                    alt={label}
+                    className="w-full h-auto block"
+                    loading="lazy"
+                    style={{ borderRadius: 'calc(2rem - 3px)' }}
+                  />
                 </div>
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: featured ? C.olive : C.khaki }}
+                >
+                  {label}
+                </span>
               </FadeInSection>
             ))}
           </div>

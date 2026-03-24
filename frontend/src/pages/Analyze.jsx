@@ -6,7 +6,7 @@ import PropertyForm from '../components/PropertyForm';
 import AnalysisResult from '../components/AnalysisResult';
 import LoadingState from '../components/LoadingState';
 import { useAuth } from '../contexts/AuthContext';
-import { API_BASE } from '../config';
+import { API_BASE, apiFetch } from '../config';
 
 function CreditsBadge({ credits }) {
   if (credits === null || credits === undefined) return null;
@@ -29,7 +29,7 @@ function PaywallModal({ onClose, token }) {
   const handlePurchase = async (packageId) => {
     setLoading(packageId);
     try {
-      const res = await fetch(`${API_BASE}/payments/create-checkout`, {
+      const res = await apiFetch(`${API_BASE}/payments/create-checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ package: packageId }),
@@ -131,7 +131,7 @@ function Analyze() {
   useEffect(() => {
     const fetchCredits = async () => {
       try {
-        const res = await fetch(`${API_BASE}/payments/credits`, {
+        const res = await apiFetch(`${API_BASE}/payments/credits`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (res.ok) {
@@ -158,7 +158,7 @@ function Analyze() {
     setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
     const fd = new FormData(); fd.append('file', file);
     try {
-      const res = await fetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd, headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await apiFetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd, headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       setPropertyData(await res.json()); setStep('form');
     } catch (err) { setError(err.message); setStep('upload'); }
@@ -180,7 +180,7 @@ function Analyze() {
           mindest_rendite: investmentProfile.mindestRendite,
         };
       }
-      const res = await fetch(`${API_BASE}/analyze`, {
+      const res = await apiFetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(requestBody),
       });
@@ -206,7 +206,7 @@ function Analyze() {
     setLoadingMessage(v === 'kapitalanlage' ? 'Bewerte als Kapitalanlage...' : 'Bewerte als Eigennutzung...');
     setLastVerwendungszweck(v); setLastFinanzierung(fin);
     try {
-      const res = await fetch(`${API_BASE}/analyze`, {
+      const res = await apiFetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ property_data: propertyData, verwendungszweck: v, eigenkapital: fin.eigenkapital, zinssatz: fin.zinssatz, tilgung: fin.tilgung, analysis_id: savedAnalysisId }),
       });
@@ -224,7 +224,7 @@ function Analyze() {
     setError(null); setStep('analyzing'); setLoadingMessage(`Berechne mit ${ek.toLocaleString('de-DE')} EUR EK...`);
     setLastFinanzierung({ ...lastFinanzierung, eigenkapital: ek });
     try {
-      const res = await fetch(`${API_BASE}/analyze`, {
+      const res = await apiFetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ property_data: propertyData, verwendungszweck: lastVerwendungszweck, eigenkapital: ek, zinssatz: lastFinanzierung?.zinssatz || 3.75, tilgung: lastFinanzierung?.tilgung || 1.25, analysis_id: savedAnalysisId }),
       });

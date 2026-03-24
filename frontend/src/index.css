@@ -170,10 +170,10 @@ h1 { font-weight: 700; letter-spacing: -0.035em; }
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-in { animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-.fade-in-delay-1 { animation-delay: 0.12s; opacity: 0; }
-.fade-in-delay-2 { animation-delay: 0.24s; opacity: 0; }
-.fade-in-delay-3 { animation-delay: 0.36s; opacity: 0; }
-.fade-in-delay-4 { animation-delay: 0.48s; opacity: 0; }
+.fade-in-delay-1 { animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.12s forwards; opacity: 0; }
+.fade-in-delay-2 { animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.24s forwards; opacity: 0; }
+.fade-in-delay-3 { animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.36s forwards; opacity: 0; }
+.fade-in-delay-4 { animation: fadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.48s forwards; opacity: 0; }
 
 @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 .slide-in-right { animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }

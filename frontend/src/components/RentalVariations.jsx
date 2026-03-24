@@ -74,8 +74,8 @@ function RentalVariations({ variationen }) {
       </p>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="label" tick={{ fontSize: 12 }} />
           <YAxis
@@ -98,7 +98,7 @@ function RentalVariations({ variationen }) {
       </ResponsiveContainer>
 
       {/* Variation Cards */}
-      <div className="grid grid-cols-5 gap-2 mt-6">
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mt-6">
         {variationen.map((v, index) => (
           <div
             key={index}

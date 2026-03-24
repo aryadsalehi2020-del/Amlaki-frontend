@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { API_BASE } from '../config';
+import { API_BASE, apiFetch } from '../config';
 
 const AuthContext = createContext(null);
 
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await fetch(`${API_BASE}/auth/login`, {
+    const response = await apiFetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Login failed');
+      throw new Error(error.detail || 'Login fehlgeschlagen');
     }
 
     const data = await response.json();
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (email, username, password, fullName) => {
-    const response = await fetch(`${API_BASE}/auth/register`, {
+    const response = await apiFetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }) => {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Registration failed');
+      throw new Error(error.detail || 'Registrierung fehlgeschlagen');
     }
 
     const data = await response.json();

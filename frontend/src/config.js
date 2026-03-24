@@ -20,3 +20,17 @@ const getApiBase = () => {
 };
 
 export const API_BASE = getApiBase();
+
+// Rate-limit-aware fetch wrapper
+export async function apiFetch(url, options = {}) {
+  const response = await fetch(url, options);
+
+  if (response.status === 429) {
+    const retryAfter = response.headers.get('Retry-After');
+    const seconds = retryAfter ? parseInt(retryAfter) : 60;
+    const minutes = Math.ceil(seconds / 60);
+    throw new Error(`Zu viele Anfragen. Bitte warte ${minutes > 1 ? minutes + ' Minuten' : 'einen Moment'} und versuche es erneut.`);
+  }
+
+  return response;
+}

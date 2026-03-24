@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { API_BASE } from '../config';
+import { API_BASE, apiFetch } from '../config';
 
 export function useStreamingChat() {
   const [isStreaming, setIsStreaming] = useState(false);
@@ -13,7 +13,7 @@ export function useStreamingChat() {
       const token = localStorage.getItem('token');
 
       // Try streaming first
-      const response = await fetch(`${API_BASE}/chat/stream`, {
+      const response = await apiFetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

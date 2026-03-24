@@ -722,6 +722,44 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
             </div>
           )}
 
+          {/* Notar-Checkliste */}
+          {result.kaufnebenkosten && (
+            <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in card-hover">
+              <h3 className="text-[18px] md:text-xl font-bold text-[#2C2418] mb-2">
+                Notar-Checkliste
+              </h3>
+              <p className="text-[13px] text-[#8C7E6A] mb-5">Dein Fahrplan vom Kaufvertrag bis zur Schlüsselübergabe</p>
+
+              <div className="space-y-3">
+                {[
+                  { nr: 1, titel: 'Finanzierungszusage einholen', beschreibung: 'Bank bestätigt die Kreditbereitschaft. Ohne Zusage keinen Notartermin vereinbaren.', timing: 'Vor dem Notartermin' },
+                  { nr: 2, titel: 'Kaufvertragsentwurf prüfen', beschreibung: 'Notar sendet Entwurf mind. 14 Tage vorher. Kaufpreis, Übergabetermin, Mängelhaftung und Sondervereinbarungen prüfen.', timing: '14 Tage vorher' },
+                  { nr: 3, titel: 'Notartermin wahrnehmen', beschreibung: 'Notar liest den Vertrag vor und beurkundet. Personalausweis mitbringen. Fragen stellen ist erlaubt und erwünscht.', timing: 'Notartermin' },
+                  { nr: 4, titel: 'Auflassungsvormerkung', beschreibung: 'Notar beantragt die Vormerkung im Grundbuch. Schützt dich vor Doppelverkauf oder Belastung durch den Verkäufer.', timing: '1-2 Wochen nach Beurkundung' },
+                  { nr: 5, titel: 'Grunderwerbsteuer zahlen', beschreibung: `Finanzamt sendet Bescheid über ${result.kaufnebenkosten.grunderwerbsteuer_prozent || 'ca. 3,5-6,5'}% des Kaufpreises. Frist: 4 Wochen nach Bescheid.`, timing: '4-8 Wochen nach Beurkundung' },
+                  { nr: 6, titel: 'Kaufpreis überweisen', beschreibung: 'Erst nach Fälligkeitsmitteilung des Notars. Niemals vorher überweisen, auch wenn der Verkäufer drängt.', timing: 'Nach Fälligkeitsmitteilung' },
+                  { nr: 7, titel: 'Grundbucheintragung', beschreibung: 'Du wirst als neuer Eigentümer eingetragen. Kann 3-6 Monate dauern. Grundschuldeintragung der Bank erfolgt parallel.', timing: '3-6 Monate nach Zahlung' },
+                  { nr: 8, titel: 'Schlüsselübergabe', beschreibung: 'Übergabeprotokoll erstellen: Zählerstände (Strom, Gas, Wasser), Schlüsselanzahl, Zustand dokumentieren.', timing: 'Am vereinbarten Übergabetermin' },
+                ].map((schritt) => (
+                  <div key={schritt.nr} className="flex items-start gap-3 p-3 bg-[#FAF7F2] rounded-xl border border-[#E8E0D4]">
+                    <span className="w-7 h-7 rounded-full bg-[#7C8B6F]/10 text-[#7C8B6F] flex items-center justify-center text-[12px] font-bold flex-shrink-0 mt-0.5">{schritt.nr}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[13px] font-semibold text-[#2C2418]">{schritt.titel}</span>
+                        <span className="text-[10px] text-[#B5A68C] bg-[#B5A68C]/10 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">{schritt.timing}</span>
+                      </div>
+                      <p className="text-[12px] text-[#8C7E6A] mt-1 leading-relaxed">{schritt.beschreibung}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[11px] text-[#B5A68C] mt-4 text-center">
+                Allgemeine Übersicht. Im Einzelfall können Abweichungen auftreten -- dein Notar berät dich individuell.
+              </p>
+            </div>
+          )}
+
           {/* Break-Even Calculator (new) */}
           {result.breakeven_eigenkapital && result.verwendungszweck === 'kapitalanlage' && (
             <div className="fade-in-delay-1">
@@ -1582,7 +1620,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
       )}
 
       {/* Disclaimer */}
-      <p className="text-[#B5A68C] text-[10px] text-center mt-4 px-4">
+      <p className="text-[#B5A68C] text-[10px] text-center mt-2 px-4">
         Datenbasierte Einsch&auml;tzung. Keine professionelle Immobilienbewertung, Rechts- oder Finanzberatung.
       </p>
     </div>

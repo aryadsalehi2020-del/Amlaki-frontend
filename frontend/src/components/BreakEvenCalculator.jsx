@@ -140,7 +140,7 @@ function BreakEvenCalculator({ breakeven, aktuellesEigenkapital, kaufpreis }) {
                 <div>
                   <p className="text-green-800 font-bold">Break-Even erreicht!</p>
                   <p className="text-green-700 text-sm">
-                    Sie haben {formatCurrency(Math.abs(differenz))} über dem Break-Even
+                    Du hast {formatCurrency(Math.abs(differenz))} über dem Break-Even
                   </p>
                 </div>
               </div>

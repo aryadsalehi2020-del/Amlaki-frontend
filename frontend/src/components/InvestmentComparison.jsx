@@ -74,10 +74,10 @@ function InvestmentComparison({ vergleich }) {
 
       {/* Chart */}
       <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 30 }}>
+        <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis type="number" tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} />
-          <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
+          <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11 }} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="endvermoegen" radius={[0, 8, 8, 0]}>
             {chartData.map((entry, index) => (

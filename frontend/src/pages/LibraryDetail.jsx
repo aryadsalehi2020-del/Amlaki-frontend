@@ -107,7 +107,7 @@ function LibraryDetail() {
   );
 
   return (
-    <div className="px-4 md:px-16 lg:px-20 py-4 md:py-20 space-y-4 md:space-y-6 overflow-hidden">
+    <div className="px-4 md:px-16 lg:px-20 pt-4 md:pt-20 pb-4 space-y-4 md:space-y-6 overflow-hidden">
       <div className="max-w-[900px]">
         {/* Header */}
         <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4] fade-in">
@@ -249,7 +249,7 @@ function LibraryDetail() {
       </div>
 
       <ConfirmDialog isOpen={showDeleteDialog} onClose={() => setShowDeleteDialog(false)} onConfirm={confirmDelete}
-        title="Analyse l\u00f6schen" message="M\u00f6chten Sie diese Analyse wirklich unwiderruflich l\u00f6schen?" confirmText="L\u00f6schen" variant="danger" />
+        title="Analyse l\u00f6schen" message="M\u00f6chtest du diese Analyse wirklich unwiderruflich l\u00f6schen?" confirmText="L\u00f6schen" variant="danger" />
     </div>
   );
 }
