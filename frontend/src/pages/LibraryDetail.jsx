@@ -107,7 +107,7 @@ function LibraryDetail() {
   );
 
   return (
-    <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20 space-y-6">
+    <div className="px-4 md:px-16 lg:px-20 py-4 md:py-20 space-y-4 md:space-y-6">
       <div className="max-w-[900px]">
         {/* Header */}
         <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4] fade-in">
