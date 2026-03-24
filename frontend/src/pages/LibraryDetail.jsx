@@ -111,22 +111,20 @@ function LibraryDetail() {
       <div className="max-w-[900px]">
         {/* Header */}
         <div className="bg-white rounded-[16px] p-6 border border-[#E8E0D4] fade-in">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Link to="/library" className="w-10 h-10 border border-[#E8E0D4] rounded-[10px] flex items-center justify-center hover:border-[#B5A68C] transition-all">
-                <svg className="w-5 h-5 text-[#8C7E6A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-              </Link>
-              <div>
-                {isEditing ? (
-                  <input type="text" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder="Titel eingeben..."
-                    className="text-[22px] font-bold text-[#2C2418] bg-transparent border-b-2 border-[#7C8B6F] focus:outline-none" />
-                ) : (
-                  <h1 className="text-[16px] md:text-[22px] font-bold text-[#2C2418]">{analysis.title || `${analysis.stadt || 'Unbekannt'} - Analyse`}</h1>
-                )}
-                <p className="text-[#8C7E6A] text-[13px] mt-1">Erstellt am {formatDate(analysis.created_at)}</p>
-              </div>
+          <div>
+            <Link to="/library" className="text-[#8C7E6A] hover:text-[#5C4F3D] transition-colors text-[13px] mb-2 flex items-center gap-1">
+              &larr; Bibliothek
+            </Link>
+            <div>
+              {isEditing ? (
+                <input type="text" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder="Titel eingeben..."
+                  className="text-[18px] md:text-[22px] font-bold text-[#2C2418] bg-transparent border-b-2 border-[#7C8B6F] focus:outline-none w-full" />
+              ) : (
+                <h1 className="text-[18px] md:text-[22px] font-bold text-[#2C2418]">{analysis.title || `${analysis.stadt || 'Unbekannt'} - Analyse`}</h1>
+              )}
+              <p className="text-[#8C7E6A] text-[12px] mt-1">Erstellt am {formatDate(analysis.created_at)}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-3">
               <button onClick={toggleFavorite} className={`w-10 h-10 rounded-[10px] flex items-center justify-center transition-all border ${analysis.is_favorite ? 'bg-[#7C8B6F]/10 border-[#7C8B6F] text-[#7C8B6F]' : 'border-[#E8E0D4] text-[#B5A68C] hover:text-[#7C8B6F]'}`}>
                 <svg className="w-5 h-5" fill={analysis.is_favorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
               </button>
