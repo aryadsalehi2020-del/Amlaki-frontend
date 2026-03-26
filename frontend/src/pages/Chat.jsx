@@ -724,7 +724,7 @@ export default function Chat() {
             <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto">
               {/* Welcome Banner for new users */}
               {showWelcomeBanner && (
-                <div className="w-full mb-4 md:mb-6 p-3 md:p-4 bg-[#7C8B6F]/[0.08] border border-[#7C8B6F]/20 rounded-xl md:rounded-2xl relative">
+                <div className="w-full mb-4 md:mb-6 p-4 md:p-5 bg-[#7C8B6F]/[0.06] border border-[#7C8B6F]/15 rounded-xl md:rounded-2xl relative">
                   <button
                     onClick={dismissWelcome}
                     className="absolute top-2.5 right-2.5 text-[#8C7E6A] hover:text-[#2C2418] transition-colors text-lg leading-none"
@@ -732,18 +732,41 @@ export default function Chat() {
                   >
                     &times;
                   </button>
-                  <h3 className="text-[14px] font-semibold text-[#2C2418] mb-0.5">
-                    Willkommen{user?.username ? `, ${user.username}` : ''}!
+                  <h3 className="text-[15px] md:text-[16px] font-bold text-[#2C2418] mb-2.5">
+                    Willkommen bei AmlakI{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : user?.username ? `, ${user.username}` : ''}!
                   </h3>
-                  <p className="text-[12px] md:text-[13px] text-[#5C4F3D] mb-2 pr-6 leading-snug">
-                    Richte dein Profil ein f&uuml;r personalisierte Beratung.
+                  <p className="text-[12px] md:text-[13px] text-[#5C4F3D] mb-3 pr-6 leading-relaxed">
+                    So holst du das Meiste aus deinem KI-Berater:
                   </p>
-                  <button
-                    onClick={() => navigate('/settings')}
-                    className="text-[12px] md:text-[13px] font-medium text-[#7C8B6F] hover:text-[#5C4F3D] transition-colors"
-                  >
-                    Profil einrichten &rarr;
-                  </button>
+                  <div className="space-y-2.5 mb-3">
+                    <button
+                      onClick={() => navigate('/analyze')}
+                      className="flex items-start gap-2.5 w-full text-left group"
+                    >
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#7C8B6F] text-white text-[11px] font-bold flex items-center justify-center mt-0.5">1</span>
+                      <div>
+                        <p className="text-[12px] md:text-[13px] font-semibold text-[#2C2418] group-hover:text-[#7C8B6F] transition-colors">Erste Immobilie analysieren</p>
+                        <p className="text-[11px] text-[#8C7E6A]">Kaufpreis, Miete und Baujahr eingeben &mdash; Score in 30 Sekunden</p>
+                      </div>
+                    </button>
+                    <div className="flex items-start gap-2.5 w-full text-left">
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#B5A68C] text-white text-[11px] font-bold flex items-center justify-center mt-0.5">2</span>
+                      <div>
+                        <p className="text-[12px] md:text-[13px] font-semibold text-[#5C4F3D]">Fragen stellen</p>
+                        <p className="text-[11px] text-[#8C7E6A]">Frag mich alles zu Finanzierung, Steuern, F&ouml;rderungen oder Mietrecht</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className="flex items-start gap-2.5 w-full text-left group"
+                    >
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#E8E0D4] text-[#5C4F3D] text-[11px] font-bold flex items-center justify-center mt-0.5">3</span>
+                      <div>
+                        <p className="text-[12px] md:text-[13px] font-semibold text-[#5C4F3D] group-hover:text-[#7C8B6F] transition-colors">Profil einrichten <span className="text-[11px] font-normal text-[#8C7E6A]">(optional)</span></p>
+                        <p className="text-[11px] text-[#8C7E6A]">F&uuml;r personalisierte Empfehlungen zu F&ouml;rderungen und Steuern</p>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="mb-5 md:mb-8 text-center">

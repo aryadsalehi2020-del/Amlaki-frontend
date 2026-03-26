@@ -3583,6 +3583,130 @@ const blogArticles = [
       </>
     ),
   },
+  {
+    slug: 'amlaki-vs-makler-immobilienbewertung-vergleich',
+    title: 'AmlakI vs. Makler: Brauche ich noch einen Immobilienmakler?',
+    metaTitle: 'AmlakI vs. Makler: KI-Immobilienberater im Vergleich (2026) | AmlakI',
+    metaDescription: 'AmlakI vs. Makler im direkten Vergleich: Kosten, Objektivitaet, Geschwindigkeit und Tiefe der Analyse. Wann du einen Makler brauchst und wann nicht.',
+    publishedAt: '2026-03-26',
+    author: 'AmlakI Redaktion',
+    category: 'Vergleich',
+    readingTime: '7 Min.',
+    excerpt: 'KI-Immobilienberater vs. traditioneller Makler: Wer liefert die bessere Analyse fuer Kapitalanleger? Ein ehrlicher Vergleich.',
+    body: () => (
+      <>
+        <p>
+          Wenn du eine Immobilie als Kapitalanlage kaufen willst, stellt sich die Frage: Brauchst du einen Makler? Einen Gutachter? Oder reicht eine KI-Analyse? Die ehrliche Antwort: Es kommt darauf an. In diesem Vergleich zeigen wir transparent, was AmlakI kann, was ein Makler kann -- und wo die Grenzen jeweils liegen.
+        </p>
+
+        <h2>Der direkte Vergleich</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Kriterium</th>
+              <th>AmlakI</th>
+              <th>Makler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Kosten</strong></td><td>0-35 EUR</td><td>3,57 % vom Kaufpreis (bei 300.000 EUR = 10.710 EUR)</td></tr>
+            <tr><td><strong>Geschwindigkeit</strong></td><td>30 Sekunden</td><td>Tage bis Wochen</td></tr>
+            <tr><td><strong>Objektivitaet</strong></td><td>100 % -- keine Provisionsinteressen</td><td>Arbeitet fuer den Verkaeufer</td></tr>
+            <tr><td><strong>Verfuegbarkeit</strong></td><td>24/7</td><td>Geschaeftszeiten, Terminvereinbarung</td></tr>
+            <tr><td><strong>Cashflow-Berechnung</strong></td><td>Automatisch, inkl. Steuereffekt</td><td>Selten, meist nur Bruttorendite</td></tr>
+            <tr><td><strong>Foerderungs-Check</strong></td><td>Automatisch (KfW, BAFA, Landes)</td><td>Meist nicht im Angebot</td></tr>
+            <tr><td><strong>Verhandlungstipps</strong></td><td>Datenbasiert mit konkreten Argumenten</td><td>Erfahrungsbasiert</td></tr>
+            <tr><td><strong>Besichtigung vor Ort</strong></td><td>Nein</td><td>Ja</td></tr>
+            <tr><td><strong>Rechtliche Beratung</strong></td><td>Allgemeine Mechanismen</td><td>Keine (nicht befugt)</td></tr>
+            <tr><td><strong>Zugang zu Off-Market-Deals</strong></td><td>Nein</td><td>Ja (Netzwerk)</td></tr>
+            <tr><td><strong>WEG-Protokolle pruefen</strong></td><td>Erklaert worauf achten</td><td>Kann sie beschaffen</td></tr>
+            <tr><td><strong>Emotionale Distanz</strong></td><td>Hoch -- nur Zahlen</td><td>Niedrig -- will verkaufen</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Wo AmlakI staerker ist</h2>
+
+        <h3>1. Objektivitaet</h3>
+        <p>
+          Ein Makler verdient nur bei Abschluss. Seine Provision betraegt typisch 3,57 Prozent -- bei einem 300.000-EUR-Objekt sind das 10.710 EUR. Es liegt in seinem wirtschaftlichen Interesse, dass du kaufst, nicht dass du den besten Deal machst. AmlakI hat kein Provisionsinteresse. Die Analyse sagt dir nuechtert, ob die Zahlen stimmen -- auch wenn das Ergebnis "Finger weg" lautet.
+        </p>
+
+        <h3>2. Tiefe der Finanzanalyse</h3>
+        <p>
+          95 Prozent der Makler koennen dir nicht sagen, wie hoch die <a href="/blog/mietrendite-berechnen-formel-beispiel">Nettomietrendite</a> nach nicht umlagefaehigen Nebenkosten ist. Oder was der <a href="/blog/eigenkapitalrendite-leverage-effekt-immobilien">Leverage-Effekt</a> bei deiner Finanzierungsstruktur bewirkt. Oder welche <a href="/blog/kfw-foerderung-kapitalanleger-vermieter">KfW-Foerderung</a> in Frage kommt. AmlakI berechnet all das automatisch -- in 30 Sekunden.
+        </p>
+
+        <h3>3. Geschwindigkeit und Kosten</h3>
+        <p>
+          Du kannst 10 Objekte in 5 Minuten screenen und sofort sehen, welche sich lohnen. Ein Maklertermin dauert eine Stunde pro Objekt, plus Anfahrt, plus Wartezeit auf Unterlagen. Bei der Suche nach der richtigen Kapitalanlage pruefst du typisch 20-50 Objekte bevor du kaufst. Mit AmlakI kostet das 0-35 EUR. Mit Makler-Besichtigungen: Wochen an Zeit.
+        </p>
+
+        <h2>Wo der Makler staerker ist</h2>
+
+        <h3>1. Besichtigung vor Ort</h3>
+        <p>
+          Kein Tool ersetzt die Besichtigung. Feuchtigkeit im Keller, Geraeusche von der Strasse, der Zustand des Treppenhauses -- das muss man sehen und riechen. Fuer die finale Kaufentscheidung ist eine Besichtigung (idealerweise mit Sachverstaendigem) unverzichtbar.
+        </p>
+
+        <h3>2. Zugang zu Off-Market-Deals</h3>
+        <p>
+          Gute Makler haben Zugang zu Objekten, die nie auf ImmoScout oder Kleinanzeigen erscheinen. Erbengemeinschaften, Bankverwertungen, Netzwerk-Deals -- hier kann ein Makler einen echten Mehrwert liefern.
+        </p>
+
+        <h3>3. Verhandlung und Abwicklung</h3>
+        <p>
+          Ein erfahrener Makler kennt den lokalen Markt, die Verhandlungsspielraeume und kann den Prozess bis zum Notartermin begleiten. Das ist besonders fuer Erstkaufer wertvoll, die sich unsicher fuehlen.
+        </p>
+
+        <h2>Die optimale Kombination</h2>
+        <p>
+          AmlakI und Makler schliessen sich nicht aus. Die smarteste Strategie fuer Kapitalanleger:
+        </p>
+        <ol>
+          <li><strong>Screening mit AmlakI:</strong> 20-50 Objekte in Minuten filtern. Nur die mit <a href="/blog/bruttorendite-berechnen-immobilien">Bruttorendite</a> ueber 4 Prozent und positivem <a href="/blog/cashflow-immobilie-berechnen">Cashflow</a> weiterverfolen.</li>
+          <li><strong>Tiefenanalyse mit AmlakI:</strong> Die Top-5-Kandidaten vollstaendig analysieren (Score, Foerderungen, Sensitivitaet).</li>
+          <li><strong>Besichtigung:</strong> Die Top-2-3 Objekte persoenlich besichtigen -- idealerweise mit Bausachverstaendigem (kostet 300-500 EUR).</li>
+          <li><strong><a href="/blog/weg-protokolle-lesen-worauf-achten">WEG-Protokolle</a> pruefen:</strong> Parallel zur Besichtigung.</li>
+          <li><strong>Verhandlung:</strong> Mit den Daten aus der AmlakI-Analyse konkret verhandeln.</li>
+        </ol>
+
+        <h2>Und Gutachter?</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Kriterium</th>
+              <th>AmlakI</th>
+              <th>Gutachter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Kosten</td><td>0-35 EUR</td><td>1.500-3.000 EUR</td></tr>
+            <tr><td>Rechtsverbindlich</td><td>Nein</td><td>Ja (Verkehrswertgutachten)</td></tr>
+            <tr><td>Bankakzeptanz</td><td>Nein</td><td>Ja</td></tr>
+            <tr><td>Fuer Finanzierung</td><td>Als Vorabcheck</td><td>Fuer Beleihungswert</td></tr>
+            <tr><td>Fuer Erbschaft/Scheidung</td><td>Nein</td><td>Ja (erforderlich)</td></tr>
+          </tbody>
+        </table>
+        <p>
+          AmlakI ersetzt kein rechtsverbindliches Gutachten. Fuer Erbschaft, Scheidung oder gerichtliche Auseinandersetzungen brauchst du einen zertifizierten Sachverstaendigen. Fuer die Kaufentscheidung als Kapitalanleger reicht eine datenbasierte Analyse in 95 Prozent der Faelle.
+        </p>
+
+        <h2>Fazit</h2>
+        <p>
+          AmlakI ist kein Makler-Ersatz -- es ist ein Makler-Upgrade. Du bekommst in 30 Sekunden eine Analyse, die tiefer, objektiver und guenstiger ist als das, was die meisten Makler liefern. Fuer die Besichtigung, Off-Market-Deals und die emotionale Sicherheit beim Erstkauf hat der Makler nach wie vor seine Berechtigung.
+        </p>
+        <p>
+          Die beste Strategie: Nutze AmlakI fuer das Screening und die Zahlen -- und den Makler (oder Sachverstaendigen) fuer das, was vor Ort passiert.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Jetzt selbst vergleichen</h3>
+          <p>Analysiere dein naechstes Objekt in 30 Sekunden -- kostenlos und ohne Makler-Provision.</p>
+          <a href="/register">Erste Analyse gratis starten</a>
+        </div>
+      </>
+    ),
+  },
 ];
 
 export default blogArticles;
