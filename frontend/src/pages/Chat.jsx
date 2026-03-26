@@ -756,7 +756,7 @@ export default function Chat() {
                       <span className="shrink-0 w-5 h-5 rounded-full bg-[#B5A68C] text-white text-[11px] font-bold flex items-center justify-center mt-0.5">2</span>
                       <div>
                         <p className="text-[12px] md:text-[13px] font-semibold text-[#2C2418] group-hover:text-[#7C8B6F] transition-colors">Erste Immobilie analysieren</p>
-                        <p className="text-[11px] text-[#8C7E6A]">Kaufpreis, Miete und Baujahr eingeben &mdash; Score in 30 Sekunden</p>
+                        <p className="text-[11px] text-[#8C7E6A]">Expos&eacute; hochladen oder Daten manuell eingeben</p>
                       </div>
                     </button>
                     <div className="flex items-start gap-2.5 w-full text-left">
