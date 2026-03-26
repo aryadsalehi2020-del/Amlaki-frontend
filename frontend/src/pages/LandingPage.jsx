@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   TrendingUp,
   MessageSquare,
@@ -210,6 +211,16 @@ export default function LandingPage() {
         WebkitOverflowScrolling: 'touch',
       }}
     >
+      <Helmet>
+        <title>AmlakI - KI-Immobilienberater fuer Kapitalanleger</title>
+        <meta name="description" content="Professionelle Immobilienanalyse mit KI. Bewertung, Cashflow-Berechnung, Foerderungen und Verhandlungstipps - basierend auf aktuellen Marktdaten. Erste Analyse gratis." />
+        <link rel="canonical" href="https://amlaki.de" />
+        <meta property="og:title" content="AmlakI - Dein KI-Immobilienberater" />
+        <meta property="og:description" content="Expose hochladen, in 30 Sekunden wissen ob sich das Objekt lohnt. Score, Cashflow, Fairer Preis & Foerderungen - erste Analyse gratis." />
+        <meta property="og:url" content="https://amlaki.de" />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       {/* ===== NAVBAR ===== */}
       <nav
         style={{ background: 'rgba(250,247,242,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.khakiLight}40`, boxShadow: scrolled ? '0 2px 12px rgba(44,36,24,0.06)' : 'none', transition: 'box-shadow 0.3s ease' }}
@@ -704,6 +715,98 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ===== FAQ ===== */}
+      <section id="faq" className="py-20 md:py-28 px-4 sm:px-5" style={{ background: C.bg }}>
+        <div className="max-w-3xl mx-auto">
+          <FadeInSection>
+            <div className="text-center mb-10 md:mb-12">
+              <span
+                className="inline-block text-xs sm:text-sm font-semibold tracking-wide uppercase mb-3"
+                style={{ color: C.olive }}
+              >
+                Fragen &amp; Antworten
+              </span>
+              <h2
+                className="text-2xl sm:text-3xl md:text-4xl font-bold"
+                style={{ color: C.heading, letterSpacing: '-0.025em' }}
+              >
+                H&auml;ufig gestellte Fragen
+              </h2>
+            </div>
+          </FadeInSection>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: 'Ersetzt AmlakI einen Makler oder Gutachter?',
+                a: 'AmlakI liefert eine datenbasierte Ersteinsch\u00e4tzung auf Basis aktueller Marktdaten, Transaktionspreise und anerkannter Bewertungsverfahren. F\u00fcr rechtsverbindliche Gutachten oder komplexe Einzelf\u00e4lle empfehlen wir zus\u00e4tzlich einen Sachverst\u00e4ndigen.',
+              },
+              {
+                q: 'Wie genau ist die KI-Bewertung?',
+                a: 'Unsere Analyse basiert auf Ertragswert-, Vergleichswert- und Sachwertverfahren \u2013 den gleichen Methoden, die Banken und Gutachter verwenden. Die KI greift auf aktuelle Bodenrichtwerte, Mietspiegeldaten und Transaktionspreise zu.',
+              },
+              {
+                q: 'F\u00fcr wen ist AmlakI gedacht?',
+                a: 'F\u00fcr alle, die eine Immobilie als Kapitalanlage kaufen m\u00f6chten \u2013 vom Erstk\u00e4ufer bis zum erfahrenen Investor. Besonders hilfreich, wenn du Rendite, Cashflow und F\u00f6rderungen schnell einsch\u00e4tzen willst, bevor du einen Makler kontaktierst.',
+              },
+              {
+                q: 'Welche Daten brauche ich f\u00fcr eine Analyse?',
+                a: 'Kaufpreis, Wohnfl\u00e4che, Kaltmiete und Baujahr reichen f\u00fcr eine solide Erstanalyse. Je mehr Angaben (Hausgeld, Energieklasse, Lage), desto pr\u00e4ziser wird die Bewertung.',
+              },
+              {
+                q: 'Ist die erste Analyse wirklich kostenlos?',
+                a: 'Ja. Du erh\u00e4ltst 1 vollst\u00e4ndige Analyse mit Score, Cashflow-Berechnung, fairem Preis und F\u00f6rderungscheck \u2013 ohne Kreditkarte, ohne Abo.',
+              },
+              {
+                q: 'Wie sch\u00fctzt ihr meine Daten?',
+                a: 'Alle Daten werden verschl\u00fcsselt \u00fcbertragen und auf europ\u00e4ischen Servern gespeichert. Wir verkaufen keine Nutzerdaten und geben sie nicht an Dritte weiter. Details findest du in unserer Datenschutzerkl\u00e4rung.',
+              },
+            ].map(({ q, a }, i) => (
+              <FadeInSection key={i} delay={i * 0.06}>
+                <details
+                  className="group rounded-2xl overflow-hidden"
+                  style={{ background: C.card, border: `1px solid ${C.border}` }}
+                >
+                  <summary
+                    className="flex items-center justify-between cursor-pointer px-5 sm:px-6 py-4 sm:py-5 text-sm sm:text-base font-semibold select-none list-none"
+                    style={{ color: C.heading }}
+                  >
+                    {q}
+                    <ChevronRight
+                      size={18}
+                      className="shrink-0 ml-3 transition-transform duration-200 group-open:rotate-90"
+                      style={{ color: C.khaki }}
+                    />
+                  </summary>
+                  <div className="px-5 sm:px-6 pb-4 sm:pb-5 text-sm leading-relaxed" style={{ color: C.body }}>
+                    {a}
+                  </div>
+                </details>
+              </FadeInSection>
+            ))}
+          </div>
+
+          {/* FAQ Schema */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: [
+                  { '@type': 'Question', name: 'Ersetzt AmlakI einen Makler oder Gutachter?', acceptedAnswer: { '@type': 'Answer', text: 'AmlakI liefert eine datenbasierte Ersteinschaetzung auf Basis aktueller Marktdaten, Transaktionspreise und anerkannter Bewertungsverfahren. Fuer rechtsverbindliche Gutachten oder komplexe Einzelfaelle empfehlen wir zusaetzlich einen Sachverstaendigen.' } },
+                  { '@type': 'Question', name: 'Wie genau ist die KI-Bewertung?', acceptedAnswer: { '@type': 'Answer', text: 'Die Analyse basiert auf Ertragswert-, Vergleichswert- und Sachwertverfahren - den gleichen Methoden, die Banken und Gutachter verwenden. Die KI greift auf aktuelle Bodenrichtwerte, Mietspiegeldaten und Transaktionspreise zu.' } },
+                  { '@type': 'Question', name: 'Fuer wen ist AmlakI gedacht?', acceptedAnswer: { '@type': 'Answer', text: 'Fuer alle, die eine Immobilie als Kapitalanlage kaufen moechten - vom Erstkaeufer bis zum erfahrenen Investor. Besonders hilfreich, wenn du Rendite, Cashflow und Foerderungen schnell einschaetzen willst.' } },
+                  { '@type': 'Question', name: 'Welche Daten brauche ich fuer eine Analyse?', acceptedAnswer: { '@type': 'Answer', text: 'Kaufpreis, Wohnflaeche, Kaltmiete und Baujahr reichen fuer eine solide Erstanalyse. Je mehr Angaben (Hausgeld, Energieklasse, Lage), desto praeziser wird die Bewertung.' } },
+                  { '@type': 'Question', name: 'Ist die erste Analyse wirklich kostenlos?', acceptedAnswer: { '@type': 'Answer', text: 'Ja. 1 vollstaendige Analyse mit Score, Cashflow-Berechnung, fairem Preis und Foerderungscheck - ohne Kreditkarte, ohne Abo.' } },
+                  { '@type': 'Question', name: 'Wie schuetzt ihr meine Daten?', acceptedAnswer: { '@type': 'Answer', text: 'Alle Daten werden verschluesselt uebertragen und auf europaeischen Servern gespeichert. Keine Weitergabe an Dritte.' } },
+                ],
+              }),
+            }}
+          />
+        </div>
+      </section>
+
       {/* ===== FOOTER ===== */}
       <footer className="py-10 md:py-12 px-4 sm:px-5" style={{ background: C.bg, borderTop: `1px solid ${C.border}`, paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom, 0px))' }}>
         <div className="max-w-5xl mx-auto">
@@ -760,6 +863,15 @@ export default function LandingPage() {
                 onMouseLeave={(e) => (e.currentTarget.style.color = C.khaki)}
               >
                 Datenschutz
+              </button>
+              <button
+                onClick={() => navigate('/blog')}
+                className="text-xs transition-colors duration-200"
+                style={{ color: C.khaki, background: 'none', border: 'none', cursor: 'pointer', minHeight: '44px', display: 'flex', alignItems: 'center' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = C.olive)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = C.khaki)}
+              >
+                Ratgeber
               </button>
               <a
                 href="https://instagram.com/amlaki.ai"

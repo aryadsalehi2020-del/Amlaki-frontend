@@ -22,6 +22,14 @@ export default function BlogIndex() {
         <title>Immobilien-Ratgeber | AmlakI</title>
         <meta name="description" content="Fachwissen fuer Kapitalanleger: Rendite berechnen, Steuern optimieren, Foerderungen nutzen. Verstaendlich erklaert von AmlakI." />
         <link rel="canonical" href="https://amlaki.de/blog" />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://amlaki.de' },
+            { '@type': 'ListItem', position: 2, name: 'Ratgeber' },
+          ],
+        })}</script>
       </Helmet>
 
       {/* Navbar */}

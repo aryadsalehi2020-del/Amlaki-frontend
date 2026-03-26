@@ -33,23 +33,35 @@ export default function BlogArticle() {
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: article.title,
-    description: article.metaDescription,
-    datePublished: article.publishedAt,
-    author: {
-      '@type': 'Organization',
-      name: article.author,
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'AmlakI',
-      url: 'https://amlaki.de',
-    },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': `https://amlaki.de/blog/${article.slug}`,
-    },
+    '@graph': [
+      {
+        '@type': 'Article',
+        headline: article.title,
+        description: article.metaDescription,
+        datePublished: article.publishedAt,
+        author: {
+          '@type': 'Organization',
+          name: article.author,
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'AmlakI',
+          url: 'https://amlaki.de',
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://amlaki.de/blog/${article.slug}`,
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://amlaki.de' },
+          { '@type': 'ListItem', position: 2, name: 'Ratgeber', item: 'https://amlaki.de/blog' },
+          { '@type': 'ListItem', position: 3, name: article.title },
+        ],
+      },
+    ],
   };
 
   return (

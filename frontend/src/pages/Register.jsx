@@ -4,9 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 
 function Register() {
-  const [formData, setFormData] = useState({ email: '', username: '', fullName: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [slowServer, setSlowServer] = useState(false);
@@ -20,24 +19,22 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); setError('');
-    if (formData.password !== formData.confirmPassword) { setError('Passw\u00f6rter stimmen nicht \u00fcberein'); return; }
     if (formData.password.length < 8) { setError('Passwort muss mindestens 8 Zeichen lang sein'); return; }
     if (!/[0-9]/.test(formData.password)) { setError('Passwort muss mindestens eine Zahl enthalten'); return; }
-    if (formData.username.length < 3) { setError('Benutzername muss mindestens 3 Zeichen lang sein'); return; }
+    // Auto-generate username from email prefix
+    const username = formData.email.split('@')[0].replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 30);
+    if (username.length < 3) { setError('E-Mail-Adresse ist zu kurz'); return; }
     setLoading(true);
     setSlowServer(false);
     slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
-    try { await register(formData.email, formData.username, formData.password, formData.fullName); navigate('/chat'); }
+    try { await register(formData.email, username, formData.password, ''); navigate('/chat'); }
     catch (err) { setError(err.message || 'Fehler'); }
     finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
   };
 
   const fields = [
     { name: 'email', type: 'email', ph: 'E-Mail', auto: 'email' },
-    { name: 'username', type: 'text', ph: 'Benutzername', auto: 'username' },
-    { name: 'fullName', type: 'text', ph: 'Name (optional)', auto: 'name', req: false },
     { name: 'password', type: 'password', ph: 'Passwort (min. 8 Zeichen + Zahl)', auto: 'new-password' },
-    { name: 'confirmPassword', type: 'password', ph: 'Passwort best\u00e4tigen', auto: 'new-password' },
   ];
 
   return (
@@ -71,29 +68,26 @@ function Register() {
           <form onSubmit={handleSubmit} className="space-y-3">
             {fields.map(f => {
               const isPassword = f.name === 'password';
-              const isConfirm = f.name === 'confirmPassword';
-              const showPw = isPassword ? showPassword : isConfirm ? showConfirm : false;
-              const togglePw = isPassword ? () => setShowPassword(!showPassword) : isConfirm ? () => setShowConfirm(!showConfirm) : null;
 
               const input = (
                 <input
-                  key={f.name} type={(isPassword || isConfirm) ? (showPw ? 'text' : 'password') : f.type}
+                  key={f.name} type={isPassword ? (showPassword ? 'text' : 'password') : f.type}
                   name={f.name} value={formData[f.name]}
-                  onChange={handleChange} required={f.req !== false} autoComplete={f.auto} autoCapitalize="none"
+                  onChange={handleChange} required autoComplete={f.auto} autoCapitalize="none"
                   placeholder={f.ph}
-                  className={`w-full px-4 py-3.5 ${(isPassword || isConfirm) ? 'pr-12' : ''} bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all`}
+                  className={`w-full px-4 py-3.5 ${isPassword ? 'pr-12' : ''} bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all`}
                 />
               );
 
-              if (isPassword || isConfirm) {
+              if (isPassword) {
                 return (
                   <div key={f.name} className="relative">
                     {input}
                     <button
-                      type="button" onClick={togglePw} tabIndex={-1}
+                      type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#B5A68C] hover:text-[#7C8B6F] transition-colors"
                     >
-                      {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 );
@@ -103,7 +97,7 @@ function Register() {
             })}
             <button type="submit" disabled={loading}
               className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-30 active:scale-[0.98]">
-              {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Kostenlos registrieren'}
+              {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Erste Analyse starten'}
             </button>
           </form>
 
