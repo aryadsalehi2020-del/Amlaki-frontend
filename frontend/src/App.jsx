@@ -21,6 +21,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
+import BlogIndex from './pages/BlogIndex';
+import BlogArticle from './pages/BlogArticle';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -56,13 +58,18 @@ function DashboardLayout({ children }) {
 
 // Root Redirect – show LandingPage for guests, Chat for logged-in users
 function RootRedirect() {
-  const { user, loading } = useAuth();
+  const { user, loading, token } = useAuth();
   const [slowLoad, setSlowLoad] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setTimeout(() => setSlowLoad(true), 4000);
     return () => clearTimeout(timer);
   }, []);
+
+  // No token = no login session → show landing page immediately
+  if (!token) {
+    return <LandingPage />;
+  }
 
   if (loading) {
     return (
@@ -102,6 +109,8 @@ function App() {
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/impressum" element={<Impressum />} />
           <Route path="/datenschutz" element={<Datenschutz />} />
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
