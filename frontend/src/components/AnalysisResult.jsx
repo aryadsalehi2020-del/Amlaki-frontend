@@ -25,7 +25,6 @@ import ZinsTilgungChart from './charts/ZinsTilgungChart';
 // UI components
 import BreakEvenCalculator from './BreakEvenCalculator';
 import ScenarioComparison from './ScenarioComparison';
-import InteractiveSliders from './InteractiveSliders';
 import LiveCalculator from './LiveCalculator';
 import SensitivityMatrix from './SensitivityMatrix';
 import InvestmentComparison from './InvestmentComparison';

@@ -6,9 +6,9 @@ function ScenarioSimulator({ analysisData }) {
     kaufpreis: analysisData?.kaufpreis || 300000,
     kaltmiete: analysisData?.kaltmiete || 950,
     hausgeld: analysisData?.hausgeld || 280,
-    zinssatz: 3.8,
-    tilgungssatz: 1.5,
-    eigenkapitalQuote: 12 // Prozent vom Kaufpreis
+    zinssatz: analysisData?.zinssatz || 3.75,
+    tilgungssatz: analysisData?.tilgung || 1.5,
+    eigenkapitalQuote: analysisData?.eigenkapital ? Math.round((analysisData.eigenkapital / (analysisData.kaufpreis || 300000)) * 100) : 12
   });
 
   const scenarios = useMemo(() => {

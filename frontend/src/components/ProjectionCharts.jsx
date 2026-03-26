@@ -12,10 +12,10 @@ function ProjectionCharts({ analysisData }) {
     const kaufpreis = analysisData.kaufpreis || 300000;
     const kaltmiete = analysisData.kaltmiete || 950;
     const hausgeld = analysisData.hausgeld || 280;
-    const zinssatz = 0.038;
-    const tilgungssatz = 0.015;
-    const eigenkapital = kaufpreis * 0.12; // 12% Nebenkosten
-    const kredit = kaufpreis;
+    const zinssatz = (analysisData.zinssatz || 3.75) / 100;
+    const tilgungssatz = (analysisData.tilgung || 1.5) / 100;
+    const eigenkapital = analysisData.eigenkapital || kaufpreis * 0.12;
+    const kredit = Math.max(kaufpreis - eigenkapital, 0) || kaufpreis;
 
     const jahresRate = kredit * (zinssatz + tilgungssatz);
     const nichtUmlagefaehig = hausgeld * 0.35;

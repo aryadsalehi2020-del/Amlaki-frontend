@@ -13,8 +13,8 @@ function FairPriceCalculator({ analysisData }) {
     vergleichspreisProQm: analysisData?.vergleichspreisProQm || 3500,
     zielRendite: 4.5,
     zielFaktor: 22,
-    zinssatz: 3.8,
-    tilgungssatz: 1.5
+    zinssatz: analysisData?.zinssatz || 3.75,
+    tilgungssatz: analysisData?.tilgung || 1.5
   });
   const [stadtInput, setStadtInput] = useState('');
   const [isLoadingMarkt, setIsLoadingMarkt] = useState(false);
