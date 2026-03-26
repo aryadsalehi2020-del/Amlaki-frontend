@@ -1,32 +1,48 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { UserProfileProvider } from './contexts/UserProfileContext';
 
-// Pages
-import Login from './pages/Login';
-import Register from './pages/Register';
-import DesignPreview from './pages/DesignPreview';
-import Analyze from './pages/Analyze';
-import Library from './pages/Library';
-import LibraryDetail from './pages/LibraryDetail';
-import Settings from './pages/Settings';
-import Profile from './pages/Profile';
-import Tools from './pages/Tools';
-import Chat from './pages/Chat';
-import Admin from './pages/Admin';
-import Pricing from './pages/Pricing';
+// Landing Page loaded immediately (first paint)
 import LandingPage from './pages/LandingPage';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Impressum from './pages/Impressum';
-import Datenschutz from './pages/Datenschutz';
-import BlogIndex from './pages/BlogIndex';
-import BlogArticle from './pages/BlogArticle';
+
+// Everything else lazy-loaded
+const Login = React.lazy(() => import('./pages/Login'));
+const Register = React.lazy(() => import('./pages/Register'));
+const DesignPreview = React.lazy(() => import('./pages/DesignPreview'));
+const Analyze = React.lazy(() => import('./pages/Analyze'));
+const Library = React.lazy(() => import('./pages/Library'));
+const LibraryDetail = React.lazy(() => import('./pages/LibraryDetail'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const Tools = React.lazy(() => import('./pages/Tools'));
+const Chat = React.lazy(() => import('./pages/Chat'));
+const Admin = React.lazy(() => import('./pages/Admin'));
+const Pricing = React.lazy(() => import('./pages/Pricing'));
+const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('./pages/ResetPassword'));
+const Impressum = React.lazy(() => import('./pages/Impressum'));
+const Datenschutz = React.lazy(() => import('./pages/Datenschutz'));
+const BlogIndex = React.lazy(() => import('./pages/BlogIndex'));
+const BlogArticle = React.lazy(() => import('./pages/BlogArticle'));
 
 // Components
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
+
+// Loading fallback
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+      <div className="flex items-center gap-[6px]">
+        {[0, 1, 2].map((i) => (
+          <span key={i} className="w-[8px] h-[8px] rounded-full bg-[#B5A68C]" style={{ animation: `typingPulse 1.4s ease-in-out ${i * 0.15}s infinite`, opacity: 0.25 }} />
+        ))}
+      </div>
+      <style>{`@keyframes typingPulse { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 0.9; } }`}</style>
+    </div>
+  );
+}
 
 // Scroll to top on route change
 function ScrollToTop() {
@@ -100,6 +116,7 @@ function App() {
       <ScrollToTop />
       <AuthProvider>
         <UserProfileProvider>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<RootRedirect />} />
@@ -220,6 +237,7 @@ function App() {
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
         </UserProfileProvider>
       </AuthProvider>
     </BrowserRouter>
