@@ -9,7 +9,7 @@ export const CARD_CLASS = "border border-zinc-800/50 rounded-md p-6";
 
 // Financial calculation constants
 export const KAUFNEBENKOSTEN_PERCENT = 0.12; // 12% buying costs
-export const NICHT_UMLAGEFAEHIG_PERCENT = 0.30; // 30% non-allocatable costs
+export const NICHT_UMLAGEFAEHIG_PERCENT = 0.35; // 35% non-allocatable costs
 export const DEPOT_BELEIHBAR_PERCENT = 0.70; // 70% of depot can be used as collateral
 export const INSTANDHALTUNG_PRO_QM = 12; // €12 per sqm per year maintenance
 
@@ -53,7 +53,7 @@ export const GRUNDERWERBSTEUER = {
   'NRW': 6.5,
   'Rheinland-Pfalz': 5.0,
   'Saarland': 6.5,
-  'Sachsen': 5.5,
+  'Sachsen': 3.5,
   'Sachsen-Anhalt': 5.0,
   'Schleswig-Holstein': 6.5,
   'Thüringen': 5.0

@@ -120,28 +120,28 @@ function FairPriceCalculator({ analysisData }) {
       },
       methoden: [
         {
+          name: 'Nach Vergleichspreisen',
+          preis: nachVergleich,
+          beschreibung: `${vergleichspreisProQm}€/m² × ${wohnflaeche}m²`,
+          gewicht: '40%'
+        },
+        {
           name: 'Nach Zielrendite',
           preis: nachRendite,
           beschreibung: `Preis für ${zielRendite}% Bruttorendite`,
-          gewicht: '30%'
+          gewicht: '25%'
         },
         {
           name: 'Nach Kaufpreisfaktor',
           preis: nachFaktor,
           beschreibung: `Preis für Faktor ${zielFaktor}`,
-          gewicht: '30%'
-        },
-        {
-          name: 'Nach Vergleichspreisen',
-          preis: nachVergleich,
-          beschreibung: `${vergleichspreisProQm}€/m² × ${wohnflaeche}m²`,
-          gewicht: '20%'
+          gewicht: '25%'
         },
         {
           name: 'Für Cashflow-Neutral',
           preis: nachCashflow,
           beschreibung: 'Max. Preis für Cashflow = 0',
-          gewicht: '20%'
+          gewicht: '10%'
         }
       ],
       fairerPreis,

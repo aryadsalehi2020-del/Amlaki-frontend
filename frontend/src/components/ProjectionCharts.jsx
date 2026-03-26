@@ -18,7 +18,7 @@ function ProjectionCharts({ analysisData }) {
     const kredit = kaufpreis;
 
     const jahresRate = kredit * (zinssatz + tilgungssatz);
-    const nichtUmlagefaehig = hausgeld * 0.30;
+    const nichtUmlagefaehig = hausgeld * 0.35;
 
     let restschuld = kredit;
     let immowert = kaufpreis;

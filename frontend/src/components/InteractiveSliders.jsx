@@ -27,9 +27,9 @@ function InteractiveSliders({ initialValues, kaufpreis, monatlicheMiete, nebenko
     const jaehrlicheRate = finanzierungssumme * ((values.zinssatz + values.tilgung) / 100);
     const monatlicheRate = jaehrlicheRate / 12;
 
-    // Nur nicht-umlagefähige Nebenkosten abziehen (ca. 30% vom Hausgeld)
-    // Typisch: Instandhaltungsrücklage + Verwaltung = ca. 30%
-    const nichtUmlagefahig = (nebenkosten || 0) * 0.3;
+    // Nur nicht-umlagefähige Nebenkosten abziehen (ca. 35% vom Hausgeld)
+    // Typisch: Instandhaltungsrücklage + Verwaltung = ca. 35%
+    const nichtUmlagefahig = (nebenkosten || 0) * 0.35;
 
     const monatlichCashflow = monatlicheMiete - monatlicheRate - nichtUmlagefahig;
     const jaehrlichCashflow = monatlichCashflow * 12;

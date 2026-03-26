@@ -44,7 +44,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
     const monatlicheRate = jaehrlicheRate / 12;
 
     // Nebenkosten: exakter Wert wenn vorhanden, sonst 30% vom Hausgeld
-    const nichtUmlagefahig = hausgeldNichtUmlagefaehig || (hausgeld || 0) * 0.3;
+    const nichtUmlagefahig = hausgeldNichtUmlagefaehig || (hausgeld || 0) * 0.35;
 
     // Cashflow
     const monatlichCashflow = aktiveMiete - monatlicheRate - nichtUmlagefahig;
@@ -52,7 +52,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
 
     // Renditen
     const bruttorendite = (jahresmiete / kaufpreis) * 100;
-    const nettorendite = ((jahresmiete - (nichtUmlagefahig * 12)) / kaufpreis) * 100;
+    const nettorendite = ((jahresmiete - (nichtUmlagefahig * 12)) / (kaufpreis + kaufnebenkosten)) * 100;
     const kaufpreisfaktor = kaufpreis / jahresmiete;
 
     // Eigenkapitalrendite
@@ -67,7 +67,11 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
       : null;
 
     // Kredit-Laufzeit
-    const kreditLaufzeit = Math.ceil(100 / values.tilgung);
+    const r = values.zinssatz / 100 / 12;
+    const payment = finanzierungssumme * (values.zinssatz + values.tilgung) / 100 / 12;
+    const kreditLaufzeit = (r > 0 && payment > finanzierungssumme * r)
+      ? Math.ceil(-Math.log(1 - (finanzierungssumme * r / payment)) / Math.log(1 + r) / 12)
+      : Math.ceil(100 / values.tilgung);
 
     // Geschätzte Gesamtzinskosten (vereinfacht)
     const geschaetzteZinskosten = finanzierungssumme * (values.zinssatz / 100) * (kreditLaufzeit / 2);

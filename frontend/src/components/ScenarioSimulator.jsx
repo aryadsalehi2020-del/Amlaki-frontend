@@ -17,7 +17,7 @@ function ScenarioSimulator({ analysisData }) {
     const eigenkapital = base.kaufpreis * (base.eigenkapitalQuote / 100);
     const kredit = base.kaufpreis + kaufnebenkosten - eigenkapital;
     const monatlicheRate = (kredit * (base.zinssatz / 100 + base.tilgungssatz / 100)) / 12;
-    const nichtUmlagefaehig = base.hausgeld * 0.30;
+    const nichtUmlagefaehig = base.hausgeld * 0.35;
     const baseCashflow = base.kaltmiete - monatlicheRate - nichtUmlagefaehig;
 
     const calcCashflow = (modifiedBase) => {
@@ -25,7 +25,7 @@ function ScenarioSimulator({ analysisData }) {
       const modEigenkapital = modifiedBase.kaufpreis * (modifiedBase.eigenkapitalQuote / 100);
       const modKredit = modifiedBase.kaufpreis + modKaufnebenkosten - modEigenkapital;
       const modRate = (modKredit * (modifiedBase.zinssatz / 100 + modifiedBase.tilgungssatz / 100)) / 12;
-      const modNichtUmlagefaehig = modifiedBase.hausgeld * 0.30;
+      const modNichtUmlagefaehig = modifiedBase.hausgeld * 0.35;
       return modifiedBase.kaltmiete - modRate - modNichtUmlagefaehig;
     };
 

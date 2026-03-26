@@ -158,10 +158,10 @@ export default function Datenschutz() {
                 aufgelisteten Zwecken zur Datenerhebung.
               </p>
 
-              <h3 style={h3Style}>b) Bei Anmeldung zur Warteliste (E-Mail)</h3>
+              <h3 style={h3Style}>b) Bei Registrierung (E-Mail)</h3>
               <p style={pStyle}>
-                Wenn Sie sich über unser Formular auf der Startseite für die
-                Warteliste anmelden, erheben wir Ihre E-Mail-Adresse. Die
+                Wenn Sie sich über unser Formular auf der Startseite
+                registrieren, erheben wir Ihre E-Mail-Adresse. Die
                 Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs.
                 1 lit. a DSGVO). Ihre E-Mail-Adresse wird ausschließlich dafür
                 verwendet, Sie über den Start von AmlakI und relevante Updates zu
@@ -171,7 +171,7 @@ export default function Datenschutz() {
               </p>
               <p style={pStyle}>
                 Sie können Ihre Einwilligung jederzeit widerrufen, indem Sie uns
-                eine formlose E-Mail an salehiarya@gmail.com
+                eine formlose E-Mail an kontakt@amlaki.de
                 senden. Die Rechtmäßigkeit der bis zum Widerruf erfolgten
                 Datenverarbeitung bleibt vom Widerruf unberührt.
               </p>
@@ -213,7 +213,7 @@ export default function Datenschutz() {
                 Cookies zu Werbezwecken. Es werden lediglich technisch notwendige
                 Cookies und lokale Speicherung (localStorage) eingesetzt, die für
                 den Betrieb der Website erforderlich sind, z.B. zur
-                Authentifizierung und zur Speicherung Ihrer Wartelisten-Anmeldung.
+                Authentifizierung und zur Speicherung Ihrer Registrierung.
               </p>
               <p style={pStyle}>
                 Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
@@ -299,8 +299,8 @@ export default function Datenschutz() {
                   <strong>Beschwerderecht bei einer Aufsichtsbehörde</strong> (Art.
                   77 DSGVO) — Sie können sich bei einer Datenschutz-Aufsichtsbehörde
                   über die Verarbeitung Ihrer personenbezogenen Daten beschweren,
-                  z.B. beim Hessischen Beauftragten für Datenschutz und
-                  Informationsfreiheit: Der Hessische Beauftragte für Datenschutz und Informationsfreiheit.
+                  z.B. beim Hamburgischen Beauftragten für Datenschutz und Informationsfreiheit und
+                  Informationsfreiheit: Der Hamburgische Beauftragte für Datenschutz und Informationsfreiheit.
                 </li>
               </ul>
             </div>

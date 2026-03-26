@@ -1018,7 +1018,7 @@ const blogArticles = [
 
         <h3>3. Anschlussfinanzierungsrisiko</h3>
         <p>
-          Nach Ablauf der Zinsbindung hast du weniger getilgt als bei einer niedrigeren Finanzierung. Die Restschuld ist hoeher, und wenn die Zinsen gestiegen sind, wird die neue Rate deutlich teurer. Plane deshalb Sondertilgungen ein und nutze das <a href="/blog/bruttorendite-berechnen-immobilien">Sonderkuendigungsrecht nach 10 Jahren</a> (Paragraph 489 BGB).
+          Nach Ablauf der Zinsbindung hast du weniger getilgt als bei einer niedrigeren Finanzierung. Die Restschuld ist hoeher, und wenn die Zinsen gestiegen sind, wird die neue Rate deutlich teurer. Plane deshalb Sondertilgungen ein und nutze das <a href="/blog/immobilie-finanzieren-ohne-eigenkapital">Sonderkuendigungsrecht nach 10 Jahren</a> (Paragraph 489 BGB).
         </p>
 
         <h2>Alternative 1: Lombardkredit als Eigenkapital-Ersatz</h2>
@@ -1090,7 +1090,7 @@ const blogArticles = [
 
         <h2>Fazit: Vollfinanzierung ist moeglich, aber kein Selbstlaeufer</h2>
         <p>
-          Eine 100-Prozent-Finanzierung des Kaufpreises ist 2026 machbar -- wenn Bonitaet, Einkommen und Objekt stimmen. Die Kaufnebenkosten musst du in der Regel selbst tragen. Der Zinsaufschlag liegt bei 0,2 bis 0,4 Prozentpunkten, was die Rendite schmaeelert, aber nicht zwingend killt. Lombardkredite, KfW-Darlehen im Nachrang und private Darlehen koennen das fehlende Eigenkapital ersetzen oder ergaenzen.
+          Eine 100-Prozent-Finanzierung des Kaufpreises ist 2026 machbar -- wenn Bonitaet, Einkommen und Objekt stimmen. Die Kaufnebenkosten musst du in der Regel selbst tragen. Der Zinsaufschlag liegt bei 0,2 bis 0,4 Prozentpunkten, was die Rendite schmaelert, aber nicht zwingend killt. Lombardkredite, KfW-Darlehen im Nachrang und private Darlehen koennen das fehlende Eigenkapital ersetzen oder ergaenzen.
         </p>
         <p>
           Die goldene Regel bleibt: Rechne konservativ. Ein Worst-Case-Szenario mit Zinsanstieg, Leerstand und ungeplanter Sanierung muss tragbar sein -- gerade bei einer Vollfinanzierung, wo der Puffer duenner ist. Nutze einen <a href="/blog/cashflow-immobilie-berechnen">Cashflow-Rechner</a>, um alle Szenarien durchzuspielen.
@@ -1563,7 +1563,7 @@ const blogArticles = [
 
         <h3>8. Schornsteinfeger</h3>
         <p>
-          Kehr- und Pruefgebuehren. Umfasst auch Abgasmessung und Feuerstaeettenschau.
+          Kehr- und Pruefgebuehren. Umfasst auch Abgasmessung und Feuerstaettenschau.
         </p>
 
         <h3>9. Versicherungen</h3>
@@ -1675,7 +1675,7 @@ const blogArticles = [
 
         <h3>Vorauszahlung vs. Pauschale</h3>
         <p>
-          Du hast zwei Moeglichkeiten: eine monatliche Vorauszahlung (mit jaehrlicher Abrechnung) oder eine Pauschale (ohne Abrechnung). Bei einer Vorauszahlung musst du abrechnen, kannst aber Nachzahlungen fordern. Bei einer Pauschale ist der Betrag fix -- du traeegst das Risiko steigender Kosten, sparst aber den Abrechnungsaufwand.
+          Du hast zwei Moeglichkeiten: eine monatliche Vorauszahlung (mit jaehrlicher Abrechnung) oder eine Pauschale (ohne Abrechnung). Bei einer Vorauszahlung musst du abrechnen, kannst aber Nachzahlungen fordern. Bei einer Pauschale ist der Betrag fix -- du traegst das Risiko steigender Kosten, sparst aber den Abrechnungsaufwand.
         </p>
         <p>
           Empfehlung fuer Einsteiger: Vorauszahlung mit jaehrlicher Abrechnung. So bleibst du transparent und kannst bei steigenden Kosten die Vorauszahlung anpassen.
@@ -2685,7 +2685,7 @@ const blogArticles = [
         </p>
         <ul>
           <li>Sanierungen und Instandhaltungen am Gemeinschaftseigentum</li>
-          <li>Hoehe des Hausgelds und der Erhoehungsruecklage</li>
+          <li>Hoehe des Hausgelds und der Erhaltungsruecklage</li>
           <li>Sonderumlagen fuer grosse Massnahmen</li>
           <li>Wahl und Verguetung der Hausverwaltung</li>
           <li>Hausordnung und Nutzungsregeln</li>
@@ -2738,7 +2738,7 @@ const blogArticles = [
           <li><strong>Fassade:</strong> "WDVS", "Fassadendaemmung", "Putzschaeden" → 20.000-60.000 EUR</li>
           <li><strong>Heizung:</strong> "Heizungstausch", "GEG", "Waermepumpe" → 30.000-80.000 EUR</li>
           <li><strong>Aufzug:</strong> "TUeV-Maengel", "Modernisierung", "Stilllegung" → 40.000-100.000 EUR</li>
-          <li><strong>Leitungen:</strong> "Strangssanierung", "Abwasser", "Bleirohre" → 20.000-50.000 EUR</li>
+          <li><strong>Leitungen:</strong> "Strangsanierung", "Abwasser", "Bleirohre" → 20.000-50.000 EUR</li>
         </ul>
         <p>
           Auch wenn noch nichts beschlossen wurde: Wird ein Thema seit 2 Jahren diskutiert, kommt der Beschluss -- und damit die Kosten.
@@ -3628,7 +3628,7 @@ const blogArticles = [
 
         <h3>1. Objektivitaet</h3>
         <p>
-          Ein Makler verdient nur bei Abschluss. Seine Provision betraegt typisch 3,57 Prozent -- bei einem 300.000-EUR-Objekt sind das 10.710 EUR. Es liegt in seinem wirtschaftlichen Interesse, dass du kaufst, nicht dass du den besten Deal machst. AmlakI hat kein Provisionsinteresse. Die Analyse sagt dir nuechtert, ob die Zahlen stimmen -- auch wenn das Ergebnis "Finger weg" lautet.
+          Ein Makler verdient nur bei Abschluss. Seine Provision betraegt typisch 3,57 Prozent -- bei einem 300.000-EUR-Objekt sind das 10.710 EUR. Es liegt in seinem wirtschaftlichen Interesse, dass du kaufst, nicht dass du den besten Deal machst. AmlakI hat kein Provisionsinteresse. Die Analyse sagt dir nuechtern, ob die Zahlen stimmen -- auch wenn das Ergebnis "Finger weg" lautet.
         </p>
 
         <h3>2. Tiefe der Finanzanalyse</h3>
@@ -3663,7 +3663,7 @@ const blogArticles = [
           AmlakI und Makler schliessen sich nicht aus. Die smarteste Strategie fuer Kapitalanleger:
         </p>
         <ol>
-          <li><strong>Screening mit AmlakI:</strong> 20-50 Objekte in Minuten filtern. Nur die mit <a href="/blog/bruttorendite-berechnen-immobilien">Bruttorendite</a> ueber 4 Prozent und positivem <a href="/blog/cashflow-immobilie-berechnen">Cashflow</a> weiterverfolen.</li>
+          <li><strong>Screening mit AmlakI:</strong> 20-50 Objekte in Minuten filtern. Nur die mit <a href="/blog/bruttorendite-berechnen-immobilien">Bruttorendite</a> ueber 4 Prozent und positivem <a href="/blog/cashflow-immobilie-berechnen">Cashflow</a> weiterverfolgen.</li>
           <li><strong>Tiefenanalyse mit AmlakI:</strong> Die Top-5-Kandidaten vollstaendig analysieren (Score, Foerderungen, Sensitivitaet).</li>
           <li><strong>Besichtigung:</strong> Die Top-2-3 Objekte persoenlich besichtigen -- idealerweise mit Bausachverstaendigem (kostet 300-500 EUR).</li>
           <li><strong><a href="/blog/weg-protokolle-lesen-worauf-achten">WEG-Protokolle</a> pruefen:</strong> Parallel zur Besichtigung.</li>

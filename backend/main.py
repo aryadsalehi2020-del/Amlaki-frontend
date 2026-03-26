@@ -6,6 +6,7 @@ import sys
 import os
 import io
 import logging
+import math
 
 # Force UTF-8 everywhere - MUST be before any other imports
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -993,6 +994,20 @@ def get_user_analyses(
     return analyses
 
 
+@app.get("/library/favorites", response_model=List[AnalysisListItem])
+def get_favorite_analyses(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Holt alle Favoriten-Analysen"""
+    analyses = db.query(Analysis)\
+        .filter(Analysis.user_id == current_user.id, Analysis.is_favorite == True)\
+        .order_by(Analysis.created_at.desc())\
+        .all()
+
+    return analyses
+
+
 @app.get("/library/{analysis_id}", response_model=AnalysisResponse)
 def get_analysis(
     analysis_id: int,
@@ -1056,20 +1071,6 @@ def delete_analysis(
     db.delete(analysis)
     db.commit()
     return None
-
-
-@app.get("/library/favorites", response_model=List[AnalysisListItem])
-def get_favorite_analyses(
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Holt alle Favoriten-Analysen"""
-    analyses = db.query(Analysis)\
-        .filter(Analysis.user_id == current_user.id, Analysis.is_favorite == True)\
-        .order_by(Analysis.created_at.desc())\
-        .all()
-
-    return analyses
 
 
 @app.post("/extract-pdf")
@@ -1555,7 +1556,7 @@ def calculate_kaufnebenkosten(kaufpreis: float, bundesland: str = None, mit_makl
         "baden-württemberg": 5.0, "bayern": 3.5, "berlin": 6.0, "brandenburg": 6.5,
         "bremen": 5.0, "hamburg": 5.5, "hessen": 6.0, "mecklenburg-vorpommern": 6.0,
         "niedersachsen": 5.0, "nordrhein-westfalen": 6.5, "rheinland-pfalz": 5.0,
-        "saarland": 6.5, "sachsen": 5.5, "sachsen-anhalt": 5.0, "schleswig-holstein": 6.5,
+        "saarland": 6.5, "sachsen": 3.5, "sachsen-anhalt": 6.5, "schleswig-holstein": 6.5,
         "thüringen": 5.0
     }
 
@@ -1633,8 +1634,9 @@ def calculate_cashflow(
     # Renditen
     bruttorendite = (monatliche_miete * 12 / kaufpreis) * 100 if kaufpreis > 0 else 0
 
-    # Nettorendite (nach Nebenkosten)
-    nettorendite = ((monatliche_miete - nebenkosten) * 12 / kaufpreis) * 100 if kaufpreis > 0 else 0
+    # Nettorendite (nach Nebenkosten, bezogen auf Gesamtinvestition inkl. Kaufnebenkosten)
+    kaufnebenkosten_geschaetzt = kaufpreis * 0.11  # ca. 11% Kaufnebenkosten
+    nettorendite = ((monatliche_miete - nebenkosten) * 12 / (kaufpreis + kaufnebenkosten_geschaetzt)) * 100 if kaufpreis > 0 else 0
 
     # Eigenkapitalrendite (bei Finanzierung)
     # Bei 0 EK: Kaufnebenkosten (~12%) sind das tatsaechliche Eigenkapital
@@ -2291,9 +2293,19 @@ def calculate_financing_options(
             tilgung=kombi["tilgung"]
         )
 
-        # Berechne wie lange bis abbezahlt
+        # Berechne wie lange bis abbezahlt (logarithmische Annuitaetenformel)
         tilgung_prozent = kombi["tilgung"]
-        jahre_bis_abbezahlt = round(100 / tilgung_prozent) if tilgung_prozent > 0 else 999
+        zinssatz_prozent = kombi["zins"]
+        kredit = kaufpreis - eigenkapital
+        if zinssatz_prozent > 0 and tilgung_prozent > 0:
+            r = zinssatz_prozent / 100 / 12  # monthly interest rate
+            payment = kredit * (zinssatz_prozent + tilgung_prozent) / 100 / 12
+            if payment > kredit * r:
+                jahre_bis_abbezahlt = round(-math.log(1 - (kredit * r / payment)) / math.log(1 + r) / 12)
+            else:
+                jahre_bis_abbezahlt = 99
+        else:
+            jahre_bis_abbezahlt = round(100 / max(tilgung_prozent, 0.1))
 
         optionen.append({
             "name": kombi["name"],
@@ -2438,8 +2450,8 @@ async def analyze_property(
 
     # 4a-2. Steuereffekt berechnen (korrekt: Mieteinnahmen werden auch versteuert!)
     if cashflow_analyse and data.kaufpreis and zweck == "kapitalanlage":
-        # Gebäudewert ca. 75% (25% Grundstück) - konservative Schätzung
-        gebaeudewert = data.kaufpreis * 0.75
+        # Gebäudewert ca. 80% (20% Grundstück)
+        gebaeudewert = data.kaufpreis * 0.80
         # AfA nach Baujahr
         if data.baujahr and data.baujahr >= 2023:
             afa_satz = 0.03
@@ -3484,15 +3496,6 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
         # Update conversation timestamp
         conversation.updated_at = datetime.utcnow()
         db.commit()
-
-        # Log Usage
-        log_usage(
-            db=db,
-            user_id=current_user.id,
-            action_type="chat",
-            input_tokens=input_tokens,
-            output_tokens=output_tokens
-        )
 
         return ChatResponse(
             response=assistant_text,

@@ -18,11 +18,11 @@ function Admin() {
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
 
+  useEffect(() => { if (user?.is_superuser) { fetchData(); fetchAgents(); } }, []);
+
   if (!user?.is_superuser) {
     return <Navigate to="/chat" replace />;
   }
-
-  useEffect(() => { fetchData(); fetchAgents(); }, []);
 
   const fetchAgents = async () => {
     try {

@@ -421,7 +421,7 @@ export default function LandingPage() {
             {[
               { src: '/screenshots/lp_chart_szenarien.png', label: 'Was-wäre-wenn Szenarien', delay: 0 },
               { src: '/screenshots/lp_score_v2.png', label: 'KI-Bewertung', delay: 0.12, featured: true },
-              { src: '/screenshots/lp_cropped_chat.png', label: 'Persönlicher KI-Berater', delay: 0.24 },
+              { src: '/screenshots/lp_chat.png', label: 'Persönlicher KI-Berater', delay: 0.24 },
             ].map(({ src, label, delay, featured }) => (
               <FadeInSection key={label} delay={delay} className="flex flex-col items-center gap-3">
                 <div
