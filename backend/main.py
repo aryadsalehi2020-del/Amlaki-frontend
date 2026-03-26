@@ -49,8 +49,13 @@ import anthropic
 import json
 import os
 from dotenv import load_dotenv
+load_dotenv()
 import httpx
 import re
+from urllib.parse import urlparse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # Eigene Module
 from knowledge_base import (
@@ -91,8 +96,6 @@ from schemas import (
     AnalysisListItem
 )
 
-load_dotenv()
-
 # Emoji-Filter: entfernt alle Emojis und Unicode-Symbole aus KI-Antworten
 EMOJI_PATTERN = re.compile(
     "["
@@ -126,19 +129,37 @@ def strip_emojis(text: str) -> str:
     """Entfernt alle Emojis aus dem Text"""
     return EMOJI_PATTERN.sub("", text)
 
+# Rate Limiter -- globales Default-Limit + spezifische Limits pro Endpoint
+limiter = Limiter(key_func=get_remote_address, default_limits=["200/hour"])
 app = FastAPI(title="AmlakI API", version="3.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Initialisiere Datenbank beim Start
 @app.on_event("startup")
 def startup_event():
     init_db()
+    # Self-ping to prevent Render cold starts (every 10 min)
+    import asyncio
+    async def keep_alive():
+        render_url = os.getenv("RENDER_EXTERNAL_URL")
+        if not render_url:
+            return  # Only run on Render, not locally
+        while True:
+            await asyncio.sleep(600)  # 10 minutes
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.get(f"{render_url}/health", timeout=10)
+            except Exception:
+                pass
+    asyncio.get_event_loop().create_task(keep_alive())
 
 # CORS - Erlaubte Origins + Vercel Preview URLs
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://amlaki.de,https://www.amlaki.de,http://localhost:5173,http://localhost:3000,http://localhost:3001").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://amlaki.*\.vercel\.app",
+    allow_origin_regex=r"https://amlaki(-[a-z0-9]+)?-aryas-projects-8e34a974\.vercel\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -150,14 +171,17 @@ app.add_middleware(
 # USAGE TRACKING & LIMITS
 # ========================================
 
-# Claude Sonnet 4 Preise (pro 1M Tokens)
-INPUT_PRICE_PER_1M = 3.0   # $3 pro 1M input tokens
-OUTPUT_PRICE_PER_1M = 15.0  # $15 pro 1M output tokens
+# Claude Preise (pro 1M Tokens)
+PRICING = {
+    "claude-sonnet-4-20250514": {"input": 3.0, "output": 15.0},
+    "claude-haiku-4-5-20251001": {"input": 1.0, "output": 5.0},
+}
 
-def calculate_cost(input_tokens: int, output_tokens: int) -> float:
-    """Berechnet Kosten in USD"""
-    input_cost = (input_tokens / 1_000_000) * INPUT_PRICE_PER_1M
-    output_cost = (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_1M
+def calculate_cost(input_tokens: int, output_tokens: int, model: str = "claude-sonnet-4-20250514") -> float:
+    """Berechnet Kosten in USD basierend auf Modell"""
+    prices = PRICING.get(model, PRICING["claude-sonnet-4-20250514"])
+    input_cost = (input_tokens / 1_000_000) * prices["input"]
+    output_cost = (output_tokens / 1_000_000) * prices["output"]
     return input_cost + output_cost
 
 def get_user_total_usage(db: Session, user_id: int) -> dict:
@@ -182,9 +206,9 @@ def check_usage_limit(db: Session, user: User) -> bool:
     limit = user.usage_limit_usd if user.usage_limit_usd else 5.0
     return usage["total_cost_usd"] < limit
 
-def log_usage(db: Session, user_id: int, action_type: str, input_tokens: int, output_tokens: int):
+def log_usage(db: Session, user_id: int, action_type: str, input_tokens: int, output_tokens: int, model: str = "claude-sonnet-4-20250514"):
     """Speichert einen Usage-Log"""
-    cost = calculate_cost(input_tokens, output_tokens)
+    cost = calculate_cost(input_tokens, output_tokens, model)
     log = UsageLog(
         user_id=user_id,
         action_type=action_type,
@@ -202,7 +226,8 @@ def log_usage(db: Session, user_id: int, action_type: str, input_tokens: int, ou
 # ========================================
 
 @app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/hour")
+def register_user(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     """Registriert einen neuen User"""
     # Prüfe ob E-Mail bereits existiert (case-insensitive)
     if db.query(User).filter(User.email == user.email.lower()).first():
@@ -226,6 +251,9 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    # Log neue Registrierung (SMTP geht nicht auf Render Free Plan)
+    print(f"NEUER USER REGISTRIERT: {db_user.username} ({db_user.email})")
 
     return db_user
 
@@ -281,11 +309,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import secrets as _secrets
 
-_reset_tokens = {}  # {token: {email, expires}}
+import hashlib
+from models import PasswordResetToken
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.ionos.de")
+SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "support@amlaki.de")
+SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASS = os.getenv("SMTP_PASS", "")
 
 
@@ -320,19 +349,60 @@ Dein AmlakiAI Team
 
     msg.attach(MIMEText(body, "plain", "utf-8"))
 
+    # Versuch SSL 465, dann STARTTLS 587
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        with smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=10) as server:
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+        return True
+    except Exception as e1:
+        print(f"Reset-Mail SSL 465 fehlgeschlagen: {e1}")
+    try:
+        with smtplib.SMTP(SMTP_HOST, 587, timeout=10) as server:
             server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
         return True
-    except Exception as e:
-        print(f"Email-Versand fehlgeschlagen: {e}")
+    except Exception as e2:
+        print(f"Reset-Mail STARTTLS 587 fehlgeschlagen: {e2}")
         return False
 
 
+def send_new_user_notification(email: str, username: str):
+    """Benachrichtigt Arya per E-Mail bei neuer Registrierung - versucht SSL (465) dann STARTTLS (587)"""
+    if not SMTP_PASS:
+        print("SMTP_PASS nicht gesetzt, ueberspringe Notification")
+        return
+    msg = MIMEMultipart()
+    msg["From"] = f"AmlakiAI <{SMTP_USER}>"
+    msg["To"] = "arya@amlaki.de"
+    msg["Subject"] = f"Neuer User: {username}"
+    body = f"Neuer User hat sich registriert:\n\nUsername: {username}\nE-Mail: {email}\n\namlaki.de/admin"
+    msg.attach(MIMEText(body, "plain", "utf-8"))
+    # Versuch 1: SSL auf Port 465
+    try:
+        with smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=10) as server:
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+        print(f"User-Notification gesendet (SSL 465): {username}")
+        return
+    except Exception as e:
+        print(f"SSL 465 fehlgeschlagen: {e}")
+    # Versuch 2: STARTTLS auf Port 587
+    try:
+        with smtplib.SMTP(SMTP_HOST, 587, timeout=10) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+        print(f"User-Notification gesendet (STARTTLS 587): {username}")
+    except Exception as e:
+        print(f"STARTTLS 587 fehlgeschlagen: {e}")
+
+
+
 @app.post("/auth/forgot-password")
-def forgot_password(data: dict = Body(...), db: Session = Depends(get_db)):
+@limiter.limit("3/hour")
+def forgot_password(request: Request, data: dict = Body(...), db: Session = Depends(get_db)):
     """Sendet Passwort-Reset Link per Email"""
     email = data.get("email", "").lower().strip()
     if not email:
@@ -342,10 +412,11 @@ def forgot_password(data: dict = Body(...), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == email).first()
     if user:
         token = _secrets.token_urlsafe(32)
-        _reset_tokens[token] = {
-            "email": email,
-            "expires": datetime.utcnow() + timedelta(hours=1)
-        }
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        # Alte Tokens fuer diese Email loeschen
+        db.query(PasswordResetToken).filter(PasswordResetToken.email == email).delete()
+        db.add(PasswordResetToken(token_hash=token_hash, email=email, expires_at=datetime.utcnow() + timedelta(hours=1)))
+        db.commit()
         send_reset_email(email, token)
 
     return {"status": "ok", "message": "Falls ein Account mit dieser E-Mail existiert, wurde ein Reset-Link gesendet."}
@@ -366,23 +437,31 @@ def reset_password(data: dict = Body(...), db: Session = Depends(get_db)):
     if not re.search(r'[0-9]', new_password):
         raise HTTPException(status_code=400, detail="Passwort muss mindestens eine Zahl enthalten")
 
-    reset_data = _reset_tokens.get(token)
-    if not reset_data:
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    reset_entry = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token_hash == token_hash,
+        PasswordResetToken.used == False
+    ).first()
+
+    if not reset_entry:
         raise HTTPException(status_code=400, detail="Ungueltiger oder abgelaufener Reset-Link")
 
-    if datetime.utcnow() > reset_data["expires"]:
-        del _reset_tokens[token]
+    if datetime.utcnow() > reset_entry.expires_at:
+        db.delete(reset_entry)
+        db.commit()
         raise HTTPException(status_code=400, detail="Reset-Link ist abgelaufen")
 
-    user = db.query(User).filter(User.email == reset_data["email"]).first()
+    user = db.query(User).filter(User.email == reset_entry.email).first()
     if not user:
         raise HTTPException(status_code=400, detail="User nicht gefunden")
 
     user.hashed_password = get_password_hash(new_password)
+    reset_entry.used = True
     db.commit()
 
-    # Token einmalig verwenden
-    del _reset_tokens[token]
+    # Aufraumen: alle abgelaufenen Tokens loeschen
+    db.query(PasswordResetToken).filter(PasswordResetToken.expires_at < datetime.utcnow()).delete()
+    db.commit()
 
     return {"status": "ok", "message": "Passwort wurde erfolgreich zurueckgesetzt"}
 
@@ -434,9 +513,9 @@ def update_current_user(
 
 # Gewichtungen für Kapitalanlage
 WEIGHTS_INVESTMENT = {
-    "cashflow_rendite": 30,
+    "cashflow_rendite": 25,
     "lage": 20,
-    "kaufpreis_qm": 15,
+    "kaufpreis_qm": 20,
     "zukunftspotenzial": 10,
     "zustand_baujahr": 10,
     "energieeffizienz": 5,
@@ -481,15 +560,15 @@ def check_no_gos(data: 'PropertyData') -> Dict[str, Any]:
                                'erbbaurecht' in data.beschreibung.lower()):
         no_gos.append("Erbpacht/Erbbaurecht erkannt")
 
-    # 2. Fertighäuser 1960-1990
+    # 2. Fertighäuser 1960-1990 (nur wenn explizit als Fertighaus erkannt)
     if data.baujahr and 1960 <= data.baujahr <= 1990:
+        ist_fertighaus = False
         if data.objekttyp and 'fertighaus' in data.objekttyp.lower():
-            no_gos.append(f"Fertighaus aus Problemzeit (Baujahr {data.baujahr})")
+            ist_fertighaus = True
         elif data.beschreibung and 'fertighaus' in data.beschreibung.lower():
+            ist_fertighaus = True
+        if ist_fertighaus:
             no_gos.append(f"Fertighaus aus Problemzeit (Baujahr {data.baujahr})")
-        else:
-            # Warnung bei Baujahr, falls unklar ob Fertighaus
-            warnings.append(f"Baujahr {data.baujahr}: Prüfe ob Fertighaus (Problemzeit 1960-1990)")
 
     # 3. Energieklasse G oder H - MIT KfW-ANALYSE!
     if data.energieklasse and data.energieklasse.upper() in ['G', 'H']:
@@ -835,8 +914,8 @@ def get_anthropic_client():
     )
 
 
-def call_claude_direct(system_prompt: str, messages: list, max_tokens: int = 4096, model: str = "claude-sonnet-4-20250514"):
-    """Call Claude API directly via httpx to avoid Anthropic SDK unicode issues on Render."""
+def call_claude_direct(system_prompt: str, messages: list, max_tokens: int = 4096, model: str = "claude-sonnet-4-20250514", db: Session = None, user_id: int = None, action_type: str = None):
+    """Call Claude API directly via httpx. Optionally logs usage if db+user_id provided."""
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY nicht konfiguriert")
@@ -858,9 +937,29 @@ def call_claude_direct(system_prompt: str, messages: list, max_tokens: int = 409
     )
 
     if response.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Claude API Fehler: {response.status_code} - {response.text[:200]}")
+        print(f"[ERROR] Claude API Fehler: {response.status_code} - {response.text[:200]}")
+        raise HTTPException(status_code=500, detail="KI-Service voruebergehend nicht erreichbar. Bitte versuche es erneut.")
 
     data = response.json()
+
+    # Log usage if db session provided (inkl. cache tokens)
+    if db and user_id and data.get("usage"):
+        try:
+            usage = data["usage"]
+            total_input = usage.get("input_tokens", 0)
+            cache_creation = usage.get("cache_creation_input_tokens", 0) or 0
+            cache_read = usage.get("cache_read_input_tokens", 0) or 0
+            effective_input = total_input + cache_creation + int(cache_read * 0.1)
+            log_usage(
+                db=db, user_id=user_id,
+                action_type=action_type or "api_call",
+                input_tokens=effective_input,
+                output_tokens=usage.get("output_tokens", 0),
+                model=model
+            )
+        except Exception as e:
+            print(f"[WARN] Usage-Log fehlgeschlagen: {e}")
+
     return data
 
 
@@ -869,45 +968,7 @@ async def root():
     return {"message": "AmlakI API läuft", "version": "2.0.0"}
 
 
-@app.get("/debug/db")
-def debug_database(db: Session = Depends(get_db)):
-    """Debug endpoint to test database"""
-    try:
-        # Test database connection
-        user_count = db.query(User).count()
-        analysis_count = db.query(Analysis).count()
-        usage_log_count = db.query(UsageLog).count()
-
-        # Check if usage_limit_usd column exists
-        test_user = db.query(User).first()
-        has_limit_column = hasattr(test_user, 'usage_limit_usd') if test_user else True
-
-        return {
-            "status": "ok",
-            "user_count": user_count,
-            "analysis_count": analysis_count,
-            "usage_log_count": usage_log_count,
-            "has_limit_column": has_limit_column,
-            "tables": list(Base.metadata.tables.keys())
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e), "type": type(e).__name__}
-
-
-@app.post("/debug/init-db")
-def debug_init_database():
-    """Manually initialize database tables"""
-    try:
-        from database import engine, Base, run_migrations
-        Base.metadata.create_all(bind=engine)
-        run_migrations()
-        return {
-            "status": "ok",
-            "message": "Tables created successfully",
-            "tables": list(Base.metadata.tables.keys())
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e), "type": type(e).__name__}
+# Debug endpoints removed for security
 
 
 # ========================================
@@ -1012,7 +1073,8 @@ def get_favorite_analyses(
 
 
 @app.post("/extract-pdf")
-async def extract_pdf_data(file: UploadFile = File(...)):
+@limiter.limit("10/hour")
+async def extract_pdf_data(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_active_user)):
     """
     Extrahiert Immobiliendaten aus einem PDF-Exposé mittels Claude
     """
@@ -1020,7 +1082,11 @@ async def extract_pdf_data(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Nur PDF-Dateien werden akzeptiert")
     
     content = await file.read()
-    
+
+    # Backend PDF size limit
+    if len(content) > 30 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="PDF zu gross (max. 30 MB)")
+
     # Base64 encoding für Claude
     import base64
     pdf_base64 = base64.b64encode(content).decode('utf-8')
@@ -1086,6 +1152,23 @@ Antworte NUR mit dem JSON, kein anderer Text."""
             ]
         )
         
+        # Log PDF extraction usage (inkl. cache tokens die extra kosten)
+        try:
+            pdf_db = next(get_db())
+            total_input = response.usage.input_tokens
+            # Cache-Tokens kosten auch Geld (cache_creation = voller Preis, cache_read = 10% Preis)
+            cache_creation = getattr(response.usage, 'cache_creation_input_tokens', 0) or 0
+            cache_read = getattr(response.usage, 'cache_read_input_tokens', 0) or 0
+            # Gesamte Input-Tokens fuer Kostenberechnung
+            effective_input = total_input + cache_creation + int(cache_read * 0.1)
+            print(f"[USAGE] PDF: input={total_input}, cache_create={cache_creation}, cache_read={cache_read}, effective={effective_input}, output={response.usage.output_tokens}")
+            log_usage(db=pdf_db, user_id=current_user.id, action_type="pdf_extraction",
+                      input_tokens=effective_input, output_tokens=response.usage.output_tokens,
+                      model="claude-sonnet-4-20250514")
+            pdf_db.close()
+        except Exception as log_err:
+            print(f"[WARN] PDF Usage-Log fehlgeschlagen: {log_err}")
+
         # Parse JSON response
         json_text = response.content[0].text.strip()
         # Entferne mögliche Markdown-Codeblöcke
@@ -1094,14 +1177,16 @@ Antworte NUR mit dem JSON, kein anderer Text."""
             if json_text.startswith("json"):
                 json_text = json_text[4:]
         json_text = json_text.strip()
-        
+
         property_data = json.loads(json_text)
         return PropertyData(**property_data)
-        
+
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"Fehler beim Parsen der KI-Antwort: {str(e)}")
+        print(f"[ERROR] Fehler beim Parsen der KI-Antwort: {str(e)}")
+        raise HTTPException(status_code=500, detail="Die KI-Antwort konnte nicht verarbeitet werden. Bitte versuche es erneut.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fehler bei der PDF-Extraktion: {str(e)}")
+        print(f"[ERROR] Fehler bei der PDF-Extraktion: {str(e)}")
+        raise HTTPException(status_code=500, detail="Fehler bei der PDF-Extraktion. Bitte versuche es erneut.")
 
 
 # Schnelle Marktdaten-Lookup aus Knowledge Base
@@ -1151,7 +1236,8 @@ def quick_market_lookup(stadt: str) -> Optional[dict]:
 
 
 @app.post("/extract-url")
-async def extract_url_data(data: dict = Body(...)):
+@limiter.limit("20/hour")
+async def extract_url_data(request: Request, data: dict = Body(...), current_user: User = Depends(get_current_active_user)):
     """
     Extrahiert Immobiliendaten aus einer ImmoScout24/Immowelt URL
     """
@@ -1165,7 +1251,9 @@ async def extract_url_data(data: dict = Body(...)):
     if is_url:
         # Validiere URL
         allowed_domains = ["immobilienscout24.de", "immowelt.de", "immonet.de", "kleinanzeigen.de"]
-        is_valid = any(domain in url.lower() for domain in allowed_domains)
+        parsed = urlparse(url.lower())
+        hostname = parsed.hostname or ""
+        is_valid = any(hostname == domain or hostname.endswith("." + domain) for domain in allowed_domains)
         if not is_valid:
             raise HTTPException(status_code=400, detail="Nur ImmoScout24, Immowelt, Immonet und Kleinanzeigen URLs werden unterstuetzt")
     else:
@@ -1174,6 +1262,7 @@ async def extract_url_data(data: dict = Body(...)):
             raise HTTPException(status_code=400, detail="Bitte fuege mehr Text aus dem Expose ein (mindestens 50 Zeichen)")
 
         try:
+            text_db = next(get_db())
             result = call_claude_direct(
                 "Du extrahierst Immobiliendaten aus Expose-Text. Antworte NUR als JSON.",
                 [{"role": "user", "content": f"""Extrahiere alle Immobiliendaten aus folgendem Expose-Text.
@@ -1184,8 +1273,10 @@ Gib die Daten als JSON zurueck:
 Expose-Text:
 {url[:5000]}"""}],
                 max_tokens=1500,
-                model="claude-haiku-4-5-20251001"
+                model="claude-haiku-4-5-20251001",
+                db=text_db, user_id=current_user.id, action_type="text_extraction"
             )
+            text_db.close()
             json_text = result["content"][0]["text"].strip()
             if json_text.startswith("```"):
                 json_text = json_text.split("```")[1]
@@ -1193,7 +1284,8 @@ Expose-Text:
                     json_text = json_text[4:]
             return json.loads(json_text.strip())
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Fehler bei der Extraktion: {str(e)}")
+            print(f"[ERROR] Fehler bei der Text-Extraktion: {str(e)}")
+            raise HTTPException(status_code=500, detail="Fehler bei der Extraktion. Bitte versuche es erneut.")
         return  # Beende hier fuer Text-Input
 
     # Scrape die Seite (mit verschiedenen Header-Kombinationen)
@@ -1284,12 +1376,15 @@ HTML (gekuerzt):
 {html_content[:12000]}"""
 
     try:
+        url_db = next(get_db())
         result = call_claude_direct(
             "Du extrahierst Immobiliendaten aus HTML. Antworte NUR als JSON.",
             [{"role": "user", "content": extraction_prompt}],
             max_tokens=2000,
-            model="claude-haiku-4-5-20251001"
+            model="claude-haiku-4-5-20251001",
+            db=url_db, user_id=current_user.id, action_type="url_extraction"
         )
+        url_db.close()
 
         json_text = result["content"][0]["text"].strip()
         if json_text.startswith("```"):
@@ -1302,9 +1397,11 @@ HTML (gekuerzt):
         return property_data
 
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"Fehler beim Parsen: {str(e)}")
+        print(f"[ERROR] Fehler beim Parsen der URL-Extraktion: {str(e)}")
+        raise HTTPException(status_code=500, detail="Die Daten konnten nicht verarbeitet werden. Bitte versuche es erneut.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fehler bei der Extraktion: {str(e)}")
+        print(f"[ERROR] Fehler bei der URL-Extraktion: {str(e)}")
+        raise HTTPException(status_code=500, detail="Fehler bei der Extraktion. Bitte versuche es erneut.")
 
 
 async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp: str = "Eigentumswohnung") -> dict:
@@ -1355,7 +1452,8 @@ async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp
                         "raw_snippet": text[:2000] if len(text) > 100 else ""
                     })
             except Exception as e:
-                search_results.append({"query": query, "error": str(e)})
+                print(f"[ERROR] Suchanfrage fehlgeschlagen: {str(e)}")
+                search_results.append({"query": query, "error": "Suchanfrage fehlgeschlagen"})
 
     # Schritt 2: Claude analysiert die Suchergebnisse UND recherchiert selbst (Haiku fuer Speed)
     research_prompt = f"""WICHTIG: Du musst LIVE-MARKTDATEN für diese Immobilienbewertung recherchieren!
@@ -1426,7 +1524,7 @@ WICHTIG: Gib KONKRETE Zahlen für DIESEN Standort an, keine Platzhalter!"""
         # Fallback: Minimale Schätzung mit Warnung
         return {
             "standort": location,
-            "fehler": f"Live-Recherche fehlgeschlagen: {str(e)}",
+            "fehler": "Live-Recherche fehlgeschlagen",
             "kaufpreis_qm_durchschnitt": 3500,  # Konservativer Fallback
             "miete_qm_durchschnitt": 10,
             "datenqualität": "ACHTUNG: Fallback-Werte - Live-Recherche empfohlen!",
@@ -1435,7 +1533,7 @@ WICHTIG: Gib KONKRETE Zahlen für DIESEN Standort an, keine Platzhalter!"""
 
 
 @app.post("/search-market-data")
-async def search_market_data(stadt: str, stadtteil: Optional[str] = None, objekttyp: Optional[str] = "Eigentumswohnung"):
+async def search_market_data(stadt: str, stadtteil: Optional[str] = None, objekttyp: Optional[str] = "Eigentumswohnung", current_user: User = Depends(get_current_active_user)):
     """
     V3.0 - LIVE Marktdaten-Recherche
     Sucht AKTUELLE Preise für Stadt/Stadtteil/Objekttyp
@@ -1539,10 +1637,9 @@ def calculate_cashflow(
     nettorendite = ((monatliche_miete - nebenkosten) * 12 / kaufpreis) * 100 if kaufpreis > 0 else 0
 
     # Eigenkapitalrendite (bei Finanzierung)
-    if eigenkapital > 0:
-        eigenkapitalrendite = (jaehrlicher_cashflow / eigenkapital) * 100
-    else:
-        eigenkapitalrendite = None  # Nicht berechenbar bei 100% Finanzierung
+    # Bei 0 EK: Kaufnebenkosten (~12%) sind das tatsaechliche Eigenkapital
+    tatsaechliches_ek = eigenkapital if eigenkapital > 0 else kaufpreis * 0.12
+    eigenkapitalrendite = (jaehrlicher_cashflow / tatsaechliches_ek) * 100 if tatsaechliches_ek > 0 else None
 
     # Bewertung relativ zum Kaufpreis (monatliche Prozentsätze)
     cashflow_ratio = (monatlicher_cashflow / kaufpreis) * 100 if kaufpreis > 0 else 0
@@ -1644,7 +1741,9 @@ def calculate_tilgungsplan(
         gesamte_tilgung += tilgung_jahr
 
         # Cashflow berechnen (mit aktueller Miete)
-        jaehrlicher_cashflow = (aktuelle_miete * 12) - jaehrliche_rate - (nebenkosten * 12)
+        # Wenn Kredit abbezahlt: keine Rate mehr
+        aktuelle_rate = jaehrliche_rate if restschuld > 0 else 0
+        jaehrlicher_cashflow = (aktuelle_miete * 12) - aktuelle_rate - (nebenkosten * 12)
 
         # Eigenkapital = Getilgter Betrag + ursprüngliches EK
         eigenkapital_aufbau = eigenkapital + gesamte_tilgung
@@ -1692,7 +1791,7 @@ def calculate_tilgungsplan(
         "gesamtvermoegen_nach_laufzeit": round(letztes_jahr["gesamtvermoegen"], 2) if letztes_jahr else eigenkapital,
         "cashflow_jahr_1": round(erstes_jahr["jaehrlicher_cashflow"], 2) if erstes_jahr else 0,
         "cashflow_jahr_final": round(letztes_jahr["jaehrlicher_cashflow"], 2) if letztes_jahr else 0,
-        "kredit_abbezahlt_in_jahren": len(jahres_projektionen) if restschuld <= 0 else None
+        "kredit_abbezahlt_in_jahren": next((j["jahr"] for j in jahres_projektionen if j["restschuld"] <= 0), None)
     }
 
     return {
@@ -2010,8 +2109,11 @@ def calculate_investment_comparison(
 
     immobilien_endvermoegen = tilgungsplan["zusammenfassung"]["gesamtvermoegen_nach_laufzeit"]
 
-    # ETF-Investment: Nur Eigenkapital investiert
-    etf_nur_ek = eigenkapital * ((1 + etf_rendite/100) ** jahre)
+    # Tatsaechliches Eigenkapital inkl. Kaufnebenkosten (~12%)
+    tatsaechliches_ek = eigenkapital + (kaufpreis * 0.12) if eigenkapital == 0 else eigenkapital
+
+    # ETF-Investment: Tatsaechliches EK investiert
+    etf_nur_ek = tatsaechliches_ek * ((1 + etf_rendite/100) ** jahre)
 
     # ETF-Investment: EK + monatliche Zuzahlung (falls negativ Cashflow)
     monatlicher_cashflow = tilgungsplan["jahre"][0]["monatlicher_cashflow"] if tilgungsplan["jahre"] else 0
@@ -2021,7 +2123,7 @@ def calculate_investment_comparison(
     monatliche_rendite = (1 + etf_rendite/100) ** (1/12) - 1
     monate = jahre * 12
     if zuzahlung > 0:
-        etf_mit_sparrate = eigenkapital * ((1 + etf_rendite/100) ** jahre) + \
+        etf_mit_sparrate = tatsaechliches_ek * ((1 + etf_rendite/100) ** jahre) + \
             zuzahlung * (((1 + monatliche_rendite) ** monate - 1) / monatliche_rendite)
     else:
         etf_mit_sparrate = etf_nur_ek
@@ -2029,20 +2131,20 @@ def calculate_investment_comparison(
     return {
         "immobilie": {
             "endvermoegen": round(immobilien_endvermoegen, 2),
-            "eingesetztes_kapital": round(eigenkapital, 2),
+            "eingesetztes_kapital": round(tatsaechliches_ek, 2),
             "monatliche_zuzahlung": round(zuzahlung, 2),
             "gesamtinvestition": round(eigenkapital + (zuzahlung * monate), 2),
-            "rendite_faktor": round(immobilien_endvermoegen / eigenkapital, 2) if eigenkapital > 0 else 0
+            "rendite_faktor": round(immobilien_endvermoegen / tatsaechliches_ek, 2) if tatsaechliches_ek > 0 else 0
         },
         "etf_nur_eigenkapital": {
             "endvermoegen": round(etf_nur_ek, 2),
             "angenommene_rendite": etf_rendite,
-            "eingesetztes_kapital": round(eigenkapital, 2)
+            "eingesetztes_kapital": round(tatsaechliches_ek, 2)
         },
         "etf_mit_sparrate": {
             "endvermoegen": round(etf_mit_sparrate, 2),
             "monatliche_sparrate": round(zuzahlung, 2),
-            "gesamtinvestition": round(eigenkapital + (zuzahlung * monate), 2)
+            "gesamtinvestition": round(tatsaechliches_ek + (zuzahlung * monate), 2)
         },
         "vergleich": {
             "immobilie_vs_etf_nur_ek": round(immobilien_endvermoegen - etf_nur_ek, 2),
@@ -2319,8 +2421,8 @@ async def analyze_property(
             # User hat den nicht-umlagefähigen Anteil angegeben
             nebenkosten = data.hausgeld_nicht_umlagefaehig
         else:
-            # Schätzung: ca. 30% des Hausgelds ist nicht umlagefähig
-            nebenkosten = hausgeld_gesamt * 0.30
+            # Schätzung: ca. 35% des Hausgelds ist nicht umlagefähig (Verwaltung + Instandhaltungsrücklage)
+            nebenkosten = hausgeld_gesamt * 0.35
         ek = request.eigenkapital or 0
         zins = request.zinssatz or 3.75
         tilg = request.tilgung or 1.25
@@ -2334,9 +2436,9 @@ async def analyze_property(
             tilgung=tilg
         )
 
-    # 4a-2. Steuereffekt berechnen (vereinfacht)
+    # 4a-2. Steuereffekt berechnen (korrekt: Mieteinnahmen werden auch versteuert!)
     if cashflow_analyse and data.kaufpreis and zweck == "kapitalanlage":
-        # Gebäudewert ca. 75% (25% Grundstück)
+        # Gebäudewert ca. 75% (25% Grundstück) - konservative Schätzung
         gebaeudewert = data.kaufpreis * 0.75
         # AfA nach Baujahr
         if data.baujahr and data.baujahr >= 2023:
@@ -2354,18 +2456,27 @@ async def analyze_property(
         # Absetzbare Kosten = AfA + Zinsen + nicht-umlagefähige NK
         absetzbar_jahr = jaehrliche_afa + jaehrliche_zinsen + (nebenkosten * 12)
 
-        # Steuerersparnis bei 42% Grenzsteuersatz
-        steuerersparnis_42 = round(absetzbar_jahr * 0.42 / 12, 2)
-        steuerersparnis_35 = round(absetzbar_jahr * 0.35 / 12, 2)
+        # KORREKTE Steuerberechnung: Mieteinnahmen - Absetzbare Kosten = steuerlicher Gewinn/Verlust
+        mieteinnahmen_jahr = miete * 12
+        steuerlicher_gewinn = mieteinnahmen_jahr - absetzbar_jahr
+        # Wenn negativ: Verlust = Steuererstattung (reduziert anderes Einkommen)
+        # Wenn positiv: Gewinn = Steuerzahlung auf Mieteinnahmen
+        steuereffekt_42 = round(-steuerlicher_gewinn * 0.42 / 12, 2)  # Negativ = Zahlung, Positiv = Erstattung
+        steuereffekt_35 = round(-steuerlicher_gewinn * 0.35 / 12, 2)
 
         cashflow_analyse["steuereffekt"] = {
             "jaehrliche_afa": round(jaehrliche_afa, 2),
             "jaehrliche_zinsen": round(jaehrliche_zinsen, 2),
             "absetzbar_gesamt_jahr": round(absetzbar_jahr, 2),
-            "steuerersparnis_monat_42": steuerersparnis_42,
-            "steuerersparnis_monat_35": steuerersparnis_35,
-            "cashflow_nach_steuer_42": round(cashflow_analyse["monatlicher_cashflow"] + steuerersparnis_42, 2),
-            "cashflow_nach_steuer_35": round(cashflow_analyse["monatlicher_cashflow"] + steuerersparnis_35, 2),
+            "mieteinnahmen_jahr": round(mieteinnahmen_jahr, 2),
+            "steuerlicher_gewinn_jahr": round(steuerlicher_gewinn, 2),
+            "steuereffekt_monat_42": steuereffekt_42,
+            "steuereffekt_monat_35": steuereffekt_35,
+            # Alt-Keys fuer Frontend-Kompatibilitaet
+            "steuerersparnis_monat_42": steuereffekt_42,
+            "steuerersparnis_monat_35": steuereffekt_35,
+            "cashflow_nach_steuer_42": round(cashflow_analyse["monatlicher_cashflow"] + steuereffekt_42, 2),
+            "cashflow_nach_steuer_35": round(cashflow_analyse["monatlicher_cashflow"] + steuereffekt_35, 2),
         }
 
     # 4b. NEUVERMIETUNGS-POTENZIAL (bei vermieteten Immobilien)
@@ -2682,11 +2793,14 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 1. **cashflow_rendite** (Gewichtung: {weights['cashflow_rendite']}%)
    - Kaufpreisfaktor: <20 sehr gut, 20-25 gut, >25 kritisch
    - Bruttorendite: >5% sehr gut, 4-5% gut, <3% kritisch
-   - Cashflow-Bewertung RELATIV zum Kaufpreis:
-     * Negativer Cashflow bis -0.15% des Kaufpreises pro Monat ist AKZEPTABEL (z.B. -450€ bei 300k, -1.500€ bei 1M)
-     * Darüber hinaus = problematisch
-     * Berücksichtige: steuerliche Vorteile (AfA, Zinsabzug) können negativen Cashflow um 30-42% reduzieren
-     * Berücksichtige: Neuvermietungspotenzial kann Cashflow verbessern
+   - Cashflow-Bewertung NACH STEUER (nicht vor Steuer!):
+     * Berechne zuerst den Cashflow NACH Steuer (AfA + Zinsabzug bei 42% Steuersatz)
+     * Wenn Cashflow nach Steuer positiv oder nur leicht negativ = GUTER Score (60-80)
+     * Negativer Cashflow vor Steuer ist KEIN Grund fuer einen schlechten Score wenn er nach Steuer positiv wird
+     * Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat VOR Steuer ist akzeptabel
+   - NEUVERMIETUNGSPOTENZIAL MUSS in den Score einfliessen:
+     * Wenn Neuvermietung den Cashflow deutlich verbessert, Score ERHOEHEN (z.B. +10-20 Punkte)
+     * Wenn Wohnung in Kuerze frei wird = fast wie Neuvermietungs-Cashflow bewerten
 
 2. **lage** (Gewichtung: {weights['lage']}%)
    - Stadtteil-Bewertung aus LIVE-Marktdaten
@@ -2694,8 +2808,14 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 
 3. **kaufpreis_qm** (Gewichtung: {weights['kaufpreis_qm']}%) [WICHTIG] LIVE-DATEN PFLICHT!
    - MUSS gegen LIVE-Marktdurchschnitt verglichen werden!
-   - Unter Markt = hoher Score, über Markt = niedriger Score
-   - Formel: Score = 100 - ((Objekt€/m² - Markt€/m²) / Markt€/m² * 100)
+   - Unter Markt = hoher Score, ueber Markt = niedriger Score
+   - Scoring-Tabelle:
+     * >20% unter Markt = Score 95-100 (aussergewoehnlicher Einkauf!)
+     * 10-20% unter Markt = Score 80-95
+     * 0-10% unter Markt = Score 65-80
+     * 0-10% ueber Markt = Score 50-65
+     * 10-20% ueber Markt = Score 30-50
+     * >20% ueber Markt = Score 10-30
 
 4. **zukunftspotenzial** (Gewichtung: {weights['zukunftspotenzial']}%)
    - Tendenz aus LIVE-Marktdaten (steigend/stabil/fallend)
@@ -2739,16 +2859,19 @@ FAIRER PREIS (WICHTIG - REALISTISCH BLEIBEN):
 - Wenn die Berechnung einen fairen Preis ergibt der >25% unter Kaufpreis liegt, setze ihn auf Kaufpreis minus 25%.
 - Begründe den fairen Preis mit Marktdaten und konkreten Mängeln.
 
-GESAMTBILD BEWERTEN (nicht nur Cashflow!):
-- Negativer Cashflow allein ist KEIN Ausschlusskriterium. Bewerte das GESAMTBILD:
-  1) Kaufpreis relativ zum Markt (unter Markt = stark positiv)
-  2) Cashflow relativ zum Kaufpreis (nicht absolut betrachten!)
-  3) Neuvermietungspotenzial (kann Cashflow verbessern)
-  4) Steuerliche Vorteile (AfA + Zinsabzug reduzieren negativen Cashflow um 30-42%)
+GESAMTBILD BEWERTEN (KRITISCH WICHTIG - NICHT NUR CASHFLOW!):
+- Negativer Cashflow VOR STEUER allein ist KEIN Grund fuer einen niedrigen Score!
+- Du MUSST das GESAMTBILD bewerten. Einzelne Kriterien-Scores muessen das reflektieren:
+  1) Kaufpreis relativ zum Markt: >20% unter Markt = EXZELLENTER Einkauf, cashflow_rendite Score MUSS das belohnen
+  2) Cashflow NACH STEUER ist relevanter als vor Steuer
+  3) Neuvermietungspotenzial: Wenn Miete deutlich unter Markt liegt, ist das POSITIV (Score erhoehen!)
+  4) Steuerliche Vorteile (AfA + Zinsabzug) MUESSEN den cashflow_rendite Score positiv beeinflussen
   5) Wertsteigerungspotenzial (Lage, Trend)
   6) Vermögensaufbau durch Tilgung
-- Ein Objekt das unter Markt liegt mit leicht negativem Cashflow kann EMPFEHLENSWERT sein!
-- Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat ist akzeptabel.
+- BEISPIEL: Objekt 30% unter Markt, Cashflow vor Steuer -400€ aber nach Steuer +50€, Neuvermietung bringt +500€
+  = Das ist ein GUTER Deal! Score sollte 70-80 sein, NICHT 50-60!
+- Ein Objekt das deutlich unter Markt liegt mit temporaer negativem Cashflow ist EMPFEHLENSWERT!
+- Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat VOR Steuer ist akzeptabel.
 
 Antworte als JSON:
 {{
@@ -2762,8 +2885,19 @@ Antworte als JSON:
     ],
     "stärken": ["<konkrete Stärke mit Zahlen>", ...],
     "schwächen": ["<konkrete Schwäche mit Zahlen>", ...],
-    "zusammenfassung": "<3-4 Sätze: 1) Klare Einschätzung mit Gesamtbild, 2) Preisvergleich IMMER in PROZENT angeben (z.B. '13% unter Markt' statt '32.500€ unter Markt'), 3) Steuereffekt verständlich erklären wenn erwähnt (z.B. 'Durch AfA und Zinsabzug reduziert sich die monatliche Belastung nach Steuer auf X€'), 4) Bei Baujahr/Energie-Warnung kurz erklären WARUM (z.B. 'Baujahr 1975 bedeutet dass Elektrik und Sanitär in den nächsten Jahren erneuert werden müssen')>"
+    "zusammenfassung": "<3-4 Saetze. REGELN: 1) Beginne POSITIV wenn Objekt unter Markt liegt. 2) Preisvergleich NUR in PROZENT (z.B. '36% unter Markt'). NIEMALS absolute Euro-Betraege fuer Rabatt/Wertzuwachs nennen! 3) Steuervorteile nur kurz erwaehnen ('steuerliche Vorteile durch AfA und Zinsabzug'), KEINE konkreten Nach-Steuer-Cashflow-Zahlen nennen (weil Mieteinnahmen ebenfalls versteuert werden muessen). 4) Bei Neuvermietungspotenzial NUR den Endwert nennen (z.B. 'Bei Neuvermietung steigt der Cashflow auf ca. +550€/Monat'), NICHT die Differenz. 5) Zusammenfassung MUSS zum Score passen: Score >70 = klar positiv formulieren.>",
+    "fairer_preis": {{
+        "fairer_preis": <deine Einschaetzung des fairen Preises in Euro als Zahl>,
+        "bewertung": "<Unter Marktwert / Marktgerecht / Leicht ueber Marktwert / Ueberteuert / Stark ueberteuert>",
+        "begruendung": "<1 Satz warum du diesen fairen Preis ansetzt, z.B. basierend auf Marktvergleich, Zustand, Lage>"
+    }}
 }}
+
+REGELN FUER FAIRER PREIS:
+- Beruecksichtige ALLE Faktoren: Marktpreis/m2, Zustand, Baujahr, Energieklasse, Lage, Mietpotenzial
+- Wenn das Objekt UNTER dem Marktdurchschnitt liegt, ist der faire Preis MINDESTENS der Kaufpreis (es ist ja schon guenstig!)
+- Ein Objekt das 30%+ unter Markt liegt = Bewertung "Unter Marktwert", NICHT "Ueberteuert"
+- Der faire Preis muss zum Score und zur Zusammenfassung passen! Kein Widerspruch!
 
 Antworte NUR mit dem JSON."""
 
@@ -2803,7 +2937,7 @@ Antworte NUR mit dem JSON."""
 
         for criterion in ai_analysis["kriterien"]:
             name = criterion["name"]
-            score = criterion["score"]
+            score = max(0, min(100, int(criterion["score"])))  # Validierung: 0-100
             gewichtung = weights.get(name, 0)
             gewichteter_score = (score * gewichtung) / 100
             total_weighted += gewichteter_score
@@ -2835,8 +2969,50 @@ Antworte NUR mit dem JSON."""
         else:
             empfehlung = "NICHT EMPFEHLENSWERT"
 
-        # Zusammenfassung direkt von der KI (ohne doppelten Score)
+        # Zusammenfassung: Score-Referenz im Text an berechneten Score anpassen
         zusammenfassung_erweitert = ai_analysis['zusammenfassung']
+        # Fix Score-Mismatch: Claude kennt den gewichteten Score nicht, also korrigieren
+        import re
+        score_int = int(round(gesamtscore))
+        # Ersetze "Score XX/100" Pattern mit dem echten Score
+        zusammenfassung_erweitert = re.sub(
+            r'Score\s+\d+/100',
+            f'Score {score_int}/100',
+            zusammenfassung_erweitert
+        )
+        # Score-Label anpassen
+        if score_int >= 80:
+            score_label = "SEHR EMPFEHLENSWERT"
+        elif score_int >= 70:
+            score_label = "EMPFEHLENSWERT"
+        elif score_int >= 55:
+            score_label = "SOLIDE"
+        elif score_int >= 40:
+            score_label = "UNTERDURCHSCHNITTLICH"
+        else:
+            score_label = "NICHT EMPFEHLENSWERT"
+        # Ersetze Score-Labels im Text
+        for old_label in ["SEHR EMPFEHLENSWERT", "EMPFEHLENSWERT", "SOLIDE", "UNTERDURCHSCHNITTLICH", "NICHT EMPFEHLENSWERT", "PRÜFENSWERT"]:
+            if old_label in zusammenfassung_erweitert and old_label != score_label:
+                zusammenfassung_erweitert = zusammenfassung_erweitert.replace(old_label, score_label)
+                break
+
+        # Fairer Preis von der KI (überschreibt Formel-Berechnung wenn vorhanden)
+        ai_fairer_preis = ai_analysis.get('fairer_preis')
+        if ai_fairer_preis and ai_fairer_preis.get('fairer_preis'):
+            ai_fp = ai_fairer_preis['fairer_preis']
+            if isinstance(ai_fp, (int, float)) and ai_fp > 0:
+                differenz_pct = round((data.kaufpreis / ai_fp - 1) * 100, 1)
+                fairer_preis_result = {
+                    "fairer_preis": round(ai_fp),
+                    "aktueller_preis": data.kaufpreis,
+                    "differenz_prozent": differenz_pct,
+                    "bewertung": ai_fairer_preis.get('bewertung', 'Marktgerecht'),
+                    "begruendung": ai_fairer_preis.get('begruendung', ''),
+                    "nach_rendite": fairer_preis_result.get("nach_rendite") if fairer_preis_result else None,
+                    "nach_faktor": fairer_preis_result.get("nach_faktor") if fairer_preis_result else None,
+                    "nach_cashflow": fairer_preis_result.get("nach_cashflow") if fairer_preis_result else None,
+                }
 
         # Kaufnebenkosten berechnen
         kaufnebenkosten_result = None
@@ -2945,7 +3121,8 @@ Antworte NUR mit der fertigen Nachricht, kein anderer Text."""
                     "Du schreibst professionelle Verhandlungsnachrichten fuer Immobilienkaeufer.",
                     [{"role": "user", "content": verhandlungs_prompt}],
                     max_tokens=800,
-                    model="claude-haiku-4-5-20251001"
+                    model="claude-haiku-4-5-20251001",
+                    db=db, user_id=current_user.id, action_type="verhandlungsmail"
                 )
                 result.verhandlungsmail = strip_emojis(mail_result["content"][0]["text"].strip())
             except Exception as e:
@@ -3016,7 +3193,8 @@ Antworte NUR mit dem JSON."""
                     "Du bist ein erfahrener Immobilienberater der Kaeufer auf Besichtigungen vorbereitet.",
                     [{"role": "user", "content": besichtigungs_prompt}],
                     max_tokens=2000,
-                    model="claude-haiku-4-5-20251001"
+                    model="claude-haiku-4-5-20251001",
+                    db=db, user_id=current_user.id, action_type="besichtigung"
                 )
                 roadmap_text = roadmap_result["content"][0]["text"].strip()
                 if roadmap_text.startswith("```"):
@@ -3104,9 +3282,11 @@ Antworte NUR mit dem JSON."""
         return result
         
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=500, detail=f"Fehler beim Parsen der KI-Analyse: {str(e)}")
+        print(f"[ERROR] Fehler beim Parsen der KI-Analyse: {str(e)}")
+        raise HTTPException(status_code=500, detail="Die KI-Analyse konnte nicht verarbeitet werden. Bitte versuche es erneut.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Fehler bei der Analyse: {str(e)}")
+        print(f"[ERROR] Fehler bei der Analyse: {str(e)}")
+        raise HTTPException(status_code=500, detail="Fehler bei der Analyse. Bitte versuche es erneut.")
 
 
 # ========================================
@@ -3179,7 +3359,7 @@ async def chat_with_ai(
     # Load analysis context if conversation is linked to an analysis
     analysis_context = ""
     if conversation.analysis_id:
-        analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id).first()
+        analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id, Analysis.user_id == current_user.id).first()
         if analysis and analysis.analysis_result:
             try:
                 result_data = json.loads(analysis.analysis_result) if isinstance(analysis.analysis_result, str) else analysis.analysis_result
@@ -3286,7 +3466,7 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
 
     try:
         # Use direct HTTP call to avoid Anthropic SDK unicode issues
-        data = call_claude_direct(chat_system, messages_for_claude, max_tokens=4096)
+        data = call_claude_direct(chat_system, messages_for_claude, max_tokens=4096, db=db, user_id=current_user.id, action_type="chat")
 
         assistant_text = strip_emojis(data["content"][0]["text"])
         input_tokens = data.get("usage", {}).get("input_tokens", 0)
@@ -3324,11 +3504,8 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
     except HTTPException:
         raise
     except Exception as e:
-        try:
-            error_detail = f"Chat-Fehler: {str(e)}"
-        except UnicodeEncodeError:
-            error_detail = "Chat-Fehler: interner Fehler"
-        raise HTTPException(status_code=500, detail=error_detail)
+        print(f"[ERROR] Chat-Fehler: {str(e)}")
+        raise HTTPException(status_code=500, detail="Chat-Fehler. Bitte versuche es erneut.")
 
 
 # ============ CONVERSATION ENDPOINTS ============
@@ -3458,7 +3635,7 @@ async def chat_stream(data: dict = Body(...), current_user: User = Depends(get_c
     # Load analysis context if conversation is linked to an analysis
     analysis_context = ""
     if conversation.analysis_id:
-        analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id).first()
+        analysis = db.query(Analysis).filter(Analysis.id == conversation.analysis_id, Analysis.user_id == current_user.id).first()
         if analysis and analysis.analysis_result:
             try:
                 result_data = json.loads(analysis.analysis_result) if isinstance(analysis.analysis_result, str) else analysis.analysis_result
@@ -3591,9 +3768,13 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
                             except json.JSONDecodeError:
                                 pass
         except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            print(f"[ERROR] Streaming-Fehler: {str(e)}")
+            yield f"data: {json.dumps({'error': 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.'})}\n\n"
 
         # Save to DB after streaming complete
+        # TODO: Usage tracking is not implemented for streaming chat.
+        # tokens_used is hardcoded to 0. Needs to be fixed to track actual
+        # token consumption from the streaming response for accurate billing.
         if full_response:
             assistant_msg = ChatMessage(
                 conversation_id=conversation.id,
@@ -3613,33 +3794,12 @@ Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     """Health Check Endpoint"""
-    api_key = os.getenv("ANTHROPIC_API_KEY")
     return {
-        "status": "healthy",
-        "api_key_configured": bool(api_key)
+        "status": "healthy"
     }
 
 
-@app.post("/admin/make-first-admin")
-async def make_first_admin(
-    current_user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Macht den aktuellen User zum Admin - NUR wenn noch kein Admin existiert"""
-    # Prüfe ob bereits ein Admin existiert
-    existing_admin = db.query(User).filter(User.is_superuser == True).first()
-    if existing_admin:
-        raise HTTPException(
-            status_code=400,
-            detail="Es existiert bereits ein Admin. Bitte wende dich an den bestehenden Admin."
-        )
-
-    # Mache aktuellen User zum Admin
-    current_user.is_superuser = True
-    db.commit()
-    db.refresh(current_user)
-
-    return {"message": "Du bist jetzt Admin!", "is_superuser": True}
+# /admin/make-first-admin endpoint removed for security
 
 
 # ========================================
@@ -3720,7 +3880,8 @@ def create_checkout_session(
         return {"checkout_url": session.url}
 
     except stripe.error.StripeError as e:
-        raise HTTPException(status_code=500, detail=f"Stripe-Fehler: {str(e)}")
+        print(f"[ERROR] Stripe-Fehler: {str(e)}")
+        raise HTTPException(status_code=500, detail="Zahlungsfehler. Bitte versuche es erneut.")
 
 
 @app.post("/payments/webhook")
@@ -4000,7 +4161,7 @@ from models import AgentConfig
 
 @app.get("/admin/agents")
 def list_agents(current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
-    """Liste aller Research-Agents"""
+    """Liste aller Research-Agents mit vollstaendiger Konfiguration"""
     agents = db.query(AgentConfig).order_by(AgentConfig.id).all()
     return [
         {
@@ -4010,9 +4171,16 @@ def list_agents(current_user: User = Depends(get_admin_user), db: Session = Depe
             "description": a.description,
             "enabled": a.enabled,
             "schedule": a.schedule,
+            "prompt": a.prompt,
+            "source_urls": a.source_urls,
+            "target_file": a.target_file,
+            "target_section": a.target_section,
+            "model": a.model or "claude-haiku-4-5-20251001",
+            "max_tokens": a.max_tokens or 1500,
             "last_run": a.last_run.isoformat() if a.last_run else None,
             "last_status": a.last_status,
             "last_error": a.last_error,
+            "last_result": a.last_result,
         }
         for a in agents
     ]
@@ -4020,27 +4188,22 @@ def list_agents(current_user: User = Depends(get_admin_user), db: Session = Depe
 
 @app.patch("/admin/agents/{agent_id}")
 def update_agent(agent_id: int, data: dict = Body(...), current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
-    """Agent-Konfiguration aktualisieren (enable/disable, description, schedule)"""
+    """Agent-Konfiguration vollstaendig aktualisieren"""
     agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
     if not agent:
         raise HTTPException(status_code=404, detail="Agent nicht gefunden")
 
-    if "enabled" in data:
-        agent.enabled = data["enabled"]
-    if "display_name" in data:
-        agent.display_name = data["display_name"]
-    if "description" in data:
-        agent.description = data["description"]
-    if "schedule" in data:
-        agent.schedule = data["schedule"]
+    for field in ["enabled", "display_name", "description", "schedule", "prompt", "source_urls", "target_file", "target_section", "model", "max_tokens"]:
+        if field in data:
+            setattr(agent, field, data[field])
 
     db.commit()
-    return {"status": "ok", "agent": agent.name, "enabled": agent.enabled}
+    return {"status": "ok", "agent": agent.name}
 
 
 @app.post("/admin/agents/{agent_id}/run")
-async def run_agent(agent_id: int, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
-    """Agent manuell ausfuehren"""
+async def run_agent_endpoint(agent_id: int, current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Agent manuell ausfuehren -- dynamisch oder legacy"""
     agent = db.query(AgentConfig).filter(AgentConfig.id == agent_id).first()
     if not agent:
         raise HTTPException(status_code=404, detail="Agent nicht gefunden")
@@ -4050,17 +4213,25 @@ async def run_agent(agent_id: int, current_user: User = Depends(get_admin_user),
     db.commit()
 
     try:
-        import importlib
-        if agent.name == "zinsen":
-            from agents.zinsen_monitor import run as agent_run
-        elif agent.name == "news":
-            from agents.news_agent import run as agent_run
+        if agent.prompt:
+            # Neuer dynamischer Runner
+            from agents.dynamic_runner import run_agent
+            result = run_agent(agent)
+            agent.last_status = result["status"]
+            agent.last_error = result.get("error")
+            agent.last_result = result.get("result")
         else:
-            raise HTTPException(status_code=400, detail=f"Unbekannter Agent: {agent.name}")
-
-        success = agent_run()
-        agent.last_status = "success" if success else "error"
-        agent.last_error = None if success else "Agent hat Fehler zurueckgegeben"
+            # Legacy: hardcoded Agents (zinsen, news)
+            if agent.name == "zinsen":
+                from agents.zinsen_monitor import run as legacy_run
+            elif agent.name == "news":
+                from agents.news_agent import run as legacy_run
+            else:
+                raise ValueError(f"Agent '{agent.name}' hat keinen Prompt und keinen Legacy-Runner")
+            success = legacy_run()
+            agent.last_status = "success" if success else "error"
+            agent.last_error = None if success else "Agent hat Fehler zurueckgegeben"
+            agent.last_result = None
     except Exception as e:
         agent.last_status = "error"
         agent.last_error = str(e)[:500]
@@ -4068,13 +4239,13 @@ async def run_agent(agent_id: int, current_user: User = Depends(get_admin_user),
     agent.last_run = datetime.utcnow()
     db.commit()
 
-    return {"status": agent.last_status, "error": agent.last_error}
+    return {"status": agent.last_status, "error": agent.last_error, "result": agent.last_result}
 
 
 @app.post("/admin/agents")
 def create_agent(data: dict = Body(...), current_user: User = Depends(get_admin_user), db: Session = Depends(get_db)):
-    """Neuen Agent erstellen"""
-    name = data.get("name", "").strip().lower()
+    """Neuen Agent erstellen mit vollstaendiger Konfiguration"""
+    name = data.get("name", "").strip().lower().replace(" ", "_")
     display_name = data.get("display_name", "").strip()
 
     if not name or not display_name:
@@ -4090,6 +4261,12 @@ def create_agent(data: dict = Body(...), current_user: User = Depends(get_admin_
         description=data.get("description", ""),
         enabled=data.get("enabled", True),
         schedule=data.get("schedule", "taeglich 07:00"),
+        prompt=data.get("prompt", ""),
+        source_urls=data.get("source_urls", ""),
+        target_file=data.get("target_file", ""),
+        target_section=data.get("target_section", ""),
+        model=data.get("model", "claude-haiku-4-5-20251001"),
+        max_tokens=data.get("max_tokens", 1500),
     )
     db.add(agent)
     db.commit()

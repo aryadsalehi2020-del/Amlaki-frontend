@@ -1,22 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Eye, EyeOff } from 'lucide-react';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [slowServer, setSlowServer] = useState(false);
+  const slowTimer = useRef(null);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => () => clearTimeout(slowTimer.current), []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setSlowServer(false);
+    slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
     try { await login(email, password); navigate('/chat'); }
     catch (err) { setError(err.message || 'Login fehlgeschlagen'); }
-    finally { setLoading(false); }
+    finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
   };
 
   return (
@@ -46,18 +54,32 @@ function Login() {
               required autoComplete="email" autoCapitalize="none" placeholder="E-Mail"
               className="w-full px-4 py-3.5 bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all"
             />
-            <input
-              type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              required autoComplete="current-password" placeholder="Passwort"
-              className="w-full px-4 py-3.5 bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+                required autoComplete="current-password" placeholder="Passwort"
+                className="w-full px-4 py-3.5 pr-12 bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all"
+              />
+              <button
+                type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#B5A68C] hover:text-[#7C8B6F] transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             <button
               type="submit" disabled={loading}
               className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-30 active:scale-[0.98]"
             >
-              {loading ? 'Laden...' : 'Fortfahren'}
+              {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Fortfahren'}
             </button>
           </form>
+
+          {slowServer && (
+            <p className="mt-3 text-center text-[12px] text-[#B5A68C] animate-pulse">
+              Einen Moment bitte - der Server wird gerade hochgefahren...
+            </p>
+          )}
 
           <p className="mt-6 text-center">
             <Link to="/forgot-password" className="text-[13px] text-[#B5A68C] hover:text-[#7C8B6F] transition-colors">
