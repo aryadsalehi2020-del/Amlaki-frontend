@@ -740,32 +740,32 @@ export default function Chat() {
                   </p>
                   <div className="space-y-2.5 mb-3">
                     <button
-                      onClick={() => navigate('/analyze')}
+                      onClick={() => navigate('/settings')}
                       className="flex items-start gap-2.5 w-full text-left group"
                     >
                       <span className="shrink-0 w-5 h-5 rounded-full bg-[#7C8B6F] text-white text-[11px] font-bold flex items-center justify-center mt-0.5">1</span>
+                      <div>
+                        <p className="text-[12px] md:text-[13px] font-semibold text-[#2C2418] group-hover:text-[#7C8B6F] transition-colors">Profil einrichten</p>
+                        <p className="text-[11px] text-[#8C7E6A]">Einkommen, Eigenkapital und Ziele &mdash; f&uuml;r genauere Analysen</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => navigate('/analyze')}
+                      className="flex items-start gap-2.5 w-full text-left group"
+                    >
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#B5A68C] text-white text-[11px] font-bold flex items-center justify-center mt-0.5">2</span>
                       <div>
                         <p className="text-[12px] md:text-[13px] font-semibold text-[#2C2418] group-hover:text-[#7C8B6F] transition-colors">Erste Immobilie analysieren</p>
                         <p className="text-[11px] text-[#8C7E6A]">Kaufpreis, Miete und Baujahr eingeben &mdash; Score in 30 Sekunden</p>
                       </div>
                     </button>
                     <div className="flex items-start gap-2.5 w-full text-left">
-                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#B5A68C] text-white text-[11px] font-bold flex items-center justify-center mt-0.5">2</span>
+                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#E8E0D4] text-[#5C4F3D] text-[11px] font-bold flex items-center justify-center mt-0.5">3</span>
                       <div>
                         <p className="text-[12px] md:text-[13px] font-semibold text-[#5C4F3D]">Fragen stellen</p>
                         <p className="text-[11px] text-[#8C7E6A]">Frag mich alles zu Finanzierung, Steuern, F&ouml;rderungen oder Mietrecht</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="flex items-start gap-2.5 w-full text-left group"
-                    >
-                      <span className="shrink-0 w-5 h-5 rounded-full bg-[#E8E0D4] text-[#5C4F3D] text-[11px] font-bold flex items-center justify-center mt-0.5">3</span>
-                      <div>
-                        <p className="text-[12px] md:text-[13px] font-semibold text-[#5C4F3D] group-hover:text-[#7C8B6F] transition-colors">Profil einrichten <span className="text-[11px] font-normal text-[#8C7E6A]">(optional)</span></p>
-                        <p className="text-[11px] text-[#8C7E6A]">F&uuml;r personalisierte Empfehlungen zu F&ouml;rderungen und Steuern</p>
-                      </div>
-                    </button>
                   </div>
                 </div>
               )}
