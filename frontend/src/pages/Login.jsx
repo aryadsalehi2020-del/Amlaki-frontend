@@ -69,7 +69,7 @@ function Login() {
             </div>
             <button
               type="submit" disabled={loading}
-              className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-30 active:scale-[0.98]"
+              className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-50 active:scale-[0.98]"
             >
               {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Fortfahren'}
             </button>

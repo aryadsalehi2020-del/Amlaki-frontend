@@ -287,6 +287,7 @@ export default function Chat() {
   const [analysisData, setAnalysisData] = useState(null);
   const [analysisLinkHandled, setAnalysisLinkHandled] = useState(false);
   const [generalMessageCount, setGeneralMessageCount] = useState(0);
+  const [loadError, setLoadError] = useState('');
   const [welcomeDismissed, setWelcomeDismissed] = useState(() => {
     return localStorage.getItem('welcomeBannerDismissed') === 'true';
   });
@@ -316,7 +317,7 @@ export default function Chat() {
         window.dispatchEvent(new Event('conversations-updated'));
       }
     } catch {
-      // silent
+      setLoadError('Unterhaltungen konnten nicht geladen werden.');
     }
   }, []);
 
@@ -384,7 +385,7 @@ export default function Chat() {
 
         loadConversations();
       } catch {
-        // silent
+        setLoadError('Analyse-Daten konnten nicht geladen werden.');
       }
     })();
   }, [searchParams, analysisLinkHandled, navigate, loadConversations]);
@@ -433,7 +434,7 @@ export default function Chat() {
           }
         }
       } catch {
-        // silent
+        setLoadError('Unterhaltung konnte nicht geladen werden.');
       }
     })();
   }, [conversationId]);
@@ -715,6 +716,16 @@ export default function Chat() {
           )}
         </div>
 
+        {/* Load Error */}
+        {loadError && (
+          <div className="px-4 md:px-6 pt-4">
+            <div className="max-w-2xl mx-auto p-3 bg-[#B85C5C]/10 border border-[#B85C5C]/20 rounded-xl flex items-center justify-between">
+              <p className="text-[#B85C5C] text-[13px]">{loadError}</p>
+              <button onClick={() => setLoadError('')} className="text-[#8C7E6A] hover:text-[#5C4F3D] text-lg leading-none ml-3">&times;</button>
+            </div>
+          </div>
+        )}
+
         {/* Messages */}
         <div
           ref={messagesContainerRef}
@@ -883,7 +894,7 @@ export default function Chat() {
               }}
               placeholder={analysisData ? 'Frage zu diesem Objekt stellen...' : 'Stelle eine Frage zum Immobilienkauf...'}
               rows={1}
-              className="w-full resize-none rounded-full bg-white border border-[#E8E0D4] pl-5 pr-12 py-3 text-[14px] text-[#2C2418] placeholder:text-[#B5A68C] outline-none focus:border-[#7C8B6F] transition-colors"
+              className="w-full resize-none rounded-2xl bg-white border border-[#E8E0D4] pl-5 pr-12 py-3 text-[14px] text-[#2C2418] placeholder:text-[#B5A68C] outline-none focus:border-[#7C8B6F] transition-colors"
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
             <button

@@ -100,7 +100,7 @@ function LibraryDetail() {
         <h3 className="text-[18px] font-semibold text-[#2C2418] mb-4">{error}</h3>
         <Link to="/library" className="inline-flex items-center gap-2 px-6 py-3 bg-[#7C8B6F] text-white font-semibold rounded-full hover:bg-[#6B7A5E] transition-all text-[14px]">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Zuruck zur Library
+          Zurück zur Library
         </Link>
       </div>
     </div>
@@ -162,7 +162,7 @@ function LibraryDetail() {
             {isReanalyzing && (
               <div className="flex items-center justify-center gap-2 text-[#7C8B6F] text-[13px] mb-4">
                 <div className="w-4 h-4 border-2 border-[#E8E0D4] border-t-[#7C8B6F] rounded-full animate-spin"></div>
-                <span>Neu-Analyse lauft...</span>
+                <span>Neu-Analyse läuft...</span>
               </div>
             )}
           </div>

@@ -79,7 +79,7 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
             cy="96"
             r={radius}
             fill="none"
-            stroke="rgba(100, 116, 139, 0.2)"
+            stroke="rgba(181, 166, 140, 0.2)"
             strokeWidth="12"
           />
           {/* Score circle with gradient */}
@@ -120,10 +120,10 @@ function ScoreCircle({ score, adjustedScore = null, showAdjusted = false }) {
 function CriterionBar({ criterion, weightDiff = null, showAdjusted = false }) {
   // Angepasste Schwellen: +10 positiver
   const getBarColor = (score) => {
-    if (score >= 60) return 'from-green-400 to-emerald-500';   // war 70
-    if (score >= 45) return 'from-yellow-400 to-orange-400';   // war 50
-    if (score >= 30) return 'from-orange-400 to-red-400';      // war 30
-    return 'from-red-500 to-rose-600';
+    if (score >= 60) return 'from-[#7C8B6F] to-[#6B7A5E]';   // war 70
+    if (score >= 45) return 'from-[#B5A68C] to-[#A3927A]';   // war 50
+    if (score >= 30) return 'from-[#B85C5C] to-[#A34A4A]';      // war 30
+    return 'from-[#B85C5C] to-[#8B3A3A]';
   };
 
   const getScoreEmoji = (score) => {
@@ -154,8 +154,8 @@ function CriterionBar({ criterion, weightDiff = null, showAdjusted = false }) {
       hasWeightChange && showAdjusted
         ? weightDiff.direction === 'up'
           ? 'bg-green-500/5 border-green-500/20 hover:border-green-500/40'
-          : 'bg-slate/5 border-slate/10 hover:border-slate/20'
-        : 'bg-slate/5 border-slate/10 hover:border-accent/30'
+          : 'bg-[#F5F0E8] border-[#E8E0D4] hover:border-slate/20'
+        : 'bg-[#F5F0E8] border-[#E8E0D4] hover:border-[#7C8B6F]/30'
     }`}>
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
@@ -377,7 +377,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
         {/* Personalized Toggle - nur bei Kapitalanlage sinnvoll */}
         {isProfileComplete && dynamicData.adjustedScore !== null && result.verwendungszweck === 'kapitalanlage' && (
-          <div className="mt-6 pt-6 border-t border-slate/10">
+          <div className="mt-6 pt-6 border-t border-[#E8E0D4]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button
@@ -403,7 +403,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-4 mt-5 md:mt-8 pt-5 md:pt-8 border-t border-slate/10">
+        <div className="grid md:grid-cols-2 gap-4 mt-5 md:mt-8 pt-5 md:pt-8 border-t border-[#E8E0D4]">
           <button
             onClick={onNewAnalysis}
             className="py-3 md:py-4 bg-gradient-gold text-[#2C2418] font-bold rounded-xl
@@ -913,14 +913,14 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center p-4 bg-slate/5 rounded-xl border border-slate/20">
+                    <div className="flex justify-between items-center p-4 bg-[#F5F0E8] rounded-xl border border-slate/20">
                       <span className="text-[#8C7E6A] font-medium">Finanzierungssumme</span>
                       <span className="font-bold text-[#2C2418]">
                         {formatCurrency(result.cashflow_analyse.finanzierungssumme)}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center p-4 bg-slate/5 rounded-xl border border-slate/20">
+                    <div className="flex justify-between items-center p-4 bg-[#F5F0E8] rounded-xl border border-slate/20">
                       <span className="text-[#8C7E6A] font-medium">Jährlicher Cashflow</span>
                       <span className={`font-bold ${result.cashflow_analyse.jaehrlicher_cashflow >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
                         {result.cashflow_analyse.jaehrlicher_cashflow >= 0 ? '+' : ''}
@@ -1079,7 +1079,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               </div>
 
               {/* Datenquelle Info */}
-              <div className="flex items-center justify-between text-sm border-t border-slate/10 pt-4">
+              <div className="flex items-center justify-between text-sm border-t border-[#E8E0D4] pt-4">
                 <span className="text-[#8C7E6A]/60">
                    Standort: {result.kennzahlen.marktdaten_standort || 'Nicht angegeben'}
                 </span>
@@ -1124,7 +1124,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   </p>
                 </div>
 
-                <div className="p-6 bg-gradient-to-br from-accent/10 to-accent/5 rounded-2xl border border-accent/30">
+                <div className="p-6 bg-gradient-to-br from-accent/10 to-accent/5 rounded-2xl border border-[#7C8B6F]/30">
                   <p className="text-sm text-[#8C7E6A]/70 mb-3 font-medium">5-Jahres-Entwicklung</p>
                   <p className="text-xl font-bold text-[#B5A68C] mb-2">
                     {result.marktdaten.preisentwicklung_5_jahre}
@@ -1249,7 +1249,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   <div key={index} className={`rounded-2xl p-6 border-2 ${
                     foerderung.prioritaet === 'sehr hoch' ? 'border-green-400 bg-green-500/10' :
                     foerderung.prioritaet === 'hoch' ? 'border-blue-400 bg-[#F5F0E8]' :
-                    'border-slate/20 bg-slate/5'
+                    'border-slate/20 bg-[#F5F0E8]'
                   }`}>
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -1327,15 +1327,15 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 Leverage-Effekt (Hebel)
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-slate/5 rounded-xl p-4 text-center">
+                <div className="bg-[#F5F0E8] rounded-xl p-4 text-center">
                   <p className="text-[#8C7E6A] text-sm mb-1">Objektrendite</p>
                   <p className="text-xl font-bold text-[#2C2418]">{result.leverage_effekt.objektrendite_prozent}%</p>
                 </div>
-                <div className="bg-slate/5 rounded-xl p-4 text-center">
+                <div className="bg-[#F5F0E8] rounded-xl p-4 text-center">
                   <p className="text-[#8C7E6A] text-sm mb-1">FK-Zins</p>
                   <p className="text-xl font-bold text-[#2C2418]">{result.leverage_effekt.fremdkapitalzins_prozent}%</p>
                 </div>
-                <div className="bg-slate/5 rounded-xl p-4 text-center">
+                <div className="bg-[#F5F0E8] rounded-xl p-4 text-center">
                   <p className="text-[#8C7E6A] text-sm mb-1">Hebel</p>
                   <p className="text-xl font-bold text-[#2C2418]">{result.leverage_effekt.hebel_faktor}x</p>
                 </div>
@@ -1528,7 +1528,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           <LiveCalculator
             kaufpreis={propertyData?.kaufpreis || 0}
             monatlicheMiete={propertyData?.aktuelle_miete || result.mietschaetzung?.geschaetzte_miete_monat || 0}
-            hausgeld={propertyData?.hausgeld || propertyData?.nebenkosten || result.cashflow_analyse?.monatliche_nebenkosten_gesamt || 0}
+            hausgeld={propertyData?.hausgeld || propertyData?.nebenkosten || result.cashflow_analyse?.monatliche_nebenkosten || 0}
             hausgeldNichtUmlagefaehig={propertyData?.hausgeld_nicht_umlagefaehig || result.cashflow_analyse?.monatliche_nebenkosten || null}
             wohnflaeche={propertyData?.wohnflaeche || 0}
             baujahr={propertyData?.baujahr || null}

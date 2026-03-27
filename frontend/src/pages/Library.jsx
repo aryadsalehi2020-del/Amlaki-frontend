@@ -15,6 +15,7 @@ function Library() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialog, setDeleteDialog] = useState({ open: false, id: null, title: '' });
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => { if (searchParams.get('filter') === 'favorites') setFilter('favorites'); }, [searchParams]);
   useEffect(() => { fetchAnalyses(); }, []);
@@ -23,7 +24,7 @@ function Library() {
     try {
       const res = await fetch(`${API_BASE}/library`, { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.ok) setAnalyses(await res.json());
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) { console.error(e); setFetchError(true); } finally { setLoading(false); }
   };
 
   const toggleFavorite = async (id, current) => {
@@ -102,6 +103,17 @@ function Library() {
           </div>
         </div>
       </div>
+
+      {/* Error */}
+      {fetchError && (
+        <div className="bg-white border border-[#B85C5C]/20 rounded-[16px] p-8 text-center mb-6 fade-in">
+          <p className="text-[#B85C5C] text-[14px] font-medium mb-1">Analysen konnten nicht geladen werden</p>
+          <p className="text-[#8C7E6A] text-[13px]">Bitte versuche es erneut oder pr&uuml;fe deine Internetverbindung.</p>
+          <button onClick={() => { setFetchError(false); setLoading(true); fetchAnalyses(); }} className="mt-4 px-5 py-2 bg-[#7C8B6F] text-white text-[13px] font-semibold rounded-full hover:bg-[#6B7A5E] transition-all">
+            Erneut versuchen
+          </button>
+        </div>
+      )}
 
       {/* List */}
       {loading ? (

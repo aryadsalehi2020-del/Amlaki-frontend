@@ -126,7 +126,7 @@ export const UserProfileProvider = ({ children }) => {
 
   // Prüfe ob Profil vollständig ist
   useEffect(() => {
-    const requiredFields = ['goal', 'riskProfile', 'experience', 'eigenkapital'];
+    const requiredFields = ['goals', 'riskProfile', 'experience', 'eigenkapital'];
     const complete = requiredFields.every(field =>
       profile[field] !== undefined && profile[field] !== null && profile[field] !== ''
     );

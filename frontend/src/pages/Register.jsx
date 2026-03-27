@@ -54,7 +54,7 @@ function Register() {
           <div className="mb-6 p-4 bg-[#7C8B6F]/[0.06] border border-[#7C8B6F]/15 rounded-[14px]">
             <p className="text-[13px] font-medium text-[#2C2418] mb-2">Kostenlos starten:</p>
             <ul className="space-y-1.5">
-              {['1 vollstaendige Immobilienanalyse gratis', 'Unbegrenzter KI-Chat', 'Keine Kreditkarte erforderlich'].map(item => (
+              {['1 vollständige Immobilienanalyse gratis', 'Unbegrenzter KI-Chat', 'Keine Kreditkarte erforderlich'].map(item => (
                 <li key={item} className="flex items-center gap-2 text-[12px] text-[#5C4F3D]">
                   <svg className="w-3.5 h-3.5 text-[#7C8B6F] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                   {item}
@@ -96,7 +96,7 @@ function Register() {
               return input;
             })}
             <button type="submit" disabled={loading}
-              className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-30 active:scale-[0.98]">
+              className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-50 active:scale-[0.98]">
               {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Erste Analyse starten'}
             </button>
           </form>
@@ -114,7 +114,7 @@ function Register() {
 
           <p className="mt-4 text-center text-[11px] text-[#B5A68C]">
             Mit der Registrierung akzeptierst du unsere{' '}
-            <Link to="/datenschutz" className="underline">Datenschutzerklaerung</Link>.
+            <Link to="/datenschutz" className="underline">Datenschutzerklärung</Link>.
           </p>
         </div>
       </div>

@@ -170,7 +170,7 @@ function Sidebar() {
 
           {analysisChats.length > 0 && (
             <div className="mb-2">
-              <p className="text-[9px] font-semibold text-[#B5A68C] uppercase tracking-wider px-3 mb-1">Objekte</p>
+              <p className="text-[10px] font-semibold text-[#B5A68C] uppercase tracking-wider px-3 mb-1">Objekte</p>
               <div className="space-y-0.5">
                 {analysisChats.map(conv => <ConvItem key={conv.id} conv={conv} />)}
               </div>
@@ -180,7 +180,7 @@ function Sidebar() {
           {generalChats.length > 0 && (
             <div>
               {analysisChats.length > 0 && (
-                <p className="text-[9px] font-semibold text-[#B5A68C] uppercase tracking-wider px-3 mb-1">Allgemein</p>
+                <p className="text-[10px] font-semibold text-[#B5A68C] uppercase tracking-wider px-3 mb-1">Allgemein</p>
               )}
               <div className="space-y-0.5">
                 {generalChats.map(conv => <ConvItem key={conv.id} conv={conv} />)}

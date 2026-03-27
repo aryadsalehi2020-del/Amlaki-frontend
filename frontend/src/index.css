@@ -50,8 +50,6 @@ h1, h2, h3, h4 {
 
 h1 { font-weight: 700; letter-spacing: -0.035em; }
 
-.text-gradient-neon, .text-gradient-gold { color: var(--heading); background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset; }
-.text-glow-blue, .text-glow-purple, .text-glow-gold { text-shadow: none; }
 
 /* Scrollbar: thin & subtle */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -77,10 +75,6 @@ h1 { font-weight: 700; letter-spacing: -0.035em; }
   box-shadow: 0 8px 30px rgba(44,36,24,0.08);
 }
 
-.card-3d { transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); transform-style: flat; }
-.card-3d:hover { transform: none; }
-.card-hover { transition: all 0.3s ease; }
-.card-hover:hover { transform: none; }
 
 /* ============================================
    BUTTONS — Warm pill style
@@ -135,21 +129,11 @@ h1 { font-weight: 700; letter-spacing: -0.035em; }
 .input-cyber::placeholder { color: var(--muted); }
 
 /* ============================================
-   BACKGROUNDS — warm cream
-   ============================================ */
-
-.bg-mesh-animated { background: var(--bg); animation: none; }
-.bg-aurora, .bg-aurora::before { background: var(--bg); animation: none; }
-.bg-aurora::before { display: none; }
-.particles, .particle, .glow-orb { display: none !important; }
-
-/* ============================================
    SCORE
    ============================================ */
 
 @keyframes scoreReveal { from { stroke-dashoffset: 283; } }
 .score-circle { animation: scoreReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-.score-glow-green, .score-glow-yellow, .score-glow-red { filter: none; }
 
 /* ============================================
    LOADING
@@ -182,9 +166,6 @@ h1 { font-weight: 700; letter-spacing: -0.035em; }
    UTILITIES
    ============================================ */
 
-.border-neon-blue, .border-neon-purple { border-color: var(--border); }
-.hover-glow-blue:hover, .hover-glow-purple:hover { box-shadow: none; }
-.shadow-neon-blue, .shadow-neon-purple, .shadow-neon-green { box-shadow: none; }
 ::selection { background: rgba(124,139,111,0.2); color: var(--heading); }
 :focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(124,139,111,0.15); border-radius: 8px; }
 
@@ -239,3 +220,21 @@ select option { background: var(--card); color: var(--heading); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Blog Typography */
+.blog-prose h2 { color: #2C2418; font-size: 1.5rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; line-height: 1.3; }
+.blog-prose h3 { color: #2C2418; font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; }
+.blog-prose p { color: #5C4F3D; font-size: 1rem; line-height: 1.8; margin-bottom: 1rem; }
+.blog-prose a { color: #7C8B6F; text-decoration: underline; text-underline-offset: 2px; }
+.blog-prose a:hover { color: #5C4F3D; }
+.blog-prose ul, .blog-prose ol { color: #5C4F3D; margin-bottom: 1rem; padding-left: 1.5rem; }
+.blog-prose li { margin-bottom: 0.5rem; line-height: 1.7; }
+.blog-prose strong { color: #2C2418; }
+.blog-prose blockquote { border-left: 3px solid #B5A68C; padding-left: 1rem; margin: 1.5rem 0; color: #8C7E6A; font-style: italic; }
+.blog-prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.blog-prose th { background: #F5F0E8; color: #2C2418; font-weight: 600; padding: 0.75rem; text-align: left; border-bottom: 2px solid #E8E0D4; }
+.blog-prose td { padding: 0.75rem; border-bottom: 1px solid #E8E0D4; color: #5C4F3D; }
+.blog-cta { margin-top: 3rem; padding: 2rem; background: #F5F0E8; border-radius: 1rem; border: 1px solid #E8E0D4; text-align: center; }
+.blog-cta h3 { color: #2C2418; font-size: 1.25rem; margin-bottom: 0.75rem; }
+.blog-cta a { display: inline-block; background: #7C8B6F; color: #fff; padding: 0.75rem 2rem; border-radius: 2rem; text-decoration: none; font-weight: 600; }
+.blog-cta a:hover { background: #6B7A5E; }

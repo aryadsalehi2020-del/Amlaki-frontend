@@ -85,7 +85,7 @@ function Profile() {
                 </span>
               </div>
               <div>
-                <p className="text-[#2C2418] font-medium text-[14px]">Profil-Vollstandigkeit</p>
+                <p className="text-[#2C2418] font-medium text-[14px]">Profil-Vollständigkeit</p>
                 <p className="text-[#8C7E6A] text-[12px]">
                   {profileStrength >= 70 ? 'Sehr gut ausgef\u00fcllt' : profileStrength >= 40 ? 'Mehr Details = bessere Tipps' : 'Bitte ausf\u00fcllen'}
                 </p>

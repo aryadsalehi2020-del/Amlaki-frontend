@@ -2353,6 +2353,13 @@ async def analyze_property(
     data = request.property_data
     zweck = request.verwendungszweck
 
+    # Input validation: Reject unrealistically low kaufpreis
+    if data.kaufpreis and data.kaufpreis < 1000:
+        raise HTTPException(
+            status_code=422,
+            detail="Kaufpreis muss mindestens 1.000 EUR betragen."
+        )
+
     weights = WEIGHTS_INVESTMENT if zweck == "kapitalanlage" else WEIGHTS_SELF_USE
 
     client = get_anthropic_client()
@@ -2395,6 +2402,13 @@ async def analyze_property(
     cashflow_analyse = None
     mietschaetzung_info = None  # NEU: Tracking ob Miete geschätzt wurde
 
+    # Nicht-umlagefähige Nebenkosten korrekt berechnen (einmal, für alle Sektionen)
+    hausgeld_gesamt_global = data.hausgeld or data.nebenkosten or 0
+    if data.hausgeld_nicht_umlagefaehig and data.hausgeld_nicht_umlagefaehig > 0:
+        hausgeld_nicht_umlagefaehig = data.hausgeld_nicht_umlagefaehig
+    else:
+        hausgeld_nicht_umlagefaehig = hausgeld_gesamt_global * 0.35
+
     if zweck == "kapitalanlage" and data.kaufpreis:
         miete = data.aktuelle_miete or 0
         ist_geschaetzte_miete = False
@@ -2428,14 +2442,8 @@ async def analyze_property(
             )
 
         # Cashflow-Berechnung: nur nicht-umlagefähige NK abziehen
-        hausgeld_gesamt = data.hausgeld or data.nebenkosten or 0
-        if data.hausgeld_nicht_umlagefaehig and data.hausgeld_nicht_umlagefaehig > 0:
-            # User hat den nicht-umlagefähigen Anteil angegeben
-            nebenkosten = data.hausgeld_nicht_umlagefaehig
-        else:
-            # Schätzung: ca. 35% des Hausgelds ist nicht umlagefähig (Verwaltung + Instandhaltungsrücklage)
-            nebenkosten = hausgeld_gesamt * 0.35
-        ek = request.eigenkapital or 0
+        nebenkosten = hausgeld_nicht_umlagefaehig
+        ek = max(0, request.eigenkapital or 0)  # Prevent negative EK
         zins = request.zinssatz or 3.75
         tilg = request.tilgung or 1.25
 
@@ -2537,36 +2545,37 @@ async def analyze_property(
                 "hinweis": "Bei WG-Vermietung und möblierter Vermietung gelten teilweise andere Regeln als bei normaler Vermietung. Kurzfristige Vermietung (Airbnb) ist in vielen Städten stark reguliert."
             }
 
-    # 5. ERWEITERTE BERECHNUNGEN (nur bei Kapitalanlage mit gültigen Daten)
+    # 5. ERWEITERTE BERECHNUNGEN
     tilgungsplan = None
     breakeven_eigenkapital = None
     szenarien = None
     sensitivity_analyse = None
 
-    if zweck == "kapitalanlage" and data.kaufpreis and data.kaufpreis > 0:
+    if data.kaufpreis and data.kaufpreis > 0:
         miete = data.aktuelle_miete or 0
         if miete == 0 and data.wohnflaeche and marktdaten:
             miete = data.wohnflaeche * marktdaten.get("miete_qm_durchschnitt", 10)
 
-        nebenkosten = data.hausgeld or data.nebenkosten or 0
+        nebenkosten = hausgeld_nicht_umlagefaehig
         ek = request.eigenkapital or 0
         zins = request.zinssatz or 3.75
         tilg = request.tilgung or 1.25
 
-        if miete > 0:
-            # Tilgungsplan berechnen
-            tilgungsplan = calculate_tilgungsplan(
-                kaufpreis=data.kaufpreis,
-                eigenkapital=ek,
-                zinssatz=zins,
-                tilgung=tilg,
-                monatliche_miete=miete,
-                nebenkosten=nebenkosten,
-                jahre=30,
-                mietsteigerung=1.5,
-                wertsteigerung=1.5
-            )
+        # Tilgungsplan: relevant für beide Zwecke (Kapitalanlage & Eigennutzung)
+        tilgungsplan = calculate_tilgungsplan(
+            kaufpreis=data.kaufpreis,
+            eigenkapital=ek,
+            zinssatz=zins,
+            tilgung=tilg,
+            monatliche_miete=miete if miete > 0 else 0,
+            nebenkosten=nebenkosten,
+            jahre=30,
+            mietsteigerung=1.5,
+            wertsteigerung=1.5
+        )
 
+        # Kapitalanlage-spezifische Berechnungen
+        if zweck == "kapitalanlage" and miete > 0:
             # Break-Even Eigenkapital berechnen
             breakeven_eigenkapital = calculate_breakeven_eigenkapital(
                 kaufpreis=data.kaufpreis,
@@ -2596,23 +2605,32 @@ async def analyze_property(
                 tilgung=tilg
             )
 
-    # 6. ZUSÄTZLICHE ANALYSEN (nur bei Kapitalanlage)
+    # 6. ZUSÄTZLICHE ANALYSEN
     investment_vergleich = None
     meilensteine = None
     miet_variationen = None
     finanzierungsoptionen = None
 
-    if zweck == "kapitalanlage" and data.kaufpreis and data.kaufpreis > 0:
+    if data.kaufpreis and data.kaufpreis > 0:
         miete = data.aktuelle_miete or 0
         if miete == 0 and data.wohnflaeche and marktdaten:
             miete = data.wohnflaeche * marktdaten.get("miete_qm_durchschnitt", 10)
 
-        nebenkosten = data.hausgeld or data.nebenkosten or 0
+        nebenkosten = hausgeld_nicht_umlagefaehig
         ek = request.eigenkapital or 0
         zins = request.zinssatz or 3.75
         tilg = request.tilgung or 1.25
 
-        if miete > 0:
+        # Finanzierungsoptionen: relevant für beide Zwecke
+        finanzierungsoptionen = calculate_financing_options(
+            kaufpreis=data.kaufpreis,
+            monatliche_miete=miete if miete > 0 else 0,
+            nebenkosten=nebenkosten,
+            eigenkapital=ek
+        )
+
+        # Kapitalanlage-spezifische Analysen
+        if zweck == "kapitalanlage" and miete > 0:
             # Investment-Vergleich (Immobilie vs. ETF)
             investment_vergleich = calculate_investment_comparison(
                 kaufpreis=data.kaufpreis,
@@ -2643,14 +2661,6 @@ async def analyze_property(
                 nebenkosten=nebenkosten
             )
 
-            # Finanzierungsoptionen
-            finanzierungsoptionen = calculate_financing_options(
-                kaufpreis=data.kaufpreis,
-                monatliche_miete=miete,
-                nebenkosten=nebenkosten,
-                eigenkapital=ek
-            )
-
     # 7. KNOWLEDGE BASE BERECHNUNGEN
     verbesserungsvorschlaege = None
     foerderungen_empfehlung = None
@@ -2664,7 +2674,7 @@ async def analyze_property(
         if miete == 0 and data.wohnflaeche and marktdaten:
             miete = data.wohnflaeche * marktdaten.get("miete_qm_durchschnitt", 10)
 
-        nebenkosten = data.hausgeld or data.nebenkosten or 0
+        nebenkosten = hausgeld_nicht_umlagefaehig
         ek = request.eigenkapital or 0
         zins = request.zinssatz or 3.75
         tilg = request.tilgung or 1.25
@@ -2722,13 +2732,15 @@ async def analyze_property(
                 )
 
             # Leverage-Effekt berechnen
-            if ek > 0:
+            # Bei 100% Finanzierung (ek=0): Kaufnebenkosten als Proxy-EK verwenden
+            ek_for_leverage = ek if ek > 0 else data.kaufpreis * 0.12
+            if data.kaufpreis > 0:
                 finanzierungssumme = data.kaufpreis - ek
                 objektrendite = bruttorendite
                 leverage_result = berechne_leverage_effekt(
                     objektrendite=objektrendite,
                     fremdkapitalzins=zins,
-                    eigenkapital=ek,
+                    eigenkapital=ek_for_leverage,
                     fremdkapital=finanzierungssumme
                 )
 

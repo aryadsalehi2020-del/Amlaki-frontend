@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useUserProfile, INVESTMENT_GOALS, RISK_PROFILES } from '../contexts/UserProfileContext';
+import { useAuth } from '../contexts/AuthContext';
 
 function PropertyForm({ initialData, onAnalyze, onBack }) {
   const { profile: investorProfile, isProfileComplete } = useUserProfile();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     kaufpreis: initialData?.kaufpreis || '', wohnflaeche: initialData?.wohnflaeche || '', zimmer: initialData?.zimmer || '',
     baujahr: initialData?.baujahr || '', etage: initialData?.etage || '', nebenkosten: initialData?.nebenkosten || '',
@@ -20,7 +22,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
   const [verwendungszweck, setVerwendungszweck] = useState('kapitalanlage');
   const [besichtigt, setBesichtigt] = useState(null); // null = nicht ausgewählt, true/false
   const [besichtigungsNotizen, setBesichtigungsNotizen] = useState('');
-  const [finanzierung, setFinanzierung] = useState({ eigenkapital: 0, zinssatz: 3.75, tilgung: 1.25 });
+  const [finanzierung, setFinanzierung] = useState({ eigenkapital: 0, zinssatz: user?.default_zinssatz || 3.75, tilgung: user?.default_tilgung || 1.25 });
   const [validationError, setValidationError] = useState(null);
 
   // Profile toggle: 'default' uses global profile, 'custom' uses local overrides

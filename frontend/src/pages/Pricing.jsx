@@ -7,6 +7,7 @@ function Pricing() {
   const { token, user } = useAuth();
   const [credits, setCredits] = useState(null);
   const [loading, setLoading] = useState(null);
+  const [purchaseError, setPurchaseError] = useState('');
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -33,14 +34,14 @@ function Pricing() {
       });
       if (!res.ok) {
         const d = await res.json();
-        alert(d.detail || 'Fehler beim Erstellen der Zahlung');
+        setPurchaseError(d.detail || 'Fehler beim Erstellen der Zahlung');
         setLoading(null);
         return;
       }
       const data = await res.json();
       window.location.href = data.checkout_url;
     } catch (err) {
-      alert('Verbindungsfehler. Bitte versuche es erneut.');
+      setPurchaseError('Verbindungsfehler. Bitte versuche es erneut.');
       setLoading(null);
     }
   };
@@ -126,6 +127,14 @@ function Pricing() {
         )}
         <p className="text-[11px] text-[#8C7E6A] mt-1">1 Credit = 1 vollst&auml;ndige Immobilienanalyse</p>
       </div>
+
+      {/* Error message */}
+      {purchaseError && (
+        <div className="mb-3 p-3 bg-[#B85C5C]/10 border border-[#B85C5C]/20 rounded-[12px] text-center">
+          <p className="text-[#B85C5C] text-[13px]">{purchaseError}</p>
+          <button onClick={() => setPurchaseError('')} className="text-[11px] text-[#8C7E6A] mt-1 hover:text-[#5C4F3D] transition-colors">Schlie&szlig;en</button>
+        </div>
+      )}
 
       {/* Credit Packs */}
       <div className="space-y-2 mb-4">

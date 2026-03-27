@@ -29,9 +29,9 @@ function ProjectionCharts({ analysisData }) {
       const tilgung = Math.min(jahresRate - zinsen, restschuld);
 
       // Mietsteigerung 2% p.a.
-      const mieteJahr = (kaltmiete * 12) * Math.pow(1.02, jahr);
-      // Wertsteigerung 2% p.a.
-      immowert = kaufpreis * Math.pow(1.02, jahr);
+      const mieteJahr = (kaltmiete * 12) * Math.pow(1.015, jahr);
+      // Wertsteigerung 1.5% p.a.
+      immowert = kaufpreis * Math.pow(1.015, jahr);
 
       const cashflowJahr = mieteJahr - jahresRate - (nichtUmlagefaehig * 12);
 
