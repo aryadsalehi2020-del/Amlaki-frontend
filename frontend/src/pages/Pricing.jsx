@@ -114,18 +114,18 @@ function Pricing() {
   ];
 
   return (
-    <div className="px-4 md:px-8 lg:px-16 py-8 md:py-14 max-w-xl mx-auto">
+    <div className="px-4 md:px-8 lg:px-16 py-10 md:py-16 max-w-2xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-[26px] md:text-[36px] font-bold text-[#2C2418] tracking-tight mb-2">
+      <div className="text-center mb-10 md:mb-12">
+        <h1 className="text-[32px] md:text-[44px] font-bold text-[#2C2418] tracking-tight mb-3">
           Credits kaufen
         </h1>
         {credits !== null && (
-          <p className="text-[14px] text-[#7C8B6F] font-medium">
+          <p className="text-[16px] md:text-[18px] text-[#7C8B6F] font-semibold">
             {credits} {credits === 1 ? 'Credit' : 'Credits'} verf&uuml;gbar
           </p>
         )}
-        <p className="text-[13px] text-[#8C7E6A] mt-2">1 Credit = 1 vollst&auml;ndige Immobilienanalyse</p>
+        <p className="text-[15px] text-[#8C7E6A] mt-2">1 Credit = 1 vollst&auml;ndige Immobilienanalyse</p>
       </div>
 
       {/* Error message */}
@@ -137,13 +137,13 @@ function Pricing() {
       )}
 
       {/* Credit Packs */}
-      <div className="space-y-3 mb-6">
+      <div className="space-y-4 mb-8">
         {packs.map((pack) => (
           <button
             key={pack.id}
             onClick={() => handlePurchase(pack.id)}
             disabled={loading !== null}
-            className={`w-full p-4 md:p-5 rounded-[16px] border-2 text-left transition-all flex items-center gap-4 relative ${
+            className={`w-full p-5 md:p-6 rounded-[20px] border-2 text-left transition-all flex items-center gap-5 relative ${
               pack.popular
                 ? 'border-[#7C8B6F] bg-[#7C8B6F]/[0.04]'
                 : 'border-[#E8E0D4] hover:border-[#B5A68C]'
@@ -156,39 +156,39 @@ function Pricing() {
             )}
 
             {/* Credit count circle */}
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+            <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 ${
               pack.popular ? 'bg-[#7C8B6F] text-white' : 'bg-[#F5F0E8] text-[#2C2418]'
             }`}>
-              <span className="text-[18px] font-bold">{pack.credits}</span>
+              <span className="text-[20px] md:text-[22px] font-bold">{pack.credits}</span>
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[16px] font-semibold text-[#2C2418]">
+              <div className="flex items-center gap-2.5">
+                <span className="text-[18px] md:text-[20px] font-semibold text-[#2C2418]">
                   {pack.credits} {pack.credits === 1 ? 'Credit' : 'Credits'}
                 </span>
                 {pack.save && (
-                  <span className="text-[12px] font-medium bg-[#7C8B6F]/10 text-[#7C8B6F] px-2 py-0.5 rounded">
+                  <span className="text-[13px] font-medium bg-[#7C8B6F]/10 text-[#7C8B6F] px-2.5 py-1 rounded-lg">
                     -{pack.save}%
                   </span>
                 )}
               </div>
-              <span className="text-[13px] text-[#8C7E6A]">{pack.perUnit}&euro;/Credit</span>
+              <span className="text-[14px] md:text-[15px] text-[#8C7E6A]">{pack.perUnit}&euro;/Credit</span>
             </div>
 
             {/* Price */}
             <div className="text-right shrink-0">
-              <span className="text-[22px] font-bold text-[#2C2418]">{pack.price}&euro;</span>
+              <span className="text-[26px] md:text-[30px] font-bold text-[#2C2418]">{pack.price}&euro;</span>
             </div>
           </button>
         ))}
       </div>
 
       {/* What's included */}
-      <div className="bg-white rounded-[16px] p-5 border border-[#E8E0D4] mb-6">
-        <p className="text-[12px] font-semibold text-[#8C7E6A] uppercase tracking-wider mb-3">Jede Analyse enth&auml;lt</p>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+      <div className="bg-white rounded-[20px] p-6 md:p-8 border border-[#E8E0D4] mb-8">
+        <p className="text-[13px] md:text-[14px] font-semibold text-[#8C7E6A] uppercase tracking-wider mb-4">Jede Analyse enth&auml;lt</p>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
           {[
             'Marktwert-Berechnung',
             'Cashflow und Rendite',
@@ -198,8 +198,8 @@ function Pricing() {
             'Besichtigungs-Checkliste',
             'Notar-Checkliste',
           ].map((f) => (
-            <div key={f} className="flex items-center gap-2 text-[13px] text-[#5C4F3D]">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#7C8B6F] shrink-0" />
+            <div key={f} className="flex items-center gap-2.5 text-[14px] md:text-[15px] text-[#5C4F3D]">
+              <CheckCircle2 className="w-4 h-4 text-[#7C8B6F] shrink-0" />
               {f}
             </div>
           ))}
@@ -208,7 +208,7 @@ function Pricing() {
 
       {/* Trust footer */}
       <div className="text-center">
-        <div className="flex flex-wrap items-center justify-center gap-4 text-[12px] text-[#B5A68C]">
+        <div className="flex flex-wrap items-center justify-center gap-5 text-[13px] text-[#B5A68C]">
           <span className="flex items-center gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             Stripe
