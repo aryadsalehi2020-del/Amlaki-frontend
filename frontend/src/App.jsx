@@ -72,19 +72,41 @@ function DashboardLayout({ children }) {
   );
 }
 
-// Root Redirect – show LandingPage immediately, redirect to Chat once auth is confirmed
+// Root Redirect – show LandingPage for guests, Chat for logged-in users
 function RootRedirect() {
   const { user, loading, token } = useAuth();
-  const navigate = React.useCallback((path) => window.location.replace(path), []);
+  const [slowLoad, setSlowLoad] = React.useState(false);
 
-  // Once auth check is done and user is confirmed, redirect to chat
   React.useEffect(() => {
-    if (!loading && user) {
-      navigate('/chat');
-    }
-  }, [loading, user, navigate]);
+    const timer = setTimeout(() => setSlowLoad(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Always show LandingPage immediately — no blank loading screen
+  // No token = no login session → show landing page immediately
+  if (!token) {
+    return <LandingPage />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+        <div className="text-center">
+          <div className="flex items-center gap-[6px] mx-auto mb-4 justify-center">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="w-[8px] h-[8px] rounded-full bg-[#B5A68C]" style={{ animation: `typingPulse 1.4s ease-in-out ${i * 0.15}s infinite`, opacity: 0.25 }} />
+            ))}
+          </div>
+          <style>{`@keyframes typingPulse { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 0.9; } }`}</style>
+          <p className="text-[#8C7E6A] text-sm">{slowLoad ? 'Server wird gestartet, einen Moment...' : 'Lade...'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/chat" replace />;
+  }
+
   return <LandingPage />;
 }
 
