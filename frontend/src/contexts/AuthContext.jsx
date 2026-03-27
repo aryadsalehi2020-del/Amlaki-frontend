@@ -13,15 +13,14 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [authChecked, setAuthChecked] = useState(false);
 
-  // Lade User-Daten beim Start
+  // Lade User-Daten beim Start — blockiert NICHT die UI
   useEffect(() => {
-    if (token) {
+    if (token && !authChecked) {
       fetchCurrentUser();
-    } else {
-      setLoading(false);
     }
   }, [token]);
 
@@ -40,22 +39,19 @@ export const AuthProvider = ({ children }) => {
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
-          setLoading(false);
+          setAuthChecked(true);
           return;
         } else {
           logout();
-          setLoading(false);
+          setAuthChecked(true);
           return;
         }
       } catch (error) {
-        console.error(`Fetch user attempt ${attempt + 1} failed:`, error);
         if (attempt < retries) {
-          // Server wahrscheinlich im Cold Start - warten und nochmal versuchen
           await new Promise(r => setTimeout(r, 3000));
         } else {
-          // Alle Versuche fehlgeschlagen - NICHT ausloggen, Token koennte noch gueltig sein
-          console.error('Server nicht erreichbar nach allen Versuchen');
-          setLoading(false);
+          // Alle Versuche fehlgeschlagen - Token behalten, spaeter nochmal pruefen
+          setAuthChecked(true);
         }
       }
     }
