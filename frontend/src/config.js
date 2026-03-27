@@ -21,7 +21,7 @@ const getApiBase = () => {
 
 export const API_BASE = getApiBase();
 
-// Rate-limit-aware fetch wrapper
+// Rate-limit-aware fetch wrapper with auto-logout on 401
 export async function apiFetch(url, options = {}) {
   const response = await fetch(url, options);
 
@@ -30,6 +30,13 @@ export async function apiFetch(url, options = {}) {
     const seconds = retryAfter ? parseInt(retryAfter) : 60;
     const minutes = Math.ceil(seconds / 60);
     throw new Error(`Zu viele Anfragen. Bitte warte ${minutes > 1 ? minutes + ' Minuten' : 'einen Moment'} und versuche es erneut.`);
+  }
+
+  // Auto-logout bei abgelaufenem Token
+  if (response.status === 401 && !url.includes('/auth/login')) {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+    throw new Error('Sitzung abgelaufen. Bitte erneut anmelden.');
   }
 
   return response;

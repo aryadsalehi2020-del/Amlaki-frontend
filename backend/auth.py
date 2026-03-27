@@ -18,7 +18,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise RuntimeError("FATAL: SECRET_KEY environment variable is not set. Server cannot start without it.")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 Tage
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30  # 30 Tage
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
