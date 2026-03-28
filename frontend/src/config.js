@@ -10,9 +10,9 @@ const getApiBase = () => {
     return 'http://localhost:8000';
   }
 
-  // Production: amlaki.de or Render
-  if (window.location.hostname.includes('amlaki.de') || window.location.hostname.includes('vercel.app') || window.location.hostname.includes('onrender.com')) {
-    return 'https://amlaki-backend.onrender.com';
+  // Production: amlaki.de or deployed environments
+  if (window.location.hostname.includes('amlaki.de') || window.location.hostname.includes('vercel.app') || window.location.hostname.includes('onrender.com') || window.location.hostname.includes('railway.app')) {
+    return 'https://amlaki-backend-production.up.railway.app';
   }
 
   // Sonst (z.B. vom Handy im gleichen Netzwerk), verwende HTTPS
