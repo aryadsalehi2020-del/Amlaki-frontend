@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+
 import {
   TrendingUp,
   MessageSquare,
@@ -211,15 +211,6 @@ export default function LandingPage() {
         WebkitOverflowScrolling: 'touch',
       }}
     >
-      <Helmet>
-        <title>AmlakI - KI-Immobilienberater fuer Kapitalanleger</title>
-        <meta name="description" content="Professionelle Immobilienanalyse mit KI. Bewertung, Cashflow-Berechnung, Foerderungen und Verhandlungstipps - basierend auf aktuellen Marktdaten. Erste Analyse gratis." />
-        <link rel="canonical" href="https://amlaki.de" />
-        <meta property="og:title" content="AmlakI - Dein KI-Immobilienberater" />
-        <meta property="og:description" content="Expose hochladen, in 30 Sekunden wissen ob sich das Objekt lohnt. Score, Cashflow, Fairer Preis & Foerderungen - erste Analyse gratis." />
-        <meta property="og:url" content="https://amlaki.de" />
-        <meta property="og:type" content="website" />
-      </Helmet>
 
       {/* ===== NAVBAR ===== */}
       <nav

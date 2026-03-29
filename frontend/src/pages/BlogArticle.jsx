@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+const Helmet = ({children}) => null;
 import blogArticles from '../data/blogArticles';
 
 const C = {
