@@ -301,7 +301,16 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
   const activeTilgungsplan = selectedScenario?.tilgungsplan || result.tilgungsplan;
 
   if (showFullReport) {
-    return <FullReport result={result} propertyData={propertyData} onBack={() => setShowFullReport(false)} />;
+    try {
+      return <FullReport result={result || {}} propertyData={propertyData || {}} onBack={() => setShowFullReport(false)} />;
+    } catch (e) {
+      return (
+        <div className="p-8 text-center">
+          <p className="text-[#B85C5C] font-semibold mb-4">Fehler beim Laden des Reports</p>
+          <button onClick={() => setShowFullReport(false)} className="px-4 py-2 bg-[#7C8B6F] text-white rounded-xl">Zur\u00fcck</button>
+        </div>
+      );
+    }
   }
 
   return (

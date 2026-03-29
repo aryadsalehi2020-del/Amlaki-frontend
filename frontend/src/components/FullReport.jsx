@@ -1,6 +1,10 @@
 import React, { useRef } from 'react';
-import { formatCurrency } from '../constants';
-import { ArrowLeft, Download, Printer } from 'lucide-react';
+import { ArrowLeft, Printer } from 'lucide-react';
+
+const fmt = (v) => {
+  try { return Math.round(v || 0).toLocaleString('de-DE') + '\u20ac'; }
+  catch { return '0\u20ac'; }
+};
 
 function Section({ title, children }) {
   return (
@@ -135,7 +139,7 @@ export default function FullReport({ result, propertyData, onBack }) {
         {/* 2. Kennzahlen */}
         <Section title="2. Kennzahlen">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KPICard label="Kaufpreis" value={formatCurrency ? formatCurrency(propertyData?.kaufpreis || 0) : `${(propertyData?.kaufpreis || 0).toLocaleString('de-DE')}\u20ac`} />
+            <KPICard label="Kaufpreis" value={fmt(propertyData?.kaufpreis || 0)} />
             <KPICard label="Bruttorendite" value={`${(cf.bruttorendite || result.kennzahlen?.bruttorendite || 0).toFixed(2)}%`} color={cf.bruttorendite >= 4 ? '#7C8B6F' : '#B85C5C'} />
             <KPICard label="Kaufpreisfaktor" value={(cf.kaufpreisfaktor || result.kennzahlen?.kaufpreisfaktor || 0).toFixed(1)} />
             <KPICard label="Preis/m\u00b2" value={`${Math.round((propertyData?.kaufpreis || 0) / (propertyData?.wohnflaeche || 1)).toLocaleString('de-DE')}\u20ac`} />
