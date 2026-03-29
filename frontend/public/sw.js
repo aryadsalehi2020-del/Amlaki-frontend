@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amlaki-v1';
+const CACHE_NAME = 'amlaki-v2';
 const PRECACHE_URLS = [
   '/',
   '/favicon.png',
