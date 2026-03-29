@@ -26,6 +26,7 @@ import ZinsTilgungChart from './charts/ZinsTilgungChart';
 import BreakEvenCalculator from './BreakEvenCalculator';
 import ScenarioComparison from './ScenarioComparison';
 import LiveCalculator from './LiveCalculator';
+import FullReport from './FullReport';
 import SensitivityMatrix from './SensitivityMatrix';
 import InvestmentComparison from './InvestmentComparison';
 import MilestonesTimeline from './MilestonesTimeline';
@@ -249,6 +250,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
   const [showPersonalized, setShowPersonalized] = useState(true);
   const [eigenkapitalInput, setEigenkapitalInput] = useState(result.cashflow_analyse?.eigenkapital || 0);
   const [showEigenkapitalEditor, setShowEigenkapitalEditor] = useState(false);
+  const [showFullReport, setShowFullReport] = useState(false);
 
   // Dynamic Scoring Integration
   let userProfileContext;
@@ -297,6 +299,10 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
   // Get the tilgungsplan to use (from selected scenario or default)
   const activeTilgungsplan = selectedScenario?.tilgungsplan || result.tilgungsplan;
+
+  if (showFullReport) {
+    return <FullReport result={result} propertyData={propertyData} onBack={() => setShowFullReport(false)} />;
+  }
 
   return (
     <div className="fade-in space-y-5 md:space-y-8">
@@ -403,7 +409,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-4 mt-5 md:mt-8 pt-5 md:pt-8 border-t border-[#E8E0D4]">
+        <div className="grid md:grid-cols-3 gap-4 mt-5 md:mt-8 pt-5 md:pt-8 border-t border-[#E8E0D4]">
           <button
             onClick={onNewAnalysis}
             className="py-3 md:py-4 bg-gradient-gold text-[#2C2418] font-bold rounded-xl
@@ -414,6 +420,18 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               Neue Analyse
+            </span>
+          </button>
+          <button
+            onClick={() => setShowFullReport(true)}
+            className="py-3 md:py-4 border-2 border-[#7C8B6F] text-[#7C8B6F] font-semibold rounded-xl
+              hover:bg-[#7C8B6F]/5 transition-all text-[14px] md:text-lg"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Full Report
             </span>
           </button>
           <button
