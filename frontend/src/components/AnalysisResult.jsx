@@ -860,9 +860,9 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   <div className="space-y-4">
                     <div className="flex justify-between items-center py-3 px-4 bg-green-500/10 rounded-xl border border-[#7C8B6F]/20">
                       <span className="text-[#8C7E6A] font-medium">
-                        Mieteinnahmen
+                        {result.cashflow_analyse?.geschaetzte_felder?.includes("miete") ? "Kaltmiete" : "Mieteinnahmen"}
                         {result.cashflow_analyse?.geschaetzte_felder?.includes("miete") && (
-                          <span className="ml-1 text-xs text-amber-600" title="Geschätzter Wert">~</span>
+                          <span className="ml-1 text-xs text-amber-600" title="Aus Warmmiete abgeleitet">~</span>
                         )}
                       </span>
                       <span className="font-bold text-[#7C8B6F] text-lg">
@@ -888,8 +888,12 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                         {formatCurrency(result.cashflow_analyse.monatliche_nebenkosten)}
                       </span>
                     </div>
-                    {result.cashflow_analyse?.hausgeld_geschaetzt && (
-                      <p className="text-xs text-amber-600/80 px-2">~ = geschätzter Wert. Bitte Hausgeld beim Verwalter erfragen.</p>
+                    {(result.cashflow_analyse?.hausgeld_geschaetzt || result.cashflow_analyse?.geschaetzte_felder?.length > 0) && (
+                      <p className="text-xs text-amber-600/80 px-2">
+                        ~ = geschätzter Wert.
+                        {result.cashflow_analyse?.geschaetzte_felder?.includes("miete") && " Kaltmiete aus Warmmiete abgeleitet."}
+                        {result.cashflow_analyse?.hausgeld_geschaetzt && " Hausgeld beim Verwalter erfragen."}
+                      </p>
                     )}
                     <div className={`flex justify-between items-center py-4 px-5 rounded-2xl shadow-lg ${result.cashflow_analyse.monatlicher_cashflow >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'}`}>
                       <span className="font-bold text-[#2C2418] text-lg">Monatlicher Cashflow<InfoTip text="Was am Ende des Monats übrig bleibt: Mieteinnahmen minus Kreditrate minus Nebenkosten. Positiv = du verdienst, negativ = du zahlst drauf." /></span>
