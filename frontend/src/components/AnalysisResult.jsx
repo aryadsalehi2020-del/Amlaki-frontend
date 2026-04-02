@@ -859,9 +859,15 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                   <h4 className="font-bold text-[#2C2418] mb-6 text-lg">Monatliche Berechnung</h4>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center py-3 px-4 bg-green-500/10 rounded-xl border border-[#7C8B6F]/20">
-                      <span className="text-[#8C7E6A] font-medium">Mieteinnahmen</span>
+                      <span className="text-[#8C7E6A] font-medium">
+                        Mieteinnahmen
+                        {result.cashflow_analyse?.geschaetzte_felder?.includes("miete") && (
+                          <span className="ml-1 text-xs text-amber-600" title="Geschätzter Wert">~</span>
+                        )}
+                      </span>
                       <span className="font-bold text-[#7C8B6F] text-lg">
-                        +{formatCurrency(result.cashflow_analyse.monatliche_miete)}
+                        {result.cashflow_analyse?.geschaetzte_felder?.includes("miete") ? "~" : "+"}
+                        {formatCurrency(result.cashflow_analyse.monatliche_miete)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-3 px-4 bg-[#B85C5C]/5 rounded-xl border border-[#B85C5C]/20">
@@ -871,11 +877,20 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-3 px-4 bg-[#B85C5C]/5 rounded-xl border border-[#B85C5C]/20">
-                      <span className="text-[#8C7E6A] font-medium">Nebenkosten/Hausgeld</span>
+                      <span className="text-[#8C7E6A] font-medium">
+                        Nebenkosten/Hausgeld
+                        {result.cashflow_analyse?.hausgeld_geschaetzt && (
+                          <span className="ml-1 text-xs text-amber-600" title="Geschätzter Wert (~4€/m²)">~</span>
+                        )}
+                      </span>
                       <span className="font-bold text-[#B85C5C] text-lg">
-                        -{formatCurrency(result.cashflow_analyse.monatliche_nebenkosten)}
+                        {result.cashflow_analyse?.hausgeld_geschaetzt ? "~" : "-"}
+                        {formatCurrency(result.cashflow_analyse.monatliche_nebenkosten)}
                       </span>
                     </div>
+                    {result.cashflow_analyse?.hausgeld_geschaetzt && (
+                      <p className="text-xs text-amber-600/80 px-2">~ = geschätzter Wert. Bitte Hausgeld beim Verwalter erfragen.</p>
+                    )}
                     <div className={`flex justify-between items-center py-4 px-5 rounded-2xl shadow-lg ${result.cashflow_analyse.monatlicher_cashflow >= 0 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-red-500 to-rose-500'}`}>
                       <span className="font-bold text-[#2C2418] text-lg">Monatlicher Cashflow<InfoTip text="Was am Ende des Monats übrig bleibt: Mieteinnahmen minus Kreditrate minus Nebenkosten. Positiv = du verdienst, negativ = du zahlst drauf." /></span>
                       <span className="font-black text-[#2C2418] text-2xl">

@@ -2444,6 +2444,15 @@ async def analyze_property(
 
     # Nicht-umlagefähige Nebenkosten korrekt berechnen (einmal, für alle Sektionen)
     hausgeld_gesamt_global = data.hausgeld or data.nebenkosten or 0
+    hausgeld_ist_geschaetzt = False
+
+    # Hausgeld schätzen wenn nicht im Exposé angegeben
+    if hausgeld_gesamt_global == 0 and data.wohnflaeche and data.wohnflaeche > 0:
+        # Richtwert: 3,50-4,50€/m² Hausgeld gesamt, konservativ 4€/m²
+        hausgeld_gesamt_global = round(data.wohnflaeche * 4.0, 2)
+        hausgeld_ist_geschaetzt = True
+        print(f"[INFO] Hausgeld nicht im Exposé — geschätzt: {hausgeld_gesamt_global}€/Monat ({data.wohnflaeche}m² × 4,00€/m²)")
+
     if data.hausgeld_nicht_umlagefaehig and data.hausgeld_nicht_umlagefaehig > 0:
         hausgeld_nicht_umlagefaehig = data.hausgeld_nicht_umlagefaehig
     else:
@@ -2510,6 +2519,30 @@ async def analyze_property(
             zinssatz=zins,
             tilgung=tilg
         )
+
+        # Geschätzte Werte markieren für Frontend ("~" Anzeige)
+        geschaetzte_felder = []
+        if ist_geschaetzte_miete:
+            geschaetzte_felder.append("miete")
+        if hausgeld_ist_geschaetzt:
+            geschaetzte_felder.append("nebenkosten")
+        if data.miete_typ_im_expose == "warmmiete":
+            geschaetzte_felder.append("miete")
+
+        if geschaetzte_felder:
+            cashflow_analyse["geschaetzte_felder"] = list(set(geschaetzte_felder))
+
+        if hausgeld_ist_geschaetzt:
+            cashflow_analyse["hausgeld_geschaetzt"] = True
+            cashflow_analyse["hausgeld_geschaetzt_hinweis"] = (
+                f"Hausgeld nicht im Exposé angegeben. Geschätzt: ~{round(hausgeld_gesamt_global, 0):.0f}€/Monat "
+                f"(~4€/m² × {data.wohnflaeche}m²). Nicht umlagefähiger Anteil: ~{round(hausgeld_nicht_umlagefaehig, 0):.0f}€/Monat."
+            )
+            if not mietschaetzung_info:
+                mietschaetzung_info = {}
+            mietschaetzung_info["hausgeld_geschaetzt"] = True
+            mietschaetzung_info["hausgeld_geschaetzt_wert"] = round(hausgeld_gesamt_global, 2)
+            mietschaetzung_info["hausgeld_nicht_umlagefaehig_geschaetzt"] = round(hausgeld_nicht_umlagefaehig, 2)
 
     # 4a-2. Steuereffekt berechnen (korrekt: Mieteinnahmen werden auch versteuert!)
     if cashflow_analyse and data.kaufpreis and zweck == "kapitalanlage":
