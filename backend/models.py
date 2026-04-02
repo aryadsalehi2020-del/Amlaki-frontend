@@ -119,11 +119,31 @@ class AgentConfig(Base):
     description = Column(String, nullable=True)
     enabled = Column(Boolean, default=True)
     schedule = Column(String, default="taeglich 07:00")  # Beschreibung
+    # NEU: Dynamische Agent-Konfiguration
+    prompt = Column(String, nullable=True)  # KI-Prompt fuer den Agent
+    source_urls = Column(String, nullable=True)  # Komma-getrennte URLs zum Scrapen
+    target_file = Column(String, nullable=True)  # Ziel-File in brain/topics/ (z.B. 'financing.md')
+    target_section = Column(String, nullable=True)  # Regex-Section im File die ersetzt wird
+    model = Column(String, default="claude-haiku-4-5-20251001")  # KI-Modell
+    max_tokens = Column(Integer, default=1500)
     last_run = Column(DateTime, nullable=True)
     last_status = Column(String, nullable=True)  # 'success', 'error', 'running'
     last_error = Column(String, nullable=True)
+    last_result = Column(String, nullable=True)  # Letztes Ergebnis (gekuerzt)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class PasswordResetToken(Base):
+    """Passwort-Reset-Tokens persistent in DB"""
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token_hash = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class UsageLog(Base):

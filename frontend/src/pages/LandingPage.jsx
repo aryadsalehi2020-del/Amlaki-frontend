@@ -111,8 +111,8 @@ const FEATURES = [
   },
   {
     icon: Brain,
-    title: 'Pers\u00f6nliche KI-Beratung',
-    description: 'Fachwissen erfahrener Immobilienberater und Gutachter \u2013 jederzeit abrufbar.',
+    title: 'Pers\u00f6nliche KI-Analyse',
+    description: 'Fachwissen erfahrener Immobilienexperten und Gutachter \u2013 jederzeit abrufbar.',
   },
   {
     icon: Coins,
@@ -207,6 +207,7 @@ export default function LandingPage() {
         color: C.body,
         fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
         minHeight: '100vh',
+        overflowX: 'hidden',
         filter: 'none',
         WebkitOverflowScrolling: 'touch',
       }}
@@ -402,7 +403,7 @@ export default function LandingPage() {
                 Professionelle Analyse in Sekunden
               </h2>
               <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}>
-                Exposé hochladen, KI-Bewertung erhalten, mit deinem persönlichen Berater ins Detail gehen.
+                Exposé hochladen, KI-Bewertung erhalten, mit deinem persönlichen KI-Assistenten ins Detail gehen.
               </p>
             </div>
           </FadeInSection>
@@ -412,7 +413,7 @@ export default function LandingPage() {
             {[
               { src: '/screenshots/lp_chart_szenarien.png', label: 'Was-wäre-wenn Szenarien', delay: 0 },
               { src: '/screenshots/lp_score_v2.png', label: 'KI-Bewertung', delay: 0.12, featured: true },
-              { src: '/screenshots/lp_chat.png', label: 'Persönlicher KI-Berater', delay: 0.24 },
+              { src: '/screenshots/lp_chat.png', label: 'Persönlicher KI-Assistent', delay: 0.24 },
             ].map(({ src, label, delay, featured }) => (
               <FadeInSection key={label} delay={delay} className="flex flex-col items-center gap-3">
                 <div
@@ -805,7 +806,7 @@ export default function LandingPage() {
             <div>
               <Logo />
               <p className="text-sm mt-2" style={{ color: C.khaki }}>
-                Dein KI-Immobilienberater.
+                Dein KI-Immobilienassistent.
               </p>
             </div>
 
@@ -836,7 +837,7 @@ export default function LandingPage() {
             <p className="text-xs" style={{ color: C.khaki }}>
               &copy; {new Date().getFullYear()} AmlakI. Alle Rechte vorbehalten.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <button
                 onClick={() => navigate('/impressum')}
                 className="text-xs transition-colors duration-200"

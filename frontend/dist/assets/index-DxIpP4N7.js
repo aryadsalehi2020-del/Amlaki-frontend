@@ -1,0 +1,1 @@
+const r=["A+","A","B","C","D","E","F","G","H"],n=t=>!t&&t!==0?"N/A":new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",minimumFractionDigits:0,maximumFractionDigits:0}).format(t),e=t=>new Date(t).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});export{r as E,e as a,n as f};

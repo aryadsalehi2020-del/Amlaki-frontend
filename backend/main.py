@@ -156,7 +156,7 @@ def startup_event():
     asyncio.get_event_loop().create_task(keep_alive())
 
 # CORS - Erlaubte Origins + Vercel Preview URLs
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://amlaki.de,https://www.amlaki.de,http://localhost:5173,http://localhost:3000,http://localhost:3001").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://amlaki.de,https://www.amlaki.de,http://localhost:5173,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -822,6 +822,8 @@ class PropertyData(BaseModel):
     stellplatz: Optional[str] = None
     vermietet: Optional[bool] = None
     aktuelle_miete: Optional[float] = None
+    warmmiete_aus_expose: Optional[float] = None  # Nur wenn im Exposé ausschließlich Warmmiete stand
+    miete_typ_im_expose: Optional[str] = None  # 'kaltmiete', 'warmmiete', 'nicht_angegeben'
     verkäufertyp: Optional[str] = None
     provision: Optional[str] = None
     beschreibung: Optional[str] = None
@@ -1060,13 +1062,18 @@ def delete_analysis(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Löscht eine Analyse"""
+    """Löscht eine Analyse und entkoppelt verknüpfte Conversations"""
     analysis = db.query(Analysis)\
         .filter(Analysis.id == analysis_id, Analysis.user_id == current_user.id)\
         .first()
 
     if not analysis:
         raise HTTPException(status_code=404, detail="Analysis not found")
+
+    # Conversations entkoppeln (ForeignKey auf NULL setzen)
+    db.query(Conversation)\
+        .filter(Conversation.analysis_id == analysis_id)\
+        .update({Conversation.analysis_id: None})
 
     db.delete(analysis)
     db.commit()
@@ -1120,7 +1127,9 @@ Gib die Daten als JSON zurück mit genau diesen Feldern (null wenn nicht gefunde
     "keller": <true/false>,
     "stellplatz": "<z.B. Tiefgarage, Außenstellplatz, keiner>",
     "vermietet": <true/false>,
-    "aktuelle_miete": <monatliche Kaltmiete in Euro falls vermietet>,
+    "aktuelle_miete": <monatliche KALTMIETE (Nettokaltmiete) in Euro falls vermietet — WICHTIG: Wenn im Exposé nur eine Warmmiete oder Gesamtmiete angegeben ist, versuche die Kaltmiete zu ermitteln, indem du die Nebenkosten/Betriebskosten abziehst. Wenn keine separate Kaltmiete ermittelbar ist, setze dieses Feld auf null und trage die Warmmiete stattdessen in "warmmiete_aus_expose" ein>,
+    "warmmiete_aus_expose": <monatliche Warmmiete in Euro, NUR ausfüllen wenn im Exposé ausschließlich eine Warmmiete/Gesamtmiete ohne separate Kaltmiete angegeben ist, sonst null>,
+    "miete_typ_im_expose": "<welcher Miettyp stand im Exposé: 'kaltmiete', 'warmmiete', 'nicht_angegeben'>",
     "verkäufertyp": "<privat oder Makler>",
     "provision": "<z.B. 3,57% oder provisionsfrei>",
     "beschreibung": "<Kurze Zusammenfassung des Objekts in 2-3 Sätzen>"
@@ -1180,6 +1189,37 @@ Antworte NUR mit dem JSON, kein anderer Text."""
         json_text = json_text.strip()
 
         property_data = json.loads(json_text)
+
+        # Warmmiete-Korrektur: Wenn nur Warmmiete im Exposé stand, Kaltmiete ableiten
+        miete_typ = property_data.get("miete_typ_im_expose", "kaltmiete")
+        warmmiete = property_data.get("warmmiete_aus_expose")
+        aktuelle_miete = property_data.get("aktuelle_miete")
+        nebenkosten = property_data.get("nebenkosten") or property_data.get("hausgeld") or 0
+
+        if miete_typ == "warmmiete" or (warmmiete and warmmiete > 0 and not aktuelle_miete):
+            # Nur Warmmiete vorhanden — Kaltmiete ableiten
+            warm = warmmiete or aktuelle_miete or 0
+            if warm > 0:
+                if nebenkosten and nebenkosten > 0:
+                    # Kaltmiete = Warmmiete - Nebenkosten/Hausgeld
+                    geschaetzte_kaltmiete = warm - nebenkosten
+                else:
+                    # Keine NK bekannt: konservativ 25-30% der Warmmiete als NK schätzen
+                    geschaetzte_kaltmiete = warm * 0.72  # 28% Abzug als konservative Schätzung
+
+                geschaetzte_kaltmiete = max(0, geschaetzte_kaltmiete)
+                property_data["aktuelle_miete"] = round(geschaetzte_kaltmiete, 2)
+                property_data["warmmiete_aus_expose"] = round(warm, 2)
+                property_data["miete_typ_im_expose"] = "warmmiete"
+                print(f"[WARN] Exposé enthielt nur Warmmiete ({warm}€). Kaltmiete geschätzt: {round(geschaetzte_kaltmiete, 2)}€ (NK: {nebenkosten}€)")
+
+        # Plausibilitätscheck: Wenn aktuelle_miete > Warmmiete wäre, stimmt etwas nicht
+        if aktuelle_miete and warmmiete and aktuelle_miete > warmmiete:
+            print(f"[WARN] Kaltmiete ({aktuelle_miete}€) > Warmmiete ({warmmiete}€) — Werte vermutlich vertauscht, korrigiere")
+            property_data["aktuelle_miete"] = warmmiete - (nebenkosten or warmmiete * 0.28)
+            property_data["warmmiete_aus_expose"] = warmmiete
+            property_data["miete_typ_im_expose"] = "warmmiete"
+
         return PropertyData(**property_data)
 
     except json.JSONDecodeError as e:
@@ -2413,6 +2453,21 @@ async def analyze_property(
         miete = data.aktuelle_miete or 0
         ist_geschaetzte_miete = False
 
+        # Warmmiete-Warnung tracken
+        if data.miete_typ_im_expose == "warmmiete" and data.warmmiete_aus_expose:
+            if not mietschaetzung_info:
+                mietschaetzung_info = {}
+            mietschaetzung_info["warmmiete_warnung"] = True
+            mietschaetzung_info["warmmiete_original"] = data.warmmiete_aus_expose
+            mietschaetzung_info["kaltmiete_abgeleitet"] = miete
+            mietschaetzung_info["hinweis_warmmiete"] = (
+                f"ACHTUNG: Im Exposé war nur eine Warmmiete von {data.warmmiete_aus_expose}€ angegeben. "
+                f"Die Kaltmiete wurde auf {miete}€ geschätzt (Warmmiete minus Nebenkosten). "
+                f"Alle Rendite- und Cashflow-Berechnungen basieren auf der geschätzten Kaltmiete. "
+                f"Bitte den tatsächlichen Mietvertrag prüfen."
+            )
+            print(f"[WARN] Warmmiete-Korrektur aktiv: {data.warmmiete_aus_expose}€ Warm → {miete}€ Kalt geschätzt")
+
         # Schätze Miete falls nicht vorhanden (frei/leerstehend)
         if miete == 0 and data.wohnflaeche and marktdaten:
             geschaetzte_miete_qm = marktdaten.get("miete_qm_durchschnitt", 10)
@@ -2807,6 +2862,7 @@ PFLICHT-VERGLEICH:
 === CASHFLOW-ANALYSE ===
 {json.dumps(cashflow_analyse, indent=2, ensure_ascii=False) if cashflow_analyse else "Nicht berechnet"}
 
+{"=== ACHTUNG: WARMMIETE-KORREKTUR ===" + chr(10) + f"Im Exposé war NUR eine Warmmiete von {data.warmmiete_aus_expose}€ angegeben (KEINE Kaltmiete)." + chr(10) + f"Die Kaltmiete wurde auf {data.aktuelle_miete}€ geschätzt. ALLE Berechnungen basieren auf dieser geschätzten Kaltmiete." + chr(10) + "DU MUSST den Nutzer in deiner Analyse DEUTLICH darauf hinweisen, dass die Miete aus der Warmmiete abgeleitet wurde und er den tatsächlichen Mietvertrag prüfen soll!" + chr(10) if data.miete_typ_im_expose == "warmmiete" and data.warmmiete_aus_expose else ""}
 Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 
 === BEWERTUNGSKRITERIEN für {zweck.upper()} ===
@@ -2814,7 +2870,7 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 
 [WICHTIG] V3.0 - BEWERTUNGSREGELN MIT LIVE-DATEN:
 
-1. **cashflow_rendite** (Gewichtung: {weights['cashflow_rendite']}%)
+{"" if zweck == "eigennutzung" else """1. **cashflow_rendite** (Gewichtung: """ + str(weights['cashflow_rendite']) + """%)
    - Kaufpreisfaktor: <20 sehr gut, 20-25 gut, >25 kritisch
    - Bruttorendite: >5% sehr gut, 4-5% gut, <3% kritisch
    - Cashflow-Bewertung NACH STEUER (nicht vor Steuer!):
@@ -2825,10 +2881,11 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
    - NEUVERMIETUNGSPOTENZIAL MUSS in den Score einfliessen:
      * Wenn Neuvermietung den Cashflow deutlich verbessert, Score ERHOEHEN (z.B. +10-20 Punkte)
      * Wenn Wohnung in Kuerze frei wird = fast wie Neuvermietungs-Cashflow bewerten
-
+"""}{"1. **cashflow_rendite** (Gewichtung: 0% - NICHT RELEVANT fuer Eigennutzung)" + chr(10) + "   - Bewerte trotzdem mit einem Score, aber dieser fliesst NICHT in den Gesamtscore ein." + chr(10) + "   - Gib einen fairen Score basierend auf monatlicher Belastung vs. vergleichbare Miete." + chr(10) if zweck == "eigennutzung" else ""}
 2. **lage** (Gewichtung: {weights['lage']}%)
    - Stadtteil-Bewertung aus LIVE-Marktdaten
-   - Standort-Faktoren berücksichtigen (Uni, Wirtschaft, ÖPNV)
+   - Standort-Faktoren beruecksichtigen (Uni, Wirtschaft, OEPNV)
+{"   - EIGENNUTZUNG: Besonders wichtig! Infrastruktur, Einkaufsmoeglichkeiten, Schulen, Aerzte, Gruenflaechen, Laermbelastung" if zweck == "eigennutzung" else ""}
 
 3. **kaufpreis_qm** (Gewichtung: {weights['kaufpreis_qm']}%) [WICHTIG] LIVE-DATEN PFLICHT!
    - MUSS gegen LIVE-Marktdurchschnitt verglichen werden!
@@ -2843,47 +2900,49 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 
 4. **zukunftspotenzial** (Gewichtung: {weights['zukunftspotenzial']}%)
    - Tendenz aus LIVE-Marktdaten (steigend/stabil/fallend)
-   - Prognose berücksichtigen
+   - Prognose beruecksichtigen
+{"   - EIGENNUTZUNG: Wertsteigerung ist relevant fuer langfristigen Vermoegensaufbau auch bei Selbstnutzung" if zweck == "eigennutzung" else ""}
 
 5. **zustand_baujahr** (Gewichtung: {weights['zustand_baujahr']}%)
    - Zustand, Baujahr, Sanierungsbedarf
-   - Fertighäuser 1960-1990 kritisch prüfen
+   - Fertighaeuser 1960-1990 kritisch pruefen
+{"   - EIGENNUTZUNG: Bewerte grosszuegiger! Ein renovierungsbeduerfiger Altbau ist fuer Eigennutzer oft OK (man kann selbst renovieren). Bewerte den CHARME und das POTENZIAL, nicht nur den aktuellen Zustand. Score mindestens 50 wenn keine gravierenden Maengel." if zweck == "eigennutzung" else ""}
 
 6. **energieeffizienz** (Gewichtung: {weights['energieeffizienz']}%)
-   - Energieklasse (G/H = Sanierung empfohlen, KfW 261 prüfen!)
+   - Energieklasse (G/H = Sanierung empfohlen, KfW 261 pruefen!)
 
 7. **nebenkosten** (Gewichtung: {weights['nebenkosten']}%)
-   - Hausgeld/Nebenkosten im Verhältnis
+   - Hausgeld/Nebenkosten im Verhaeltnis
 
 8. **grundriss** (Gewichtung: {weights['grundriss']}%)
-   - Zimmerzahl, Schnitt, Ausstattung
+{"   - EIGENNUTZUNG: SEHR WICHTIG (20% Gewichtung)! Bewerte ausfuehrlich:" + chr(10) + "     * Zimmeranzahl fuer Haushaltsgroesse (2 Zimmer = Paar/Single OK, 3+ = Familie)" + chr(10) + "     * Raumaufteilung und Schnitt (offene Kueche, Durchgangszimmer, Bad mit Fenster)" + chr(10) + "     * Balkon/Terrasse/Garten vorhanden?" + chr(10) + "     * Abstellraum/Keller?" + chr(10) + "     * Ausrichtung (Sueden = besser)" + chr(10) + "     * Stockwerk (Erdgeschoss vs. Dachgeschoss)" + chr(10) + "     * WENN WENIG INFOS: Bewerte neutral mit Score 60-65, NICHT niedrig! Fehlende Grundriss-Infos duerfen den Score nicht ruinieren." if zweck == "eigennutzung" else "   - Zimmerzahl, Schnitt, Ausstattung"}
 
 9. **verkäufertyp** (Gewichtung: {weights['verkäufertyp']}%)
    - Privat vs. Makler, Provision
 
 WICHTIG - V6.0 PHILOSOPHIE (PROFESSIONELL, REALISTISCH, GESAMTBILD):
-- IMMER Live-Marktdaten in der Begründung zitieren!
-- Du bist ein professioneller Immobilienberater. Sprich wie ein seriöser Berater.
-- NIEMALS absolute Kaufempfehlungen oder Kaufwarnungen. Du gibst EINSCHÄTZUNGEN.
-- Formuliere als Einschätzung: "aus unserer Sicht", "nach unserer Analyse"
-- KEINE widersprüchlichen Aussagen! Score und Text MÜSSEN zusammenpassen:
+- IMMER Live-Marktdaten in der Begruendung zitieren!
+- Du bist ein professioneller Immobilienberater. Sprich wie ein serioeser Berater.
+- NIEMALS absolute Kaufempfehlungen oder Kaufwarnungen. Du gibst EINSCHAETZUNGEN.
+- Formuliere als Einschaetzung: "aus unserer Sicht", "nach unserer Analyse"
+- KEINE widersprüchlichen Aussagen! Score und Text MUESSEN zusammenpassen:
   * Score <40 = NICHT "gemischtes Bild" sagen! Das ist klar negativ.
-  * Score 40-55 = "gemischt" oder "prüfenswert" ist OK
+  * Score 40-55 = "gemischt" oder "pruefenswert" ist OK
   * Score >55 = positiv formulieren
-
+{"" if zweck == "eigennutzung" else """
 PREIS-BEWERTUNG (WICHTIG - REALISTISCHE EINORDNUNG):
 - Bis 10% über Markt = "leicht über Marktdurchschnitt" (NICHT "deutlich überteuert"!)
 - 10-20% über Markt = "über Marktdurchschnitt"
 - 20-30% über Markt = "deutlich über Markt"
 - Über 30% über Markt = "stark überteuert"
-- Unter Markt = IMMER positiv hervorheben!
+- Unter Markt = IMMER positiv hervorheben!"""}
 
 FAIRER PREIS (WICHTIG - REALISTISCH BLEIBEN):
 - Der faire Preis darf MAXIMAL 25% unter dem Kaufpreis liegen! Mehr als 25% Rabatt ist unrealistisch.
 - Wenn die Berechnung einen fairen Preis ergibt der >25% unter Kaufpreis liegt, setze ihn auf Kaufpreis minus 25%.
-- Begründe den fairen Preis mit Marktdaten und konkreten Mängeln.
+- Begruende den fairen Preis mit Marktdaten und konkreten Maengeln.
 
-GESAMTBILD BEWERTEN (KRITISCH WICHTIG - NICHT NUR CASHFLOW!):
+{"EIGENNUTZUNG - BEWERTUNGSPHILOSOPHIE (KRITISCH WICHTIG):" + chr(10) + "- Bei Eigennutzung geht es um WOHNQUALITAET und PREIS-LEISTUNG, NICHT um Rendite!" + chr(10) + "- Monatliche Belastung (Kreditrate + Hausgeld) vs. vergleichbare Miete ist der wichtigste Vergleich" + chr(10) + "- Wenn Kaufen guenstiger oder gleich teuer wie Mieten ist = POSITIV (man baut Vermoegen auf!)" + chr(10) + "- Unter Marktpreis kaufen = EXZELLENT fuer Eigennutzer (sofortiger Vermoegensgewinn)" + chr(10) + "- Lage und Grundriss sind die wichtigsten Kriterien - hier lebt man!" + chr(10) + "- FEHLENDE INFOS zu Grundriss/Zustand: NEUTRAL bewerten (Score 60-65), NICHT bestrafen!" + chr(10) + "- Ein Objekt 18% unter Markt in guter Lage ist fuer Eigennutzer EMPFEHLENSWERT (Score 65-80)!" + chr(10) + "- Energieklasse ist weniger kritisch - man kann schrittweise sanieren mit KfW-Foerderung" + chr(10) + "- STEUERFREIER VERKAUF: Nach nur 3 Jahren Selbstnutzung (im Kaufjahr + 2 Folgejahre) ist der Verkauf komplett steuerfrei (§23 EStG)! Das ist ein RIESIGER Vorteil gegenueber Kapitalanlage (10 Jahre Spekulationsfrist). Erwaehne dies in der Zusammenfassung als Pluspunkt!" if zweck == "eigennutzung" else """GESAMTBILD BEWERTEN (KRITISCH WICHTIG - NICHT NUR CASHFLOW!):
 - Negativer Cashflow VOR STEUER allein ist KEIN Grund fuer einen niedrigen Score!
 - Du MUSST das GESAMTBILD bewerten. Einzelne Kriterien-Scores muessen das reflektieren:
   1) Kaufpreis relativ zum Markt: >20% unter Markt = EXZELLENTER Einkauf, cashflow_rendite Score MUSS das belohnen
@@ -2895,7 +2954,7 @@ GESAMTBILD BEWERTEN (KRITISCH WICHTIG - NICHT NUR CASHFLOW!):
 - BEISPIEL: Objekt 30% unter Markt, Cashflow vor Steuer -400€ aber nach Steuer +50€, Neuvermietung bringt +500€
   = Das ist ein GUTER Deal! Score sollte 70-80 sein, NICHT 50-60!
 - Ein Objekt das deutlich unter Markt liegt mit temporaer negativem Cashflow ist EMPFEHLENSWERT!
-- Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat VOR Steuer ist akzeptabel.
+- Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat VOR Steuer ist akzeptabel."""}
 
 Antworte als JSON:
 {{

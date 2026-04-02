@@ -54,6 +54,14 @@ def run_migrations():
         ("users", "usage_limit_usd", "ALTER TABLE users ADD COLUMN usage_limit_usd FLOAT DEFAULT 5.0"),
         ("users", "analysis_credits", "ALTER TABLE users ADD COLUMN analysis_credits INTEGER DEFAULT 1"),
         ("analyses", "is_premium", "ALTER TABLE analyses ADD COLUMN is_premium BOOLEAN DEFAULT FALSE"),
+        # Agent-Erweiterungen fuer dynamische Konfiguration
+        ("agent_configs", "prompt", "ALTER TABLE agent_configs ADD COLUMN prompt TEXT"),
+        ("agent_configs", "source_urls", "ALTER TABLE agent_configs ADD COLUMN source_urls TEXT"),
+        ("agent_configs", "target_file", "ALTER TABLE agent_configs ADD COLUMN target_file VARCHAR"),
+        ("agent_configs", "target_section", "ALTER TABLE agent_configs ADD COLUMN target_section VARCHAR"),
+        ("agent_configs", "model", "ALTER TABLE agent_configs ADD COLUMN model VARCHAR DEFAULT 'claude-haiku-4-5-20251001'"),
+        ("agent_configs", "max_tokens", "ALTER TABLE agent_configs ADD COLUMN max_tokens INTEGER DEFAULT 1500"),
+        ("agent_configs", "last_result", "ALTER TABLE agent_configs ADD COLUMN last_result TEXT"),
     ]
 
     for table, column, sql in migrations:

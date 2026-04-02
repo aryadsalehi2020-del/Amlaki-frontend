@@ -76,7 +76,7 @@ function Login() {
           </form>
 
           {slowServer && (
-            <p className="mt-3 text-center text-[12px] text-[#B5A68C] animate-pulse">
+            <p className="mt-3 text-center text-[12px] text-[#B5A68C] pulse-neon">
               Einen Moment bitte - der Server wird gerade hochgefahren...
             </p>
           )}

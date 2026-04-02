@@ -89,29 +89,9 @@ function inlineFormat(text) {
 function TypingIndicator() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '12px 16px', height: '42px' }}>
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="typing-dot"
-          style={{ animationDelay: `${i * 0.15}s` }}
-        />
-      ))}
-      <style>{`
-        .typing-dot {
-          display: block;
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background-color: #B5A68C;
-          opacity: 0.25;
-          will-change: opacity;
-          animation: typingPulse 1.4s ease-in-out infinite;
-        }
-        @keyframes typingPulse {
-          0%, 80%, 100% { opacity: 0.25; }
-          40% { opacity: 0.9; }
-        }
-      `}</style>
+      <span className="loading-dot" />
+      <span className="loading-dot" />
+      <span className="loading-dot" />
     </div>
   );
 }
@@ -747,7 +727,7 @@ export default function Chat() {
                     Willkommen bei AmlakI{user?.full_name ? `, ${user.full_name.split(' ')[0]}` : user?.username ? `, ${user.username}` : ''}!
                   </h3>
                   <p className="text-[12px] md:text-[13px] text-[#5C4F3D] mb-3 pr-6 leading-relaxed">
-                    So holst du das Meiste aus deinem KI-Berater:
+                    So holst du das Meiste aus deinem KI-Assistenten:
                   </p>
                   <div className="space-y-2.5 mb-3">
                     <button
@@ -785,7 +765,7 @@ export default function Chat() {
                   Wie kann ich helfen?
                 </h2>
                 <p className="text-[13px] text-[#8C7E6A]">
-                  Dein KI-Berater f&uuml;r den Immobilienkauf im DACH-Raum
+                  Dein KI-Assistent f&uuml;r den Immobilienkauf im DACH-Raum
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full pb-4">

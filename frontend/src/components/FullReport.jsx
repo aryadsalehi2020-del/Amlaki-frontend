@@ -3,7 +3,7 @@ import { ArrowLeft, Printer } from 'lucide-react';
 
 // Safe number formatting
 const n = (v) => Math.round(Number(v) || 0).toLocaleString('de-DE');
-const eur = (v) => n(v) + '\u20ac';
+const eur = (v) => n(v) + '€';
 const pct = (v) => (Number(v) || 0).toFixed(2) + '%';
 
 // Error Boundary
@@ -16,7 +16,7 @@ class ReportErrorBoundary extends React.Component {
         <div className="p-8 text-center">
           <p className="text-[#B85C5C] font-semibold mb-4">Fehler beim Laden des Reports</p>
           <button onClick={this.props.onBack} className="px-6 py-3 bg-[#7C8B6F] text-white rounded-xl font-semibold">
-            Zur\u00fcck zur Analyse
+            Zurück zur Analyse
           </button>
         </div>
       );
@@ -66,14 +66,19 @@ function ReportContent({ result, propertyData, onBack }) {
   const krit = r.kriterien || [];
   const score = Number(r.gesamtscore) || 0;
   const scoreCol = score >= 65 ? '#7C8B6F' : score >= 40 ? '#B5A68C' : '#B85C5C';
-  const cashflow = Number(cf.cashflow_vor_steuer || cf.monatlicher_cashflow) || 0;
+  const cashflow = Number(cf.monatlicher_cashflow) || 0;
+  const steuer = cf.steuereffekt || {};
+  const staerken = r['stärken'] || [];
+  const schwaechen = r['schwächen'] || [];
+
+  const scoreLabel = score >= 65 ? 'Empfehlenswert' : score >= 55 ? 'Solide' : score >= 40 ? 'Prüfen' : 'Nicht empfohlen';
 
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 print:hidden">
         <button onClick={onBack} className="flex items-center gap-2 text-[14px] text-[#8C7E6A] hover:text-[#7C8B6F]">
-          <ArrowLeft size={18} /> Zur\u00fcck
+          <ArrowLeft size={18} /> Zurück
         </button>
         <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2.5 bg-[#7C8B6F] text-white rounded-xl text-[14px] font-semibold hover:bg-[#6B7A5E]">
           <Printer size={16} /> PDF / Drucken
@@ -86,13 +91,13 @@ function ReportContent({ result, propertyData, onBack }) {
         <div className="text-center mb-8 pb-6 border-b border-[#E8E0D4]">
           <p className="text-[20px] font-bold mb-3">
             <span className="text-[#7C8B6F]">A</span><span className="text-[#2C2418]">mlak</span><span className="text-[#7C8B6F]">I</span>
-            <span className="text-[12px] text-[#8C7E6A] ml-2">Vollst\u00e4ndiger Analysebericht</span>
+            <span className="text-[12px] text-[#8C7E6A] ml-2">Vollständiger Analysebericht</span>
           </p>
           <h1 className="text-[24px] md:text-[32px] font-bold text-[#2C2418] mb-2">
             {p.titel || p.title || (r.zusammenfassung || '').split('.')[0] || 'Immobilienanalyse'}
           </h1>
           <p className="text-[14px] text-[#8C7E6A]">
-            {[p.stadt, p.stadtteil].filter(Boolean).join(' ')} | {p.wohnflaeche || '?'}m\u00b2 | Baujahr {p.baujahr || '?'}
+            {[p.stadt, p.stadtteil].filter(Boolean).join(' ')} | {p.wohnflaeche || '?'}m² | Baujahr {p.baujahr || '?'}
           </p>
           <p className="text-[12px] text-[#B5A68C] mt-2">
             Erstellt am {new Date().toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' })}
@@ -107,10 +112,10 @@ function ReportContent({ result, propertyData, onBack }) {
                 <span className="text-[32px] font-bold" style={{ color: scoreCol }}>{Math.round(score)}</span>
               </div>
               <p className="text-[14px] font-semibold mt-2" style={{ color: scoreCol }}>
-                {score >= 65 ? 'Empfehlenswert' : score >= 55 ? 'Solide' : score >= 40 ? 'Pr\u00fcfen' : 'Nicht empfohlen'}
+                {scoreLabel}
               </p>
             </div>
-            <p className="flex-1 text-[14px] text-[#5C4F3D] leading-relaxed">{r.zusammenfassung || 'Keine Zusammenfassung verf\u00fcgbar.'}</p>
+            <p className="flex-1 text-[14px] text-[#5C4F3D] leading-relaxed">{r.zusammenfassung || 'Keine Zusammenfassung verfügbar.'}</p>
           </div>
           {krit.length > 0 && (
             <div className="mt-4 space-y-2">
@@ -131,9 +136,9 @@ function ReportContent({ result, propertyData, onBack }) {
         <Section title="2. Kennzahlen">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <KPI label="Kaufpreis" value={eur(p.kaufpreis)} />
-            <KPI label="Bruttorendite" value={pct(cf.bruttorendite || r.kennzahlen?.bruttorendite)} color={(Number(cf.bruttorendite) || 0) >= 4 ? '#7C8B6F' : '#B85C5C'} />
-            <KPI label="Kaufpreisfaktor" value={(Number(cf.kaufpreisfaktor || r.kennzahlen?.kaufpreisfaktor) || 0).toFixed(1)} />
-            <KPI label="Preis/m\u00b2" value={eur((Number(p.kaufpreis) || 0) / Math.max(Number(p.wohnflaeche) || 1, 1))} />
+            <KPI label="Bruttorendite" value={pct(cf.bruttorendite_prozent || r.kennzahlen?.bruttorendite)} color={(Number(cf.bruttorendite_prozent || r.kennzahlen?.bruttorendite) || 0) >= 4 ? '#7C8B6F' : '#B85C5C'} />
+            <KPI label="Kaufpreisfaktor" value={(Number(r.kennzahlen?.kaufpreisfaktor || cf.kaufpreisfaktor) || 0).toFixed(1)} />
+            <KPI label="Preis/m²" value={eur((Number(p.kaufpreis) || 0) / Math.max(Number(p.wohnflaeche) || 1, 1))} />
           </div>
         </Section>
 
@@ -142,12 +147,12 @@ function ReportContent({ result, propertyData, onBack }) {
           <div className="bg-[#FAF7F2] rounded-xl p-5">
             <Row label="Kaltmiete" value={'+' + eur(cf.monatliche_miete)} />
             <Row label="Kreditrate" value={'-' + eur(cf.monatliche_rate)} />
-            <Row label="Nicht umlagef\u00e4hige NK" value={'-' + eur(cf.monatliche_nebenkosten)} />
+            <Row label="Nicht umlagefähige NK" value={'-' + eur(cf.monatliche_nebenkosten)} />
             <Row label="Cashflow vor Steuer" value={eur(cashflow)} bold color={cashflow >= 0 ? '#7C8B6F' : '#B85C5C'} />
-            {Number(cf.steuerersparnis_monat) > 0 && (
+            {steuer.steuereffekt_monat_42 && (
               <>
-                <Row label="Steuerersparnis (mtl.)" value={'+' + eur(cf.steuerersparnis_monat)} />
-                <Row label="Cashflow nach Steuer" value={eur(cf.cashflow_nach_steuer)} bold color={(Number(cf.cashflow_nach_steuer) || 0) >= 0 ? '#7C8B6F' : '#B85C5C'} />
+                <Row label="Steuereffekt (mtl., 42%)" value={(Number(steuer.steuereffekt_monat_42) >= 0 ? '+' : '') + eur(steuer.steuereffekt_monat_42)} />
+                <Row label="Cashflow nach Steuer" value={eur(steuer.cashflow_nach_steuer_42)} bold color={(Number(steuer.cashflow_nach_steuer_42) || 0) >= 0 ? '#7C8B6F' : '#B85C5C'} />
               </>
             )}
           </div>
@@ -175,8 +180,8 @@ function ReportContent({ result, propertyData, onBack }) {
           <Section title="5. Abschreibung (AfA)">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <KPI label="AfA-Satz" value={(Number(afa.afa_satz) || 0) + '%'} />
-              <KPI label="J\u00e4hrliche AfA" value={eur(afa.jaehrliche_afa)} />
-              <KPI label="Geb\u00e4udewert" value={eur(afa.gebaeudewert)} />
+              <KPI label="Jährliche AfA" value={eur(afa.jaehrliche_afa)} />
+              <KPI label="Gebäudewert" value={eur(afa.gebaeudewert)} />
               <KPI label="Steuerersparnis/J." value={eur(afa.steuerersparnis_jahr)} color="#7C8B6F" />
             </div>
           </Section>
@@ -231,31 +236,37 @@ function ReportContent({ result, propertyData, onBack }) {
           </Section>
         )}
 
-        {/* 9. Foerderungen */}
+        {/* 9. Förderungen */}
         {fo.length > 0 && (
-          <Section title="9. F\u00f6rderungen">
+          <Section title="9. Förderungen">
             <div className="space-y-3">
               {fo.map((f, i) => (
                 <div key={i} className="bg-[#FAF7F2] rounded-xl p-4">
-                  <h4 className="text-[14px] font-semibold text-[#2C2418]">{f.name || f.programm || 'F\u00f6rderung'}</h4>
-                  <p className="text-[13px] text-[#5C4F3D]">{f.beschreibung || f.details || ''}</p>
+                  <h4 className="text-[14px] font-semibold text-[#2C2418]">{f.name || f.programm || 'Förderung'}</h4>
+                  <p className="text-[13px] text-[#5C4F3D]">{f.beschreibung || f.grund || f.details || ''}</p>
+                  {f.kredit && <p className="text-[13px] text-[#5C4F3D]">Kredit bis {eur(f.kredit)}{f.zins ? ` (${f.zins})` : ''}</p>}
+                  {f.zuschuss && <p className="text-[13px] text-[#5C4F3D]">{f.zuschuss}</p>}
+                  {f.foerderung_prozent && <p className="text-[13px] text-[#5C4F3D]">Zuschuss: {f.foerderung_prozent}%{f.beispiel ? ` — ${f.beispiel}` : ''}</p>}
+                  {f.foerderung && <p className="text-[13px] text-[#5C4F3D]">{f.foerderung}</p>}
                   {Number(f.betrag) > 0 && <p className="text-[14px] font-bold text-[#7C8B6F] mt-1">Bis zu {eur(f.betrag)}</p>}
+                  {f.wichtig && <p className="text-[12px] text-[#B85C5C] mt-1">{f.wichtig}</p>}
+                  {f.link && <a href={f.link} target="_blank" rel="noopener noreferrer" className="text-[12px] text-[#7C8B6F] hover:underline mt-1 inline-block">Zum Förderprogramm →</a>}
                 </div>
               ))}
             </div>
           </Section>
         )}
 
-        {/* 10. Tipps */}
+        {/* 10. Verbesserungsvorschläge */}
         {tipps.length > 0 && (
-          <Section title="10. Verbesserungsvorschl\u00e4ge">
+          <Section title="10. Verbesserungsvorschläge">
             <div className="space-y-2">
               {tipps.map((t, i) => (
                 <div key={i} className="flex gap-3 p-3 bg-[#FAF7F2] rounded-xl">
                   <span className="text-[#7C8B6F] font-bold shrink-0">{i + 1}.</span>
                   <div>
-                    <p className="text-[14px] font-semibold text-[#2C2418]">{typeof t === 'string' ? t : (t.titel || t.title || '')}</p>
-                    {t.beschreibung && <p className="text-[13px] text-[#5C4F3D] mt-1">{t.beschreibung}</p>}
+                    <p className="text-[14px] font-semibold text-[#2C2418]">{typeof t === 'string' ? t : (t.tipp || t.titel || t.title || t.typ || '')}</p>
+                    {(t.effekt || t.beschreibung) && <p className="text-[13px] text-[#5C4F3D] mt-1">{t.effekt || t.beschreibung}</p>}
                   </div>
                 </div>
               ))}
@@ -263,20 +274,20 @@ function ReportContent({ result, propertyData, onBack }) {
           </Section>
         )}
 
-        {/* 11. Staerken/Schwaechen */}
-        {((r.staerken || []).length > 0 || (r.schwaechen || []).length > 0) && (
-          <Section title="11. St\u00e4rken & Schw\u00e4chen">
+        {/* 11. Stärken & Schwächen */}
+        {(staerken.length > 0 || schwaechen.length > 0) && (
+          <Section title="11. Stärken & Schwächen">
             <div className="grid md:grid-cols-2 gap-4">
-              {(r.staerken || []).length > 0 && (
+              {staerken.length > 0 && (
                 <div>
-                  <h4 className="text-[14px] font-semibold text-[#7C8B6F] mb-2">St\u00e4rken</h4>
-                  {(r.staerken || []).map((s, i) => <p key={i} className="text-[13px] text-[#5C4F3D] flex gap-2"><span className="text-[#7C8B6F]">{'\u2714'}</span> {s}</p>)}
+                  <h4 className="text-[14px] font-semibold text-[#7C8B6F] mb-2">Stärken</h4>
+                  {staerken.map((s, i) => <p key={i} className="text-[13px] text-[#5C4F3D] flex gap-2"><span className="text-[#7C8B6F]">✔</span> {s}</p>)}
                 </div>
               )}
-              {(r.schwaechen || []).length > 0 && (
+              {schwaechen.length > 0 && (
                 <div>
-                  <h4 className="text-[14px] font-semibold text-[#B85C5C] mb-2">Schw\u00e4chen</h4>
-                  {(r.schwaechen || []).map((s, i) => <p key={i} className="text-[13px] text-[#5C4F3D] flex gap-2"><span className="text-[#B85C5C]">{'\u2718'}</span> {s}</p>)}
+                  <h4 className="text-[14px] font-semibold text-[#B85C5C] mb-2">Schwächen</h4>
+                  {schwaechen.map((s, i) => <p key={i} className="text-[13px] text-[#5C4F3D] flex gap-2"><span className="text-[#B85C5C]">✘</span> {s}</p>)}
                 </div>
               )}
             </div>
@@ -285,7 +296,7 @@ function ReportContent({ result, propertyData, onBack }) {
 
         {/* Footer */}
         <div className="mt-10 pt-6 border-t border-[#E8E0D4] text-center">
-          <p className="text-[12px] text-[#B5A68C]">Erstellt mit AmlakI — amlaki.de — Keine Anlageberatung. Alle Angaben ohne Gew\u00e4hr.</p>
+          <p className="text-[12px] text-[#B5A68C]">Erstellt mit AmlakI — amlaki.de — Keine Anlageberatung. Alle Angaben ohne Gewähr.</p>
         </div>
       </div>
     </div>

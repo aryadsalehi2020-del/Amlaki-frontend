@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 function ConfirmDialog({
   isOpen, onClose, onConfirm,
@@ -25,8 +26,8 @@ function ConfirmDialog({
 
   const style = variants[variant];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#2C2418]/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-[20px] p-5 md:p-6 max-w-sm md:max-w-md w-full border border-[#E8E0D4] shadow-2xl animate-scale-in">
         <div className="flex items-start gap-4">
@@ -41,7 +42,8 @@ function ConfirmDialog({
           <button onClick={() => { onConfirm(); onClose(); }} className={`flex-1 px-4 py-3.5 md:py-3 min-h-[44px] rounded-[12px] transition-all font-bold active:opacity-80 ${style.confirmBtn}`}>{confirmText}</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

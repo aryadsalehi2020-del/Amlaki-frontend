@@ -487,11 +487,11 @@ def berechne_fairen_preis(kaufpreis: float, jahresmiete: float, wohnflaeche: flo
     if markt_qm_preis and wohnflaeche and wohnflaeche > 0:
         nach_markt = round(markt_qm_preis * wohnflaeche)
 
-    # Gewichteter Durchschnitt
+    # Gewichteter Durchschnitt - Marktvergleich ist die objektivste Methode
     if nach_markt is not None:
-        # Alle 4 Methoden: Rendite 30%, Faktor 30%, Markt 25%, Cashflow 15%
+        # Alle 4 Methoden: Markt 40%, Rendite 25%, Faktor 25%, Cashflow 10%
         fairer_preis_raw = round(
-            nach_rendite * 0.30 + nach_faktor * 0.30 + nach_markt * 0.25 + nach_cashflow * 0.15
+            nach_markt * 0.40 + nach_rendite * 0.25 + nach_faktor * 0.25 + nach_cashflow * 0.10
         )
     else:
         # Ohne Marktdaten: Rendite 40%, Faktor 40%, Cashflow 20%
@@ -550,64 +550,69 @@ def empfehle_foerderungen(
             "programm": "KfW 124",
             "name": "Wohneigentumsprogramm",
             "kredit": 100000,
-            "zins": "ca. 3,4%",
+            "zins": "marktnaher Zins",
             "grund": "Selbstgenutzte Immobilie",
             "wichtig": "Antrag VOR Kaufvertrag!",
+            "link": "https://www.kfw.de/inlandsfoerderung/Privatpersonen/Neubau/F%C3%B6rderprodukte/Wohneigentumsprogramm-(124)/",
             "prioritaet": "hoch"
         })
 
-    # KfW 261/262 - Energetische Sanierung
+    # KfW 261 - Energetische Sanierung (KfW 262 eingestellt, in 261 integriert)
     if energieklasse and energieklasse.upper() in ['D', 'E', 'F', 'G', 'H']:
         empfehlungen.append({
-            "programm": "KfW 261/262",
-            "name": "BEG Wohngebäude",
+            "programm": "KfW 261",
+            "name": "BEG Wohngebäude-Kredit",
             "kredit": 150000,
-            "zuschuss": "Bis 67.500€ Tilgungszuschuss",
-            "grund": f"Energieklasse {energieklasse} -> Sanierung förderfähig",
-            "wichtig": "Antrag VOR Baubeginn, Energieberater erforderlich!",
+            "zuschuss": "Bis 45% Tilgungszuschuss (max. 67.500€)",
+            "grund": f"Energieklasse {energieklasse} - Sanierung förderfähig",
+            "wichtig": "Antrag VOR Baubeginn, Energieberater erforderlich! Gebäude muss mind. 5 Jahre alt sein.",
+            "link": "https://www.kfw.de/inlandsfoerderung/Privatpersonen/Bestehende-Immobilie/F%C3%B6rderprodukte/Bundesf%C3%B6rderung-f%C3%BCr-effiziente-Geb%C3%A4ude-Wohngeb%C3%A4ude-Kredit-(261-262)/",
             "prioritaet": "hoch"
         })
 
-    # KfW 308 - Jung kauft Alt
+    # KfW 308 - Jung kauft Alt (Familien + Bestandserwerb)
     if selbstnutzung and kinder_anzahl > 0 and energieklasse and energieklasse.upper() in ['F', 'G', 'H']:
         kredit = 100000 if kinder_anzahl == 1 else (125000 if kinder_anzahl == 2 else 150000)
         einkommensgrenze = 90000 + (kinder_anzahl - 1) * 10000
         empfehlungen.append({
             "programm": "KfW 308",
-            "name": "Jung kauft Alt",
+            "name": "Wohneigentum für Familien - Bestandserwerb (Jung kauft Alt)",
             "kredit": kredit,
-            "zins": "ca. 1,12%",
+            "zins": "ca. 1,12% (ca. 2,5 Prozentpunkte unter Marktzins)",
             "grund": f"Familie mit {kinder_anzahl} Kind(ern) + Energieklasse {energieklasse}",
             "einkommensgrenze": einkommensgrenze,
-            "bedingung": "Sanierung zu EH 85 EE in 54 Monaten",
+            "bedingung": "Sanierung zu Effizienzhaus 85 EE innerhalb von 54 Monaten",
+            "link": "https://www.kfw.de/inlandsfoerderung/Privatpersonen/Bestehende-Immobilie/F%C3%B6rderprodukte/Wohneigentum-f%C3%BCr-Familien-Bestandserwerb-(308)/",
             "prioritaet": "sehr hoch"
         })
 
-    # KfW 458 - Heizungsförderung
+    # KfW 458 - Heizungsförderung (seit 2024 über KfW, nicht mehr BAFA)
     if heizung_alt:
         foerderung = 30  # Grundförderung
         if selbstnutzung:
-            foerderung += 20  # Klimabonus
+            foerderung += 20  # Klimageschwindigkeits-Bonus
         if einkommen and einkommen <= 40000:
-            foerderung += 30  # Einkommensbonus
+            foerderung += 30  # Einkommens-Bonus
         foerderung = min(foerderung, 70)
         empfehlungen.append({
             "programm": "KfW 458",
-            "name": "Heizungsförderung",
+            "name": "Heizungsförderung für Privatpersonen",
             "foerderung_prozent": foerderung,
             "grund": "Alte Heizung austauschfähig",
-            "beispiel": f"Bei 30.000€ Wärmepumpe: bis zu {int(30000 * foerderung / 100)}€ Zuschuss!",
+            "beispiel": f"Bei 30.000€ Wärmepumpe: bis zu {int(30000 * foerderung / 100):,}€ Zuschuss!",
             "hinweis": None if selbstnutzung else "Als Vermieter nur 30% Grundförderung (Klimabonus und Einkommensbonus gelten nur für Eigennutzer)",
+            "link": "https://www.kfw.de/inlandsfoerderung/Privatpersonen/Bestehende-Immobilie/F%C3%B6rderprodukte/Heizungsf%C3%B6rderung-f%C3%BCr-Privatpersonen-Wohngeb%C3%A4ude-(458)/",
             "prioritaet": "hoch" if foerderung >= 50 else "mittel"
         })
 
-    # BAFA Einzelmaßnahmen
+    # BAFA Einzelmaßnahmen (Dämmung, Fenster - Heizung läuft seit 2024 über KfW)
     empfehlungen.append({
         "programm": "BAFA",
-        "name": "Einzelmaßnahmen",
+        "name": "BEG Einzelmaßnahmen (Gebäudehülle)",
         "foerderung": "15-20% Zuschuss",
-        "fuer": "Dämmung, Fenster, Sonnenschutz",
+        "fuer": "Dämmung, Fenster, Sonnenschutz, Lüftungsanlagen",
         "tipp": "Mit iSFP-Bonus: Förderfähige Kosten verdoppeln sich auf 60.000€!",
+        "link": "https://www.bafa.de/DE/Energie/Effiziente_Gebaeude/effiziente_gebaeude_node.html",
         "prioritaet": "mittel"
     })
 
@@ -711,22 +716,6 @@ def generiere_verbesserungsvorschlaege(
             ],
             "prioritaet": "hoch"
         })
-
-    # 6. Fairer Preis
-    fairer = berechne_fairen_preis(kaufpreis, jahresmiete, markt_qm_preis=None)
-    tipps.append({
-        "typ": "Fairer Preis",
-        "icon": "",
-        "tipp": f"Fairer Kaufpreis wäre: {fairer['fairer_preis']:,.0f}€",
-        "berechnung": {
-            "nach_ertragswert": fairer["nach_rendite"],
-            "nach_faktor_22": fairer["nach_faktor"],
-            "nach_cashflow": fairer["nach_cashflow"],
-            "empfehlung": fairer["fairer_preis"]
-        },
-        "differenz": f"Aktuell {fairer['differenz_prozent']}% über fairem Preis" if fairer['differenz_prozent'] > 0 else f"Aktuell {abs(fairer['differenz_prozent'])}% unter fairem Preis",
-        "prioritaet": "hoch" if abs(fairer['differenz_prozent']) > 10 else "mittel"
-    })
 
     return tipps
 
@@ -882,8 +871,11 @@ def berechne_leverage_effekt(
     Berechnet den Leverage-Effekt.
     EK-Rendite = Objektrendite + (Objektrendite - FK-Zins) x (FK/EK)
     """
+    # Bei 0 EK: Kaufnebenkosten (~12% vom Kaufpreis) als tatsaechliches EK
     if eigenkapital <= 0:
-        return {"fehler": "Eigenkapital muss größer 0 sein"}
+        eigenkapital = (fremdkapital + eigenkapital) * 0.12  # ~12% Kaufnebenkosten
+        if eigenkapital <= 0:
+            return {"fehler": "Eigenkapital muss groesser 0 sein"}
 
     hebel = fremdkapital / eigenkapital
     spread = objektrendite - fremdkapitalzins
@@ -961,9 +953,9 @@ Der User entscheidet selbst. Wir zeigen:
 - [NEIN] Riskante Szenarien (mit Warnung, aber trotzdem berechnet!)
 
 ### 3. MIT ZAHLEN ARGUMENTIEREN!
-- Kaufpreisfaktor: <20 sehr gut, 20-25 okay, >25 kritisch
-- Bruttorendite: >5% sehr gut, 4-5% gut, <3% kritisch
-- Cashflow: >0 gut, -100 bis 0 akzeptabel, <-100 problematisch
+- Kaufpreisfaktor: <22 sehr gut, 22-27 gut, >27 kritisch
+- Bruttorendite: >4.5% sehr gut, 3.5-4.5% gut, <2.5% kritisch
+- Cashflow RELATIV zum Kaufpreis bewerten (nicht absolut!), Steuereffekt beruecksichtigen
 
 ### 4. FÖRDERUNGEN IMMER ERWÄHNEN!
 - KfW 124: Selbstnutzer, 100.000€ zu 3.4%

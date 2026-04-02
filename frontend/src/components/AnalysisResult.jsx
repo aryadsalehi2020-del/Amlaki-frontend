@@ -1308,6 +1308,11 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                         {'\u{1F4A1}'} {foerderung.tipp}
                       </p>
                     )}
+                    {foerderung.link && (
+                      <a href={foerderung.link} target="_blank" rel="noopener noreferrer" className="text-xs text-[#7C8B6F] hover:underline mt-2 inline-block">
+                        Zum Förderprogramm →
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>

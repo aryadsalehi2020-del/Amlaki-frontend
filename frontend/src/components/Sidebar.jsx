@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { MessageSquare, Search, BookOpen, Calculator, Settings, CreditCard, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
+import ConfirmDialog from './ConfirmDialog';
 
 const ICON_MAP = { MessageSquare, Search, BookOpen, Calculator, Settings, CreditCard };
 
@@ -11,6 +12,7 @@ function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [credits, setCredits] = useState(null);
 
@@ -200,12 +202,16 @@ function Sidebar() {
           <p className="text-[11px] text-[#8C7E6A] truncate">{user?.email}</p>
         </div>
         <button
-          onClick={() => { logout(); navigate('/login'); }}
+          onClick={() => setShowLogoutDialog(true)}
           className="w-full px-3 py-2 text-[13px] text-[#8C7E6A] hover:text-[#5C4F3D] transition-colors rounded-[10px] hover:bg-[#F5F0E8] text-left"
         >
           Abmelden
         </button>
       </div>
+
+      <ConfirmDialog isOpen={showLogoutDialog} onClose={() => setShowLogoutDialog(false)}
+        onConfirm={() => { logout(); navigate('/login'); }} title="Abmelden?"
+        message="Möchtest du dich wirklich abmelden?" confirmText="Abmelden" cancelText="Abbrechen" variant="warning" />
     </div>
   );
 

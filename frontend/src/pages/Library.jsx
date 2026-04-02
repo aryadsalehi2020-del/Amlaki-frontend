@@ -119,11 +119,10 @@ function Library() {
       {loading ? (
         <div className="py-16 flex justify-center">
           <div className="flex items-center gap-[6px]">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="w-[8px] h-[8px] rounded-full bg-[#B5A68C]" style={{ animation: `typingPulse 1.4s ease-in-out ${i * 0.15}s infinite`, opacity: 0.25 }} />
-            ))}
+            <span className="loading-dot" />
+            <span className="loading-dot" />
+            <span className="loading-dot" />
           </div>
-          <style>{`@keyframes typingPulse { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 0.9; } }`}</style>
         </div>
       ) : sorted.length === 0 ? (
         <div className="bg-white border border-[#E8E0D4] rounded-[16px] p-16 text-center fade-in">

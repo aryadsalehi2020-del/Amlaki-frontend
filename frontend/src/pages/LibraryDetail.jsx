@@ -59,7 +59,7 @@ function LibraryDetail() {
     try {
       const response = await fetch(`${API_BASE}/analyze`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ property_data: analysis.property_data, verwendungszweck: newVerwendungszweck, eigenkapital: analysis.eigenkapital || 0, zinssatz: analysis.zinssatz || 3.75, tilgung: analysis.tilgung || 1.25 }),
+        body: JSON.stringify({ property_data: analysis.property_data, verwendungszweck: newVerwendungszweck, eigenkapital: analysis.eigenkapital || 0, zinssatz: analysis.zinssatz || 3.75, tilgung: analysis.tilgung || 1.25, analysis_id: analysis.id }),
       });
       if (response.ok) {
         const newResult = await response.json();
@@ -84,11 +84,10 @@ function LibraryDetail() {
     <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
       <div className="bg-white rounded-[16px] p-12 text-center border border-[#E8E0D4]">
         <div className="flex items-center gap-[6px] mx-auto mb-4 justify-center">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="w-[8px] h-[8px] rounded-full bg-[#B5A68C]" style={{ animation: `typingPulse 1.4s ease-in-out ${i * 0.15}s infinite`, opacity: 0.25 }} />
-          ))}
+          <span className="loading-dot" />
+          <span className="loading-dot" />
+          <span className="loading-dot" />
         </div>
-        <style>{`@keyframes typingPulse { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 0.9; } }`}</style>
         <p className="text-[#8C7E6A] text-[16px]">Lade Analyse...</p>
       </div>
     </div>
@@ -161,7 +160,7 @@ function LibraryDetail() {
             </div>
             {isReanalyzing && (
               <div className="flex items-center justify-center gap-2 text-[#7C8B6F] text-[13px] mb-4">
-                <div className="w-4 h-4 border-2 border-[#E8E0D4] border-t-[#7C8B6F] rounded-full animate-spin"></div>
+                <div className="loading-spinner" style={{ borderColor: '#E8E0D4', borderTopColor: '#7C8B6F' }}></div>
                 <span>Neu-Analyse läuft...</span>
               </div>
             )}
@@ -183,14 +182,14 @@ function LibraryDetail() {
             </div>
           </div>
 
-          {/* Berater Button */}
+          {/* Assistent Button */}
           <div className="mt-6 pt-6 border-t border-[#E8E0D4]">
             <button
               onClick={() => navigate(`/chat?analysis_id=${id}`)}
               className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-[#7C8B6F] text-white font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all text-[14px]"
             >
               <MessageSquare className="w-5 h-5" />
-              Berater zu diesem Objekt
+              Assistent zu diesem Objekt
             </button>
           </div>
         </div>

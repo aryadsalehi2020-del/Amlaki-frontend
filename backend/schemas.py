@@ -54,6 +54,7 @@ class UserUpdate(BaseModel):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    # NOTE: is_superuser is intentionally exposed here for frontend admin UI rendering
     is_superuser: bool = False
     created_at: datetime
     default_verwendungszweck: str

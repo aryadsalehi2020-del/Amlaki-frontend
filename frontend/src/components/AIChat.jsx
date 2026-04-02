@@ -51,7 +51,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
       const score = analysisContext.gesamtscore ? `${Math.round(analysisContext.gesamtscore)}/100` : '';
       return {
         role: 'assistant',
-        content: `Ich bin Ihr Berater f\u00fcr **diese Immobilie** in ${stadt} (${kaufpreis})!\n\n` +
+        content: `Ich bin Ihr Assistent f\u00fcr **diese Immobilie** in ${stadt} (${kaufpreis})!\n\n` +
           (score ? `Aktueller Score: **${score}**\n\n` : '') +
           `Frag mich zu diesem Objekt:\n` +
           `- "Ist der Preis angemessen?"\n` +
@@ -115,7 +115,7 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-[#E8E0D4]">
-        <h3 className="text-[16px] font-semibold text-[#2C2418]">Immobilien-Berater AI</h3>
+        <h3 className="text-[16px] font-semibold text-[#2C2418]">Immobilien-Assistent AI</h3>
         <p className="text-[#8C7E6A] text-[13px] mt-1">Frag mich alles zu Immobilien</p>
       </div>
 
@@ -176,10 +176,10 @@ function AIChat({ analysisContext, isProjectSpecific = false }) {
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-[#F5F0E8] border border-[#E8E0D4] p-4 rounded-[16px]">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-[#B5A68C] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-[#B5A68C] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-[#B5A68C] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="flex items-center gap-[6px]">
+                <span className="loading-dot" />
+                <span className="loading-dot" />
+                <span className="loading-dot" />
               </div>
             </div>
           </div>

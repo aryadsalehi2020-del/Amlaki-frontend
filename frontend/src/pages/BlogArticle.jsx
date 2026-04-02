@@ -148,6 +148,32 @@ export default function BlogArticle() {
         </div>
       </header>
 
+      {/* CTA Button */}
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 20px 0' }}>
+        <a
+          href="/analyze"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            background: C.olive,
+            color: '#FFFFFF',
+            fontSize: 14,
+            fontWeight: 600,
+            padding: '12px 24px',
+            borderRadius: 30,
+            textDecoration: 'none',
+            transition: 'background 0.2s, transform 0.2s',
+            letterSpacing: '0.01em',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = '#6B7A5F'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = C.olive; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          Jetzt Immobilie analysieren
+          <span style={{ fontSize: 16 }}>&#8594;</span>
+        </a>
+      </div>
+
       {/* Article Body */}
       <article style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 60px' }}>
         <div className="blog-prose">

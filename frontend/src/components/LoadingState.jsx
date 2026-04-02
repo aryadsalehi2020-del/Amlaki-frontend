@@ -26,10 +26,7 @@ function LoadingState({ message }) {
       {/* Three dots - calm fade animation */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '32px' }}>
         {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="loading-dot-slow"
-          />
+          <span key={i} className="loading-dot" />
         ))}
       </div>
 
@@ -47,20 +44,6 @@ function LoadingState({ message }) {
         <p style={{ color: '#5C4F3D', fontSize: '13px' }}>{TIPS[tipIdx]}</p>
       </div>
 
-      <style>{`
-        .loading-dot-slow {
-          display: block;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background-color: #B5A68C;
-          animation: loadBreath 4s ease-in-out infinite;
-        }
-        @keyframes loadBreath {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.6; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -46,7 +46,7 @@ function Register() {
             <span className="text-[#2C2418]">mlak</span>
             <span className="font-extrabold text-[#7C8B6F]">I</span>
           </h1>
-          <p className="text-[14px] text-[#8C7E6A] mt-2">Dein KI-Immobilienberater</p>
+          <p className="text-[14px] text-[#8C7E6A] mt-2">Dein KI-Immobilienassistent</p>
         </div>
 
         <div className="fade-in fade-in-delay-1">
@@ -102,7 +102,7 @@ function Register() {
           </form>
 
           {slowServer && (
-            <p className="mt-3 text-center text-[12px] text-[#B5A68C] animate-pulse">
+            <p className="mt-3 text-center text-[12px] text-[#B5A68C] pulse-neon">
               Einen Moment bitte - der Server wird gerade hochgefahren...
             </p>
           )}

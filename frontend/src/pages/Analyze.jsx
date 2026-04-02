@@ -270,7 +270,7 @@ function Analyze() {
               {savedAnalysisId && (
                 <div className="mb-4 bg-white border border-[#E8E0D4] rounded-[12px] p-3 fade-in">
                   <div className="flex items-center gap-3">
-                    <p className="text-[13px] text-[#8C7E6A] flex-1">Analyse gespeichert. Mit dem Berater besprechen?</p>
+                    <p className="text-[13px] text-[#8C7E6A] flex-1">Analyse gespeichert. Mit dem Assistenten besprechen?</p>
                     <button
                       onClick={() => navigate(`/chat?analysis_id=${savedAnalysisId}`)}
                       className="px-4 py-2 bg-[#7C8B6F] text-white font-medium rounded-[10px] hover:bg-[#6B7A5E] transition-all text-[12px] flex items-center gap-1.5 shrink-0"
