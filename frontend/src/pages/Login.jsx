@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ function Login() {
   const [slowServer, setSlowServer] = useState(false);
   const slowTimer = useRef(null);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
 
   useEffect(() => () => clearTimeout(slowTimer.current), []);
 
@@ -47,6 +48,24 @@ function Login() {
           {error && (
             <div className="mb-6 px-4 py-3 bg-[#B85C5C]/[0.08] border border-[#B85C5C]/[0.2] rounded-[12px] text-[#B85C5C] text-[13px]">{error}</div>
           )}
+
+          <GoogleLoginButton
+            onSuccess={async (credential) => {
+              setError(''); setLoading(true); setSlowServer(false);
+              slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
+              try { await googleLogin(credential); navigate('/chat'); }
+              catch (err) { setError(err.message || 'Google Login fehlgeschlagen'); }
+              finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
+            }}
+            onError={(msg) => setError(msg)}
+            text="signin_with"
+          />
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px bg-[#E8E0D4]" />
+            <span className="text-[12px] text-[#B5A68C]">oder</span>
+            <div className="flex-1 h-px bg-[#E8E0D4]" />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <input

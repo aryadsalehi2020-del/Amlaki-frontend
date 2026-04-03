@@ -110,6 +110,26 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const googleLogin = async (credential) => {
+    const response = await apiFetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Google Login fehlgeschlagen');
+    }
+
+    const data = await response.json();
+    const newToken = data.access_token;
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    await fetchCurrentUser(newToken);
+    return data;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -141,6 +161,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    googleLogin,
     logout,
     updateUser,
     isAuthenticated: !!user
