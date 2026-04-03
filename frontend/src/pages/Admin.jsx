@@ -26,6 +26,8 @@ function Admin() {
   const [revenue, setRevenue] = useState(null);
   const [revenuePeriod, setRevenuePeriod] = useState('30d');
   const [expandedUser, setExpandedUser] = useState(null);
+  const [chartMode, setChartMode] = useState('revenue'); // 'revenue' | 'users'
+  const [usersChart, setUsersChart] = useState(null);
 
   useEffect(() => { if (user?.is_superuser) { fetchData(); fetchAgents(); fetchRevenue('30d'); } }, []);
 
@@ -123,6 +125,31 @@ function Admin() {
         setRevenuePeriod(period);
       }
     } catch (err) { /* ignore */ }
+  };
+
+  const fetchUsersChart = async (period) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/users-chart?period=${period}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        setUsersChart(await res.json());
+        setRevenuePeriod(period);
+      }
+    } catch (err) { /* ignore */ }
+  };
+
+  const switchChartMode = (mode) => {
+    setChartMode(mode);
+    if (mode === 'users' && !usersChart) {
+      fetchUsersChart(revenuePeriod);
+    }
+  };
+
+  const handlePeriodChange = (period) => {
+    if (chartMode === 'revenue') {
+      fetchRevenue(period);
+    } else {
+      fetchUsersChart(period);
+    }
   };
 
   const formatEur = (cents) => {
@@ -421,16 +448,33 @@ function Admin() {
         {/* ===== USERS TAB ===== */}
         {activeTab === 'users' && <>
 
-        {/* Revenue Dashboard */}
+        {/* Chart Dashboard */}
         <div className="bg-white rounded-[16px] border border-[#E8E0D4] overflow-hidden fade-in">
           <div className="p-4 md:p-6 border-b border-[#E8E0D4] flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
-              <h2 className="text-[18px] font-semibold text-[#2C2418]">Umsatz</h2>
-              {revenue && (
-                <p className="text-[28px] font-bold text-[#7C8B6F] mt-1">{formatEur(revenue.total_revenue_cents)}</p>
+              {/* Mode Toggle */}
+              <div className="flex items-center gap-1 bg-[#F5F0E8] rounded-[10px] p-1 mb-3 w-fit">
+                <button onClick={() => switchChartMode('revenue')}
+                  className={`px-4 py-1.5 rounded-[8px] text-[13px] font-medium transition-all ${
+                    chartMode === 'revenue' ? 'bg-white text-[#2C2418] shadow-sm' : 'text-[#8C7E6A] hover:text-[#5C4F3D]'
+                  }`}>Umsatz</button>
+                <button onClick={() => switchChartMode('users')}
+                  className={`px-4 py-1.5 rounded-[8px] text-[13px] font-medium transition-all ${
+                    chartMode === 'users' ? 'bg-white text-[#2C2418] shadow-sm' : 'text-[#8C7E6A] hover:text-[#5C4F3D]'
+                  }`}>Users</button>
+              </div>
+              {/* Values */}
+              {chartMode === 'revenue' && revenue && (
+                <>
+                  <p className="text-[28px] font-bold text-[#7C8B6F] leading-tight">{formatEur(revenue.total_revenue_cents)}</p>
+                  <p className="text-[12px] text-[#8C7E6A] mt-0.5">{revenue.total_purchases} Kaeufe / {revenue.total_credits} Credits</p>
+                </>
               )}
-              {revenue && (
-                <p className="text-[12px] text-[#8C7E6A] mt-0.5">{revenue.total_purchases} Kaeufe / {revenue.total_credits} Credits</p>
+              {chartMode === 'users' && usersChart && (
+                <>
+                  <p className="text-[28px] font-bold text-[#2C2418] leading-tight">{usersChart.total_new} neue User</p>
+                  <p className="text-[12px] text-[#8C7E6A] mt-0.5">{usersChart.total_all} gesamt</p>
+                </>
               )}
             </div>
             <div className="flex items-center gap-1.5 bg-[#F5F0E8] rounded-[10px] p-1">
@@ -441,7 +485,7 @@ function Admin() {
                 { key: '90d', label: '1 Quartal' },
                 { key: '365d', label: '1 Jahr' },
               ].map(p => (
-                <button key={p.key} onClick={() => fetchRevenue(p.key)}
+                <button key={p.key} onClick={() => handlePeriodChange(p.key)}
                   className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${
                     revenuePeriod === p.key
                       ? 'bg-white text-[#2C2418] shadow-sm'
@@ -454,7 +498,7 @@ function Admin() {
           </div>
 
           {/* Revenue Chart */}
-          {revenue && revenue.data_points.length > 0 && (
+          {chartMode === 'revenue' && revenue && revenue.data_points.length > 0 && (
             <div className="p-4 md:p-6">
               <div className="h-[180px] flex items-end gap-[2px]">
                 {(() => {
@@ -471,13 +515,11 @@ function Admin() {
                           }}
                         />
                       </div>
-                      {/* Tooltip */}
                       {d.revenue_cents > 0 && (
                         <div className="absolute bottom-full mb-1 bg-[#2C2418] text-white text-[10px] px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                           {formatEur(d.revenue_cents)} / {d.purchases}x / {d.credits} Credits
                         </div>
                       )}
-                      {/* Label - nur jedes n-te anzeigen */}
                       {(revenue.data_points.length <= 14 || i % Math.ceil(revenue.data_points.length / 10) === 0) && (
                         <span className="text-[9px] text-[#B5A68C] truncate w-full text-center">{d.date}</span>
                       )}
@@ -487,8 +529,47 @@ function Admin() {
               </div>
             </div>
           )}
-          {revenue && revenue.data_points.length === 0 && (
+          {chartMode === 'revenue' && revenue && revenue.data_points.length === 0 && (
             <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Keine Umsaetze in diesem Zeitraum</div>
+          )}
+
+          {/* Users Chart */}
+          {chartMode === 'users' && usersChart && usersChart.data_points.length > 0 && (
+            <div className="p-4 md:p-6">
+              <div className="h-[180px] flex items-end gap-[2px]">
+                {(() => {
+                  const maxCount = Math.max(...usersChart.data_points.map(d => d.count), 1);
+                  return usersChart.data_points.map((d, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0 group relative">
+                      <div className="w-full flex flex-col items-center justify-end h-[140px]">
+                        <div
+                          className="w-full rounded-t-[4px] transition-all"
+                          style={{
+                            height: `${Math.max((d.count / maxCount) * 140, d.count > 0 ? 4 : 0)}px`,
+                            backgroundColor: d.count > 0 ? '#2C2418' : '#E8E0D4',
+                            opacity: d.count > 0 ? 1 : 0.3,
+                          }}
+                        />
+                      </div>
+                      {d.count > 0 && (
+                        <div className="absolute bottom-full mb-1 bg-[#2C2418] text-white text-[10px] px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          {d.count} {d.count === 1 ? 'User' : 'Users'}
+                        </div>
+                      )}
+                      {(usersChart.data_points.length <= 14 || i % Math.ceil(usersChart.data_points.length / 10) === 0) && (
+                        <span className="text-[9px] text-[#B5A68C] truncate w-full text-center">{d.date}</span>
+                      )}
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
+          {chartMode === 'users' && usersChart && usersChart.data_points.length === 0 && (
+            <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Keine neuen User in diesem Zeitraum</div>
+          )}
+          {chartMode === 'users' && !usersChart && (
+            <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Lade...</div>
           )}
         </div>
 
