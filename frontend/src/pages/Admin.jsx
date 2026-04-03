@@ -540,8 +540,8 @@ function Admin() {
                           className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${u.is_superuser ? 'bg-[#F5F0E8] text-[#5C4F3D] border border-[#E8E0D4]' : 'bg-[#F5F0E8] text-[#8C7E6A]'} disabled:opacity-50`}>
                           {u.is_superuser ? 'Admin entfernen' : 'Zu Admin machen'}
                         </button>
-                        <button onClick={() => openFeedbackEmail(u)} disabled={u.id === user.id}
-                          className="px-3 py-1.5 bg-[#7C8B6F]/10 text-[#7C8B6F] rounded-[8px] text-[12px] font-medium disabled:opacity-50">E-Mail</button>
+                        <button onClick={() => openFeedbackEmail(u)} 
+                          className="px-3 py-1.5 bg-[#7C8B6F]/10 text-[#7C8B6F] rounded-[8px] text-[12px] font-medium">E-Mail</button>
                         <button onClick={() => deleteUser(u.id, u.username)} disabled={actionLoading || u.id === user.id}
                           className="px-3 py-1.5 bg-[#B85C5C]/10 text-[#B85C5C] rounded-[8px] text-[12px] font-medium disabled:opacity-50">Loschen</button>
                       </div>
