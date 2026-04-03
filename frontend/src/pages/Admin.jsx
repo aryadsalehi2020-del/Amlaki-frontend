@@ -497,80 +497,94 @@ function Admin() {
             </div>
           </div>
 
-          {/* Revenue Chart */}
-          {chartMode === 'revenue' && revenue && revenue.data_points.length > 0 && (
-            <div className="p-4 md:p-6">
-              <div className="h-[180px] flex items-end gap-[2px]">
-                {(() => {
-                  const maxRev = Math.max(...revenue.data_points.map(d => d.revenue_cents), 1);
-                  return revenue.data_points.map((d, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0 group relative">
-                      <div className="w-full flex flex-col items-center justify-end h-[140px]">
-                        <div
-                          className="w-full rounded-t-[4px] transition-all"
-                          style={{
-                            height: `${Math.max((d.revenue_cents / maxRev) * 140, d.revenue_cents > 0 ? 4 : 0)}px`,
-                            backgroundColor: d.revenue_cents > 0 ? '#7C8B6F' : '#E8E0D4',
-                            opacity: d.revenue_cents > 0 ? 1 : 0.3,
-                          }}
-                        />
-                      </div>
-                      {d.revenue_cents > 0 && (
-                        <div className="absolute bottom-full mb-1 bg-[#2C2418] text-white text-[10px] px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                          {formatEur(d.revenue_cents)} / {d.purchases}x / {d.credits} Credits
-                        </div>
-                      )}
-                      {(revenue.data_points.length <= 14 || i % Math.ceil(revenue.data_points.length / 10) === 0) && (
-                        <span className="text-[9px] text-[#B5A68C] truncate w-full text-center">{d.date}</span>
-                      )}
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-          )}
-          {chartMode === 'revenue' && revenue && revenue.data_points.length === 0 && (
-            <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Keine Umsaetze in diesem Zeitraum</div>
-          )}
+          {/* Line Chart - shared for both modes */}
+          {(() => {
+            let dataPoints, getValue, color, emptyMsg, tooltipFn;
+            if (chartMode === 'revenue') {
+              if (!revenue) return null;
+              dataPoints = revenue.data_points;
+              getValue = d => d.revenue_cents;
+              color = '#7C8B6F';
+              emptyMsg = 'Keine Umsaetze in diesem Zeitraum';
+              tooltipFn = d => `${formatEur(d.revenue_cents)} / ${d.purchases}x`;
+            } else {
+              if (!usersChart) return <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Lade...</div>;
+              dataPoints = usersChart.data_points;
+              getValue = d => d.count;
+              color = '#2C2418';
+              emptyMsg = 'Keine neuen User in diesem Zeitraum';
+              tooltipFn = d => `${d.count} ${d.count === 1 ? 'User' : 'Users'}`;
+            }
 
-          {/* Users Chart */}
-          {chartMode === 'users' && usersChart && usersChart.data_points.length > 0 && (
-            <div className="p-4 md:p-6">
-              <div className="h-[180px] flex items-end gap-[2px]">
-                {(() => {
-                  const maxCount = Math.max(...usersChart.data_points.map(d => d.count), 1);
-                  return usersChart.data_points.map((d, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0 group relative">
-                      <div className="w-full flex flex-col items-center justify-end h-[140px]">
-                        <div
-                          className="w-full rounded-t-[4px] transition-all"
-                          style={{
-                            height: `${Math.max((d.count / maxCount) * 140, d.count > 0 ? 4 : 0)}px`,
-                            backgroundColor: d.count > 0 ? '#2C2418' : '#E8E0D4',
-                            opacity: d.count > 0 ? 1 : 0.3,
-                          }}
-                        />
-                      </div>
-                      {d.count > 0 && (
-                        <div className="absolute bottom-full mb-1 bg-[#2C2418] text-white text-[10px] px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                          {d.count} {d.count === 1 ? 'User' : 'Users'}
+            if (!dataPoints || dataPoints.length === 0) {
+              return <div className="p-6 text-center text-[13px] text-[#8C7E6A]">{emptyMsg}</div>;
+            }
+
+            const values = dataPoints.map(getValue);
+            const maxVal = Math.max(...values, 1);
+            const W = 1000;
+            const H = 180;
+            const padTop = 20;
+            const padBottom = 30;
+            const padLeft = 0;
+            const padRight = 0;
+            const chartH = H - padTop - padBottom;
+            const chartW = W - padLeft - padRight;
+            const n = dataPoints.length;
+            const step = n > 1 ? chartW / (n - 1) : chartW;
+
+            const points = dataPoints.map((d, i) => {
+              const x = padLeft + (n > 1 ? i * step : chartW / 2);
+              const y = padTop + chartH - (getValue(d) / maxVal) * chartH;
+              return { x, y, d };
+            });
+
+            const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+            const areaPath = linePath + ` L${points[points.length - 1].x},${padTop + chartH} L${points[0].x},${padTop + chartH} Z`;
+
+            // Label indices
+            const maxLabels = 10;
+            const labelStep = Math.max(1, Math.ceil(n / maxLabels));
+
+            return (
+              <div className="p-4 md:p-6">
+                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[180px]" preserveAspectRatio="none">
+                  {/* Grid lines */}
+                  {[0, 0.25, 0.5, 0.75, 1].map(f => (
+                    <line key={f} x1={padLeft} x2={W - padRight} y1={padTop + chartH * (1 - f)} y2={padTop + chartH * (1 - f)}
+                      stroke="#E8E0D4" strokeWidth="0.5" />
+                  ))}
+                  {/* Area fill */}
+                  <path d={areaPath} fill={color} opacity="0.08" />
+                  {/* Line */}
+                  <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Dots */}
+                  {points.map((p, i) => getValue(p.d) > 0 && (
+                    <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={color} stroke="white" strokeWidth="2" />
+                  ))}
+                  {/* Labels */}
+                  {points.map((p, i) => i % labelStep === 0 && (
+                    <text key={i} x={p.x} y={H - 6} textAnchor="middle" fill="#B5A68C" fontSize="11" fontFamily="inherit">
+                      {p.d.date}
+                    </text>
+                  ))}
+                </svg>
+                {/* Hover overlay with tooltips */}
+                <div className="flex -mt-[180px] h-[180px] relative" style={{ pointerEvents: 'none' }}>
+                  {points.map((p, i) => (
+                    <div key={i} className="flex-1 group" style={{ pointerEvents: 'auto' }}>
+                      {getValue(p.d) > 0 && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute bg-[#2C2418] text-white text-[10px] px-2 py-1 rounded-[4px] whitespace-nowrap z-10 pointer-events-none"
+                          style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / H) * 100 - 12}%`, transform: 'translateX(-50%)' }}>
+                          {tooltipFn(p.d)}
                         </div>
                       )}
-                      {(usersChart.data_points.length <= 14 || i % Math.ceil(usersChart.data_points.length / 10) === 0) && (
-                        <span className="text-[9px] text-[#B5A68C] truncate w-full text-center">{d.date}</span>
-                      )}
                     </div>
-                  ));
-                })()}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {chartMode === 'users' && usersChart && usersChart.data_points.length === 0 && (
-            <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Keine neuen User in diesem Zeitraum</div>
-          )}
-          {chartMode === 'users' && !usersChart && (
-            <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Lade...</div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Stats Cards */}
