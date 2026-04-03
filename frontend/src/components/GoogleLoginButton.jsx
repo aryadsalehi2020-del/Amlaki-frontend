@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '658179994478-t1trka6uolpo2b2i0uqcch1dd6vg956f.apps.googleusercontent.com';
 
 function GoogleLoginButton({ onSuccess, onError, text = 'signin_with' }) {
   const buttonRef = useRef(null);

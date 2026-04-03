@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import GoogleLoginButton from '../components/GoogleLoginButton';
@@ -13,6 +13,13 @@ function Register() {
   const slowTimer = useRef(null);
   const navigate = useNavigate();
   const { register, googleLogin } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirectTarget = searchParams.get('redirect');
+
+  const getRedirectPath = () => {
+    if (redirectTarget === 'analyze') return '/analyze';
+    return '/chat';
+  };
 
   useEffect(() => () => clearTimeout(slowTimer.current), []);
 
@@ -28,7 +35,7 @@ function Register() {
     setLoading(true);
     setSlowServer(false);
     slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
-    try { await register(formData.email, username, formData.password, ''); navigate('/chat'); }
+    try { await register(formData.email, username, formData.password, ''); navigate(getRedirectPath()); }
     catch (err) { setError(err.message || 'Fehler'); }
     finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
   };
@@ -70,7 +77,7 @@ function Register() {
             onSuccess={async (credential) => {
               setError(''); setLoading(true); setSlowServer(false);
               slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
-              try { await googleLogin(credential); navigate('/chat'); }
+              try { await googleLogin(credential); navigate(getRedirectPath()); }
               catch (err) { setError(err.message || 'Google Login fehlgeschlagen'); }
               finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
             }}
