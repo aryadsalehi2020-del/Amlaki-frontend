@@ -4260,6 +4260,75 @@ async def get_user_analyses_admin(
 
 
 # ========================================
+# ADMIN EMAIL ENDPOINT
+# ========================================
+
+@app.post("/admin/users/{user_id}/send-email")
+async def send_email_to_user(
+    user_id: int,
+    data: dict = Body(...),
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """E-Mail an User senden + optional Credits schenken (nur Admin)"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User nicht gefunden")
+
+    subject = data.get("subject", "")
+    body_text = data.get("body", "")
+    add_credits = data.get("add_credits", 0)
+
+    if not subject or not body_text:
+        raise HTTPException(status_code=400, detail="Betreff und Text sind Pflichtfelder")
+
+    if not SMTP_PASS:
+        raise HTTPException(status_code=500, detail="SMTP nicht konfiguriert. Bitte SMTP_PASS in den Umgebungsvariablen setzen.")
+
+    # E-Mail senden
+    msg = MIMEMultipart()
+    msg["From"] = f"Amlaki <{SMTP_USER}>"
+    msg["To"] = user.email
+    msg["Subject"] = subject
+    msg["Reply-To"] = "arya@amlaki.de"
+    msg.attach(MIMEText(body_text, "plain", "utf-8"))
+
+    email_sent = False
+    try:
+        with smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=10) as server:
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+        email_sent = True
+    except Exception as e1:
+        print(f"Admin-Mail SSL 465 fehlgeschlagen: {e1}")
+        try:
+            with smtplib.SMTP(SMTP_HOST, 587, timeout=10) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+            email_sent = True
+        except Exception as e2:
+            print(f"Admin-Mail STARTTLS 587 fehlgeschlagen: {e2}")
+            raise HTTPException(status_code=500, detail=f"E-Mail konnte nicht gesendet werden: {str(e2)}")
+
+    # Credits hinzufügen wenn gewünscht
+    credits_added = 0
+    if add_credits and add_credits > 0:
+        current_credits = user.analysis_credits if user.analysis_credits is not None else 0
+        user.analysis_credits = current_credits + add_credits
+        credits_added = add_credits
+        db.commit()
+
+    print(f"[ADMIN] E-Mail an {user.email} gesendet. Betreff: {subject}. Credits +{credits_added}")
+    return {
+        "success": True,
+        "email_sent": email_sent,
+        "credits_added": credits_added,
+        "message": f"E-Mail an {user.email} gesendet" + (f" + {credits_added} Credits geschenkt" if credits_added > 0 else "")
+    }
+
+
+# ========================================
 # AGENT ADMIN ENDPOINTS
 # ========================================
 

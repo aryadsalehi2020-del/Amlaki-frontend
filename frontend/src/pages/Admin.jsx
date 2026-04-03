@@ -17,6 +17,12 @@ function Admin() {
   const [editingAgent, setEditingAgent] = useState(null);
   const [showCreateAgent, setShowCreateAgent] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
+  const [emailModal, setEmailModal] = useState(null);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [emailCredits, setEmailCredits] = useState(1);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailResult, setEmailResult] = useState(null);
 
   useEffect(() => { if (user?.is_superuser) { fetchData(); fetchAgents(); } }, []);
 
@@ -104,6 +110,33 @@ function Admin() {
       if (!usersRes.ok || !statsRes.ok) throw new Error('Fehler beim Laden der Admin-Daten');
       setUsers(await usersRes.json()); setStats(await statsRes.json());
     } catch (err) { setError(err.message); } finally { setLoading(false); }
+  };
+
+  const openFeedbackEmail = (u) => {
+    setEmailModal(u);
+    setEmailSubject('Kurze Frage zu deiner Amlaki-Analyse');
+    setEmailBody(`Hi ${u.username},\n\nich bin Arya, Gruender von Amlaki. Du bist einer unserer allerersten Nutzer — und dein Feedback ist Gold wert.\n\nDrei kurze Fragen (dauert 2 Minuten):\n\n1. Was hat dich dazu gebracht, Amlaki auszuprobieren?\n2. War die Analyse hilfreich? Was hat gefehlt oder gestoert?\n3. Wuerdest du Amlaki weiterempfehlen? Wenn nein — warum nicht?\n\nAls Dankeschoen schenke ich dir eine weitere kostenlose Analyse.\n\nEinfach auf diese Mail antworten — kein Formular, kein Link.\n\nBeste Gruesse\nArya\nGruender, Amlaki`);
+    setEmailCredits(1);
+    setEmailResult(null);
+  };
+
+  const sendEmailToUser = async () => {
+    if (!emailModal) return;
+    setEmailSending(true);
+    setEmailResult(null);
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${emailModal.id}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ subject: emailSubject, body: emailBody, add_credits: emailCredits })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Fehler beim Senden');
+      setEmailResult({ success: true, message: data.message });
+      await fetchData();
+    } catch (err) {
+      setEmailResult({ success: false, message: err.message });
+    } finally { setEmailSending(false); }
   };
 
   const toggleUserStatus = async (userId, currentStatus) => {
@@ -426,6 +459,8 @@ function Admin() {
                   <p>Verbrauch: ${u.total_cost_usd?.toFixed(3) || '0.000'} / ${u.usage_limit_usd?.toFixed(2) || '5.00'}</p>
                 </div>
                 <div className="flex gap-2">
+                  <button onClick={() => openFeedbackEmail(u)} disabled={u.id === user.id}
+                    className="flex-1 px-3 py-2 bg-[#7C8B6F]/10 text-[#7C8B6F] rounded-[8px] text-[12px] font-medium disabled:opacity-50">E-Mail</button>
                   <button onClick={() => toggleUserStatus(u.id, u.is_active)} disabled={actionLoading || u.id === user.id}
                     className={`flex-1 px-3 py-2 rounded-[8px] text-[12px] font-medium transition-all ${u.is_active ? 'bg-[#B85C5C]/10 text-[#B85C5C]' : 'bg-[#7C8B6F]/10 text-[#7C8B6F]'} disabled:opacity-50`}>
                     {u.is_active ? 'Blockieren' : 'Aktivieren'}
@@ -505,6 +540,8 @@ function Admin() {
                           className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${u.is_superuser ? 'bg-[#F5F0E8] text-[#5C4F3D] border border-[#E8E0D4]' : 'bg-[#F5F0E8] text-[#8C7E6A]'} disabled:opacity-50`}>
                           {u.is_superuser ? 'Admin entfernen' : 'Zu Admin machen'}
                         </button>
+                        <button onClick={() => openFeedbackEmail(u)} disabled={u.id === user.id}
+                          className="px-3 py-1.5 bg-[#7C8B6F]/10 text-[#7C8B6F] rounded-[8px] text-[12px] font-medium disabled:opacity-50">E-Mail</button>
                         <button onClick={() => deleteUser(u.id, u.username)} disabled={actionLoading || u.id === user.id}
                           className="px-3 py-1.5 bg-[#B85C5C]/10 text-[#B85C5C] rounded-[8px] text-[12px] font-medium disabled:opacity-50">Loschen</button>
                       </div>
@@ -516,6 +553,51 @@ function Admin() {
           </div>
         </div>
         </>}
+
+        {/* Email Modal */}
+        {emailModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setEmailModal(null)}>
+            <div className="bg-white rounded-[16px] w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="p-6 border-b border-[#E8E0D4]">
+                <h3 className="text-[18px] font-semibold text-[#2C2418]">E-Mail an {emailModal.username}</h3>
+                <p className="text-[13px] text-[#8C7E6A] mt-1">{emailModal.email}</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-[#5C4F3D] mb-1">Betreff</label>
+                  <input type="text" value={emailSubject} onChange={e => setEmailSubject(e.target.value)}
+                    className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[8px] text-[14px] text-[#2C2418] focus:outline-none focus:border-[#7C8B6F]" />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-[#5C4F3D] mb-1">Nachricht</label>
+                  <textarea value={emailBody} onChange={e => setEmailBody(e.target.value)} rows={12}
+                    className="w-full px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[8px] text-[14px] text-[#2C2418] focus:outline-none focus:border-[#7C8B6F] resize-y font-mono" />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-[#5C4F3D] mb-1">Gratis-Credits schenken</label>
+                  <div className="flex items-center gap-2">
+                    <input type="number" min="0" max="10" value={emailCredits} onChange={e => setEmailCredits(parseInt(e.target.value) || 0)}
+                      className="w-20 px-3 py-2 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[8px] text-[14px] text-center text-[#2C2418] focus:outline-none focus:border-[#7C8B6F]" />
+                    <span className="text-[13px] text-[#8C7E6A]">Analysen</span>
+                  </div>
+                </div>
+                {emailResult && (
+                  <div className={`p-3 rounded-[8px] text-[13px] ${emailResult.success ? 'bg-[#7C8B6F]/10 text-[#7C8B6F]' : 'bg-[#B85C5C]/10 text-[#B85C5C]'}`}>
+                    {emailResult.message}
+                  </div>
+                )}
+              </div>
+              <div className="p-6 border-t border-[#E8E0D4] flex gap-3 justify-end">
+                <button onClick={() => setEmailModal(null)}
+                  className="px-4 py-2 text-[#8C7E6A] text-[14px] font-medium hover:text-[#5C4F3D] transition-colors">Abbrechen</button>
+                <button onClick={sendEmailToUser} disabled={emailSending || !emailSubject || !emailBody}
+                  className="px-6 py-2 bg-[#7C8B6F] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#6B7A5E] transition-colors disabled:opacity-50">
+                  {emailSending ? 'Sende...' : `Senden${emailCredits > 0 ? ` + ${emailCredits} Credits` : ''}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
