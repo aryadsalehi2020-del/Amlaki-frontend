@@ -23,8 +23,11 @@ function Admin() {
   const [emailCredits, setEmailCredits] = useState(1);
   const [emailSending, setEmailSending] = useState(false);
   const [emailResult, setEmailResult] = useState(null);
+  const [revenue, setRevenue] = useState(null);
+  const [revenuePeriod, setRevenuePeriod] = useState('30d');
+  const [expandedUser, setExpandedUser] = useState(null);
 
-  useEffect(() => { if (user?.is_superuser) { fetchData(); fetchAgents(); } }, []);
+  useEffect(() => { if (user?.is_superuser) { fetchData(); fetchAgents(); fetchRevenue('30d'); } }, []);
 
   if (!user?.is_superuser) {
     return <Navigate to="/chat" replace />;
@@ -110,6 +113,25 @@ function Admin() {
       if (!usersRes.ok || !statsRes.ok) throw new Error('Fehler beim Laden der Admin-Daten');
       setUsers(await usersRes.json()); setStats(await statsRes.json());
     } catch (err) { setError(err.message); } finally { setLoading(false); }
+  };
+
+  const fetchRevenue = async (period) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/revenue?period=${period}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        setRevenue(await res.json());
+        setRevenuePeriod(period);
+      }
+    } catch (err) { /* ignore */ }
+  };
+
+  const formatEur = (cents) => {
+    return (cents / 100).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' \u20ac';
+  };
+
+  const packageLabel = (pkg) => {
+    const labels = { single: '1 Analyse (9\u20ac)', pack5: '5 Analysen (35\u20ac)', pack10: '10 Analysen (50\u20ac)' };
+    return labels[pkg] || pkg;
   };
 
   const openFeedbackEmail = (u) => {
@@ -398,18 +420,90 @@ function Admin() {
 
         {/* ===== USERS TAB ===== */}
         {activeTab === 'users' && <>
+
+        {/* Revenue Dashboard */}
+        <div className="bg-white rounded-[16px] border border-[#E8E0D4] overflow-hidden fade-in">
+          <div className="p-4 md:p-6 border-b border-[#E8E0D4] flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[18px] font-semibold text-[#2C2418]">Umsatz</h2>
+              {revenue && (
+                <p className="text-[28px] font-bold text-[#7C8B6F] mt-1">{formatEur(revenue.total_revenue_cents)}</p>
+              )}
+              {revenue && (
+                <p className="text-[12px] text-[#8C7E6A] mt-0.5">{revenue.total_purchases} Kaeufe / {revenue.total_credits} Credits</p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 bg-[#F5F0E8] rounded-[10px] p-1">
+              {[
+                { key: 'today', label: 'Heute' },
+                { key: '7d', label: '7 Tage' },
+                { key: '30d', label: '1 Monat' },
+                { key: '90d', label: '1 Quartal' },
+                { key: '365d', label: '1 Jahr' },
+              ].map(p => (
+                <button key={p.key} onClick={() => fetchRevenue(p.key)}
+                  className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${
+                    revenuePeriod === p.key
+                      ? 'bg-white text-[#2C2418] shadow-sm'
+                      : 'text-[#8C7E6A] hover:text-[#5C4F3D]'
+                  }`}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Revenue Chart */}
+          {revenue && revenue.data_points.length > 0 && (
+            <div className="p-4 md:p-6">
+              <div className="h-[180px] flex items-end gap-[2px]">
+                {(() => {
+                  const maxRev = Math.max(...revenue.data_points.map(d => d.revenue_cents), 1);
+                  return revenue.data_points.map((d, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0 group relative">
+                      <div className="w-full flex flex-col items-center justify-end h-[140px]">
+                        <div
+                          className="w-full rounded-t-[4px] transition-all"
+                          style={{
+                            height: `${Math.max((d.revenue_cents / maxRev) * 140, d.revenue_cents > 0 ? 4 : 0)}px`,
+                            backgroundColor: d.revenue_cents > 0 ? '#7C8B6F' : '#E8E0D4',
+                            opacity: d.revenue_cents > 0 ? 1 : 0.3,
+                          }}
+                        />
+                      </div>
+                      {/* Tooltip */}
+                      {d.revenue_cents > 0 && (
+                        <div className="absolute bottom-full mb-1 bg-[#2C2418] text-white text-[10px] px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          {formatEur(d.revenue_cents)} / {d.purchases}x / {d.credits} Credits
+                        </div>
+                      )}
+                      {/* Label - nur jedes n-te anzeigen */}
+                      {(revenue.data_points.length <= 14 || i % Math.ceil(revenue.data_points.length / 10) === 0) && (
+                        <span className="text-[9px] text-[#B5A68C] truncate w-full text-center">{d.date}</span>
+                      )}
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
+          {revenue && revenue.data_points.length === 0 && (
+            <div className="p-6 text-center text-[13px] text-[#8C7E6A]">Keine Umsaetze in diesem Zeitraum</div>
+          )}
+        </div>
+
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 fade-in fade-in-delay-1">
             {[
               { label: 'Gesamt User', value: stats.total_users },
               { label: 'Aktive User', value: stats.active_users },
-              { label: 'Blockiert', value: stats.blocked_users },
+              { label: 'Gesamt Umsatz', value: formatEur(stats.total_revenue_cents || 0), highlight: true },
               { label: 'Analysen', value: stats.total_analyses }
             ].map(s => (
               <div key={s.label} className="bg-white rounded-[12px] p-5 border border-[#E8E0D4]">
                 <p className="text-[#8C7E6A] text-[11px] uppercase tracking-wider mb-1">{s.label}</p>
-                <p className="text-[28px] font-bold text-[#2C2418]">{s.value}</p>
+                <p className={`text-[28px] font-bold ${s.highlight ? 'text-[#7C8B6F]' : 'text-[#2C2418]'}`}>{s.value}</p>
               </div>
             ))}
           </div>
@@ -454,9 +548,10 @@ function Admin() {
                   <span className="text-[#7C8B6F] font-bold text-[14px]">{u.analyses_count}</span>
                 </div>
                 <div className="text-[12px] text-[#8C7E6A] mb-3">
+                  <p>Credits: <span className="font-bold text-[#2C2418]">{u.analysis_credits || 0}</span>{u.total_purchased_credits > 0 ? ` (${u.total_purchased_credits} gekauft)` : ''}</p>
+                  {u.total_revenue_cents > 0 && <p>Umsatz: <span className="font-bold text-[#7C8B6F]">{formatEur(u.total_revenue_cents)}</span> ({u.purchases?.length || 0} Kaeufe)</p>}
                   <p>Registriert: {formatDate(u.created_at)}</p>
                   <p>Letzte Aktivitat: {formatRelativeTime(u.last_activity)}</p>
-                  <p>Verbrauch: ${u.total_cost_usd?.toFixed(3) || '0.000'} / ${u.usage_limit_usd?.toFixed(2) || '5.00'}</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => openFeedbackEmail(u)} disabled={u.id === user.id}
@@ -479,8 +574,9 @@ function Admin() {
                 <tr>
                   <th className="text-left p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">User</th>
                   <th className="text-left p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">E-Mail</th>
+                  <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Credits</th>
+                  <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Umsatz</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Analysen</th>
-                  <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Verbrauch</th>
                   <th className="text-left p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Registriert</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Status</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Aktionen</th>
@@ -488,7 +584,8 @@ function Admin() {
               </thead>
               <tbody className="divide-y divide-[#E8E0D4]">
                 {users.map((u) => (
-                  <tr key={u.id} className={`hover:bg-[#FAF7F2] transition-colors ${!u.is_active ? 'bg-[#B85C5C]/[0.03]' : ''}`}>
+                  <React.Fragment key={u.id}>
+                  <tr className={`hover:bg-[#FAF7F2] transition-colors ${!u.is_active ? 'bg-[#B85C5C]/[0.03]' : ''}`}>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-[#7C8B6F]">
@@ -501,26 +598,24 @@ function Admin() {
                       </div>
                     </td>
                     <td className="p-4 text-[#5C4F3D] text-[14px]">{u.email}</td>
-                    <td className="p-4 text-center"><span className="text-[#7C8B6F] font-bold">{u.analyses_count}</span></td>
                     <td className="p-4 text-center">
-                      <div className="text-[13px] font-mono text-[#5C4F3D]">${u.total_cost_usd?.toFixed(3) || '0.000'}</div>
-                      {editingLimit?.userId === u.id ? (
-                        <div className="flex items-center gap-1 mt-1 justify-center">
-                          <span className="text-[12px] text-[#8C7E6A]">$</span>
-                          <input type="number" step="0.5" min="0" value={editingLimit.value} onChange={(e) => setEditingLimit({ userId: u.id, value: e.target.value })}
-                            className="w-16 px-1 py-0.5 bg-white border border-[#7C8B6F] rounded text-[12px] text-[#2C2418] text-center" autoFocus />
-                          <button onClick={() => updateLimit(u.id, editingLimit.value)} disabled={actionLoading}
-                            className="px-1.5 py-0.5 bg-[#7C8B6F]/10 text-[#7C8B6F] rounded text-[12px]">OK</button>
-                          <button onClick={() => setEditingLimit(null)}
-                            className="px-1.5 py-0.5 bg-[#B85C5C]/10 text-[#B85C5C] rounded text-[12px]">X</button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setEditingLimit({ userId: u.id, value: u.usage_limit_usd || 5 })}
-                          className="text-[12px] text-[#8C7E6A] hover:text-[#7C8B6F] transition-colors">
-                          Limit: ${u.usage_limit_usd?.toFixed(2) || '5.00'}
-                        </button>
+                      <div className="text-[14px] font-bold text-[#2C2418]">{u.analysis_credits || 0}</div>
+                      {u.total_purchased_credits > 0 && (
+                        <div className="text-[11px] text-[#8C7E6A]">{u.total_purchased_credits} gekauft</div>
                       )}
                     </td>
+                    <td className="p-4 text-center">
+                      {u.total_revenue_cents > 0 ? (
+                        <button onClick={() => setExpandedUser(expandedUser === u.id ? null : u.id)}
+                          className="hover:bg-[#7C8B6F]/5 rounded-[6px] px-2 py-1 transition-all">
+                          <div className="text-[14px] font-bold text-[#7C8B6F]">{formatEur(u.total_revenue_cents)}</div>
+                          <div className="text-[11px] text-[#8C7E6A]">{u.purchases?.length || 0} Kaeufe</div>
+                        </button>
+                      ) : (
+                        <span className="text-[13px] text-[#B5A68C]">-</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center"><span className="text-[#7C8B6F] font-bold">{u.analyses_count}</span></td>
                     <td className="p-4 text-[#8C7E6A] text-[13px]">{formatDate(u.created_at)}</td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -547,6 +642,26 @@ function Admin() {
                       </div>
                     </td>
                   </tr>
+                  {/* Expanded Purchase History */}
+                  {expandedUser === u.id && u.purchases && u.purchases.length > 0 && (
+                    <tr>
+                      <td colSpan={8} className="p-0">
+                        <div className="bg-[#FAF7F2] px-6 py-4 border-t border-[#E8E0D4]">
+                          <p className="text-[12px] font-semibold text-[#5C4F3D] mb-2">Kaufhistorie von {u.username}</p>
+                          <div className="space-y-1.5">
+                            {u.purchases.map(p => (
+                              <div key={p.id} className="flex items-center justify-between text-[12px] bg-white px-3 py-2 rounded-[8px] border border-[#E8E0D4]">
+                                <span className="text-[#8C7E6A]">{new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                <span className="font-medium text-[#2C2418]">{packageLabel(p.package)}</span>
+                                <span className="font-bold text-[#7C8B6F]">{formatEur(p.amount_cents)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
                 ))}
               </tbody>
             </table>
