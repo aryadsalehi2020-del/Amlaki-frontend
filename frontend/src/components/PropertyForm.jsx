@@ -84,6 +84,13 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {/* Top submit button */}
+          <button type="submit" className="w-full py-3.5 bg-[#7C8B6F] text-white font-semibold rounded-full text-[15px] hover:bg-[#6B7A5E] transition-all mb-6 active:scale-[0.98]">
+            <span className="flex items-center justify-center gap-3">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Immobilie bewerten
+            </span>
+          </button>
           {validationError && (
             <div className="mb-6 p-4 bg-[#B85C5C]/[0.08] border border-[#B85C5C]/[0.2] rounded-[12px] text-[#B85C5C] text-[14px]">
               <div className="flex items-center gap-2">
