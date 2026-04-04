@@ -527,6 +527,65 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
             </div>
           )}
 
+          {/* Potenzial-Szenarien */}
+          {result.potenzial_szenarien && result.potenzial_szenarien.szenarien?.length > 0 && (
+            <div className="bg-white border-2 border-[#7C8B6F]/20 rounded-3xl p-4 md:p-8 fade-in">
+              <h3 className="text-xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
+                Potenzial-Rechner
+              </h3>
+              <p className="text-[13px] text-[#8C7E6A] mb-6">Was waere wenn? Realistische Szenarien fuer dieses Objekt.</p>
+
+              <div className="space-y-3">
+                {/* Aktuell */}
+                <div className="flex items-center justify-between p-4 bg-[#F5F0E8] rounded-xl border border-[#E8E0D4]">
+                  <div>
+                    <p className="text-[14px] font-medium text-[#8C7E6A]">Aktuell</p>
+                    <p className="text-[12px] text-[#B5A68C]">Ohne Veraenderungen</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`text-[14px] font-bold ${result.potenzial_szenarien.aktuell.cashflow >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
+                      {result.potenzial_szenarien.aktuell.cashflow >= 0 ? '+' : ''}{formatCurrency(result.potenzial_szenarien.aktuell.cashflow)}/Mo
+                    </span>
+                    <span className="text-[20px] font-bold text-[#2C2418] w-12 text-right">{result.potenzial_szenarien.aktuell.score}</span>
+                  </div>
+                </div>
+
+                {/* Szenarien */}
+                {result.potenzial_szenarien.szenarien.map((s, i) => (
+                  <div key={i} className={`flex items-center justify-between p-4 rounded-xl border ${
+                    s.score === result.potenzial_szenarien.max_score
+                      ? 'bg-[#7C8B6F]/5 border-[#7C8B6F]/30'
+                      : 'bg-white border-[#E8E0D4]'
+                  }`}>
+                    <div>
+                      <p className="text-[14px] font-medium text-[#2C2418]">{s.name}</p>
+                      <p className="text-[12px] text-[#8C7E6A]">{s.beschreibung}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={`text-[14px] font-bold ${s.cashflow >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
+                        {s.cashflow >= 0 ? '+' : ''}{formatCurrency(s.cashflow)}/Mo
+                      </span>
+                      <div className="text-right">
+                        <span className={`text-[20px] font-bold w-12 inline-block text-right ${s.score >= 65 ? 'text-[#7C8B6F]' : 'text-[#2C2418]'}`}>{s.score}</span>
+                        <span className="text-[11px] text-[#7C8B6F] font-medium ml-1">+{s.aenderung}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bestes Szenario Highlight */}
+              {result.potenzial_szenarien.max_score > result.potenzial_szenarien.aktuell.score + 5 && (
+                <div className="mt-4 p-4 bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-xl">
+                  <p className="text-[13px] text-[#5C4F3D]">
+                    <span className="font-semibold text-[#7C8B6F]">Bestes Potenzial: Score {result.potenzial_szenarien.max_score}</span>
+                    {' '}-- mit {result.potenzial_szenarien.bestes_szenario.name.toLowerCase()} steigt der Score um +{result.potenzial_szenarien.bestes_szenario.aenderung} Punkte und der Cashflow auf {formatCurrency(result.potenzial_szenarien.bestes_szenario.cashflow)}/Monat.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Mietschätzung Hinweis (NEU) */}
           {result.mietschaetzung && result.mietschaetzung.ist_geschaetzt && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in border-2 border-[#B5A68C]/30">
