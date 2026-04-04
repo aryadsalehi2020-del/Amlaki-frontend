@@ -8,6 +8,47 @@ import LoadingState from '../components/LoadingState';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE, apiFetch } from '../config';
 
+// IndexedDB helpers for storing large files (PDF) across page navigations
+const DB_NAME = 'amlaki_pending';
+const STORE_NAME = 'files';
+
+function openPendingDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function savePendingFile(file) {
+  const db = await openPendingDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put({ file, name: file.name }, 'pendingPdf');
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function loadPendingFile() {
+  try {
+    const db = await openPendingDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const req = tx.objectStore(STORE_NAME).get('pendingPdf');
+      req.onsuccess = () => {
+        const result = req.result;
+        // Clean up
+        tx.objectStore(STORE_NAME).delete('pendingPdf');
+        db.close();
+        resolve(result || null);
+      };
+      req.onerror = () => { db.close(); resolve(null); };
+    });
+  } catch { return null; }
+}
+
 function CreditsBadge({ credits }) {
   if (credits === null || credits === undefined) return null;
   return (
@@ -160,12 +201,21 @@ function Analyze() {
       return;
     }
 
-    // Case 3: Came from PDF upload as guest — show upload step to re-upload
-    const pendingAction = localStorage.getItem('pendingAction');
-    if (pendingAction === 'pdf') {
-      localStorage.removeItem('pendingAction');
-      // Stay on upload step — user re-uploads now with auth
-    }
+    // Case 3: Pending PDF from IndexedDB
+    loadPendingFile().then((data) => {
+      if (!data) return;
+      setStep('analyzing');
+      setLoadingMessage('Expose wird analysiert...');
+      const fd = new FormData();
+      fd.append('file', data.file, data.name);
+      apiFetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd, headers: { 'Authorization': `Bearer ${token}` } })
+        .then(async (res) => {
+          if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
+          setPropertyData(await res.json());
+          setStep('form');
+        })
+        .catch(err => { setError(err.message); setStep('upload'); });
+    });
   }, [token]);
 
   // Prefill from Library "Daten bearbeiten"
@@ -207,10 +257,15 @@ function Analyze() {
   }, []);
 
   const handleFileUpload = useCallback(async (file) => {
-    // Guest: redirect to register, they'll re-upload after
+    // Guest: save PDF in IndexedDB, redirect to register
     if (!token) {
-      localStorage.setItem('pendingAction', 'pdf');
-      navigate('/register?redirect=analyze');
+      try {
+        await savePendingFile(file);
+        navigate('/register?redirect=analyze');
+      } catch (e) {
+        setError('Datei konnte nicht gespeichert werden. Bitte registriere dich zuerst.');
+        setStep('upload');
+      }
       return;
     }
 
