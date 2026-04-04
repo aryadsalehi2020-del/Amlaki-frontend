@@ -303,6 +303,83 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
 
 
 # ========================================
+# GOOGLE LOGIN
+# ========================================
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+
+@app.post("/auth/google", response_model=Token)
+def google_login(data: dict = Body(...), db: Session = Depends(get_db)):
+    """Login/Register mit Google ID Token"""
+    id_token_str = data.get("credential", "")
+    if not id_token_str:
+        raise HTTPException(status_code=400, detail="Google credential fehlt")
+
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google Login nicht konfiguriert")
+
+    try:
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        idinfo = google_id_token.verify_oauth2_token(
+            id_token_str, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except Exception as e:
+        print(f"[ERROR] Google Token Verifizierung fehlgeschlagen: {e}")
+        raise HTTPException(status_code=401, detail="Google Token ungueltig")
+
+    email = idinfo.get("email", "").lower()
+    name = idinfo.get("name", "")
+    if not email:
+        raise HTTPException(status_code=400, detail="Keine E-Mail im Google Token")
+
+    # User existiert? -> Login
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        # Neuer User -> Register
+        # Username aus Email generieren
+        base_username = email.split("@")[0].replace(".", "_").replace("+", "_")[:25]
+        import re
+        base_username = re.sub(r'[^a-zA-Z0-9_.-]', '_', base_username)
+        if len(base_username) < 3:
+            base_username = base_username + "_user"
+
+        # Eindeutigen Username sicherstellen
+        username = base_username
+        counter = 1
+        while db.query(User).filter(User.username == username).first():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        # Zufaelliges Passwort (User loggt sich nur via Google ein)
+        import secrets as _s
+        random_pw = _s.token_urlsafe(32)
+
+        is_first_user = db.query(User).count() == 0
+
+        user = User(
+            email=email,
+            username=username,
+            full_name=name,
+            hashed_password=get_password_hash(random_pw),
+            is_superuser=is_first_user,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        print(f"NEUER GOOGLE USER: {user.username} ({user.email})")
+
+    # JWT erstellen
+    access_token = create_access_token(
+        data={"sub": user.email},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+# ========================================
 # PASSWORT RESET
 # ========================================
 import smtplib
@@ -317,21 +394,45 @@ SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASS = os.getenv("SMTP_PASS", "")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+
+
+def send_email_via_resend(to_email: str, subject: str, body: str, from_email: str = "Amlaki <support@amlaki.de>"):
+    """Sendet E-Mail via Resend API (kein SMTP noetig)"""
+    print(f"[RESEND] Versuche E-Mail an {to_email} zu senden...")
+    print(f"[RESEND] API Key vorhanden: {bool(RESEND_API_KEY)}, Key Anfang: {RESEND_API_KEY[:10] if RESEND_API_KEY else 'LEER'}")
+    if not RESEND_API_KEY:
+        print("[WARN] RESEND_API_KEY nicht gesetzt")
+        return False
+    try:
+        response = httpx.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "from": from_email,
+                "to": [to_email],
+                "subject": subject,
+                "text": body,
+                "reply_to": "arya@amlaki.de"
+            },
+            timeout=15
+        )
+        print(f"[RESEND] Response: {response.status_code} {response.text}")
+        if response.status_code == 200:
+            print(f"[OK] Resend E-Mail an {to_email} gesendet")
+            return True
+        else:
+            print(f"[ERROR] Resend fehlgeschlagen: {response.status_code} {response.text}")
+            return False
+    except Exception as e:
+        print(f"[ERROR] Resend Exception: {type(e).__name__}: {e}")
+        return False
 
 
 def send_reset_email(to_email: str, reset_token: str):
-    """Sendet Passwort-Reset Email via IONOS SMTP"""
-    if not SMTP_PASS:
-        print("WARNUNG: SMTP_PASS nicht gesetzt, kann keine Emails senden")
-        return False
-
+    """Sendet Passwort-Reset Email via Resend (Fallback: SMTP)"""
     frontend_url = os.getenv("FRONTEND_URL", "https://amlaki.de")
     reset_link = f"{frontend_url}/reset-password?token={reset_token}"
-
-    msg = MIMEMultipart()
-    msg["From"] = f"AmlakiAI <{SMTP_USER}>"
-    msg["To"] = to_email
-    msg["Subject"] = "Passwort zuruecksetzen - AmlakiAI"
 
     body = f"""Hallo,
 
@@ -347,6 +448,19 @@ Falls du diese Anfrage nicht gestellt hast, ignoriere diese E-Mail.
 Viele Gruesse,
 Dein AmlakiAI Team
 """
+
+    # Resend bevorzugen
+    if RESEND_API_KEY:
+        return send_email_via_resend(to_email, "Passwort zuruecksetzen - AmlakiAI", body)
+
+    if not SMTP_PASS:
+        print("WARNUNG: Weder RESEND_API_KEY noch SMTP_PASS gesetzt")
+        return False
+
+    msg = MIMEMultipart()
+    msg["From"] = f"AmlakiAI <{SMTP_USER}>"
+    msg["To"] = to_email
+    msg["Subject"] = "Passwort zuruecksetzen - AmlakiAI"
 
     msg.attach(MIMEText(body, "plain", "utf-8"))
 
@@ -3224,12 +3338,13 @@ ANALYSE-ERGEBNIS:
 REGELN:
 1. Hoeflich und professionell, nicht aggressiv
 2. Konkretes Preisangebot machen (zwischen fairem Preis und Kaufpreis)
-3. Argumente mit Zahlen belegen (Marktdaten, Energiekosten, Sanierungsbedarf)
-4. Interesse am Objekt zeigen, aber sachlich bleiben
-5. Auf Deutsch, duzen vermeiden, Sie-Form
-6. Keine Emojis
-7. Format: Betreff + Nachricht
-8. Max 200 Woerter
+3. Argumente mit Zahlen belegen (Energiekosten, Sanierungsbedarf, Zustand, Baujahr)
+4. WICHTIG: Wenn der Preis/m2 UNTER dem Marktdurchschnitt liegt, erwaehne den Marktdurchschnitt NIEMALS -- das wuerde das Verhandlungsargument des Kaeufers zerstoeren. Nutze stattdessen nur objektbezogene Argumente (Zustand, Energie, Sanierungsbedarf)
+5. Interesse am Objekt zeigen, aber sachlich bleiben
+6. Auf Deutsch, duzen vermeiden, Sie-Form
+7. Keine Emojis
+8. Format: Betreff + Nachricht
+9. Max 200 Woerter
 
 Antworte NUR mit der fertigen Nachricht, kein anderer Text."""
 
@@ -4013,13 +4128,28 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         session = event["data"]["object"]
         user_id = int(session.get("metadata", {}).get("user_id", 0))
         credits_to_add = int(session.get("metadata", {}).get("credits", 0))
+        package_id = session.get("metadata", {}).get("package", "single")
 
         if user_id and credits_to_add:
             user = db.query(User).filter(User.id == user_id).first()
             if user:
                 current_credits = user.analysis_credits if user.analysis_credits is not None else 0
                 user.analysis_credits = current_credits + credits_to_add
+
+                # Purchase tracken
+                from models import Purchase
+                package_info = CREDIT_PACKAGES.get(package_id, {})
+                purchase = Purchase(
+                    user_id=user_id,
+                    stripe_session_id=session.get("id"),
+                    package=package_id,
+                    credits=credits_to_add,
+                    amount_cents=package_info.get("price_cents", 0),
+                    currency="eur",
+                )
+                db.add(purchase)
                 db.commit()
+                print(f"[PAYMENT] User {user_id} kaufte {package_id}: +{credits_to_add} Credits, {package_info.get('price_cents', 0)} Cent")
 
     return {"status": "ok"}
 
@@ -4028,7 +4158,8 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
 # ADMIN ENDPOINTS
 # ========================================
 
-from schemas import AdminUserResponse, AdminUserUpdate, AdminStatsResponse
+from schemas import AdminUserResponse, AdminUserUpdate, AdminStatsResponse, RevenueStatsResponse, RevenueDataPoint, PurchaseResponse
+from models import Purchase
 from datetime import datetime, timedelta
 
 async def get_admin_user(current_user: User = Depends(get_current_active_user)) -> User:
@@ -4061,6 +4192,11 @@ async def get_admin_stats(
     analyses_today = db.query(Analysis).filter(Analysis.created_at >= today_start).count()
     analyses_this_week = db.query(Analysis).filter(Analysis.created_at >= week_start).count()
 
+    # Revenue-Daten
+    from sqlalchemy import func as sqlfunc
+    total_revenue = db.query(sqlfunc.coalesce(sqlfunc.sum(Purchase.amount_cents), 0)).scalar()
+    total_purchases = db.query(Purchase).count()
+
     return AdminStatsResponse(
         total_users=total_users,
         active_users=active_users,
@@ -4069,7 +4205,9 @@ async def get_admin_stats(
         users_today=users_today,
         users_this_week=users_this_week,
         analyses_today=analyses_today,
-        analyses_this_week=analyses_this_week
+        analyses_this_week=analyses_this_week,
+        total_revenue_cents=total_revenue,
+        total_purchases=total_purchases,
     )
 
 
@@ -4082,6 +4220,8 @@ async def get_all_users(
 ):
     """Alle User abrufen (nur Admin)"""
     users = db.query(User).offset(skip).limit(limit).all()
+
+    from sqlalchemy import func as sqlfunc
 
     result = []
     for user in users:
@@ -4098,6 +4238,11 @@ async def get_all_users(
         # Usage-Daten
         usage = get_user_total_usage(db, user.id)
 
+        # Purchase-Daten
+        user_purchases = db.query(Purchase).filter(Purchase.user_id == user.id).order_by(Purchase.created_at.desc()).all()
+        total_purchased_credits = sum(p.credits for p in user_purchases)
+        total_revenue_cents = sum(p.amount_cents for p in user_purchases)
+
         result.append(AdminUserResponse(
             id=user.id,
             email=user.email,
@@ -4111,7 +4256,14 @@ async def get_all_users(
             last_activity=last_activity,
             usage_limit_usd=user.usage_limit_usd or 5.0,
             total_cost_usd=usage["total_cost_usd"],
-            total_requests=usage["total_requests"]
+            total_requests=usage["total_requests"],
+            analysis_credits=user.analysis_credits if user.analysis_credits is not None else 0,
+            total_purchased_credits=total_purchased_credits,
+            total_revenue_cents=total_revenue_cents,
+            purchases=[PurchaseResponse(
+                id=p.id, created_at=p.created_at, package=p.package,
+                credits=p.credits, amount_cents=p.amount_cents, currency=p.currency or "eur"
+            ) for p in user_purchases],
         ))
 
     return result
@@ -4282,34 +4434,35 @@ async def send_email_to_user(
     if not subject or not body_text:
         raise HTTPException(status_code=400, detail="Betreff und Text sind Pflichtfelder")
 
-    if not SMTP_PASS:
-        raise HTTPException(status_code=500, detail="SMTP nicht konfiguriert. Bitte SMTP_PASS in den Umgebungsvariablen setzen.")
-
-    # E-Mail senden
-    msg = MIMEMultipart()
-    msg["From"] = f"Amlaki <{SMTP_USER}>"
-    msg["To"] = user.email
-    msg["Subject"] = subject
-    msg["Reply-To"] = "arya@amlaki.de"
-    msg.attach(MIMEText(body_text, "plain", "utf-8"))
-
+    # E-Mail via Resend senden (SMTP als Fallback)
     email_sent = False
-    try:
-        with smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=10) as server:
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-        email_sent = True
-    except Exception as e1:
-        print(f"Admin-Mail SSL 465 fehlgeschlagen: {e1}")
+    if RESEND_API_KEY:
+        email_sent = send_email_via_resend(user.email, subject, body_text)
+        if not email_sent:
+            raise HTTPException(status_code=500, detail="E-Mail konnte nicht gesendet werden. Resend API Fehler.")
+    elif SMTP_PASS:
+        msg = MIMEMultipart()
+        msg["From"] = f"Amlaki <{SMTP_USER}>"
+        msg["To"] = user.email
+        msg["Subject"] = subject
+        msg["Reply-To"] = "arya@amlaki.de"
+        msg.attach(MIMEText(body_text, "plain", "utf-8"))
         try:
-            with smtplib.SMTP(SMTP_HOST, 587, timeout=10) as server:
-                server.starttls()
+            with smtplib.SMTP_SSL(SMTP_HOST, 465, timeout=10) as server:
                 server.login(SMTP_USER, SMTP_PASS)
                 server.send_message(msg)
             email_sent = True
-        except Exception as e2:
-            print(f"Admin-Mail STARTTLS 587 fehlgeschlagen: {e2}")
-            raise HTTPException(status_code=500, detail=f"E-Mail konnte nicht gesendet werden: {str(e2)}")
+        except Exception:
+            try:
+                with smtplib.SMTP(SMTP_HOST, 587, timeout=10) as server:
+                    server.starttls()
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.send_message(msg)
+                email_sent = True
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"E-Mail konnte nicht gesendet werden: {str(e)}")
+    else:
+        raise HTTPException(status_code=500, detail="Weder RESEND_API_KEY noch SMTP konfiguriert.")
 
     # Credits hinzufügen wenn gewünscht
     credits_added = 0
@@ -4325,6 +4478,160 @@ async def send_email_to_user(
         "email_sent": email_sent,
         "credits_added": credits_added,
         "message": f"E-Mail an {user.email} gesendet" + (f" + {credits_added} Credits geschenkt" if credits_added > 0 else "")
+    }
+
+
+# ========================================
+# REVENUE ADMIN ENDPOINT
+# ========================================
+
+@app.get("/admin/revenue", response_model=RevenueStatsResponse)
+async def get_revenue_stats(
+    period: str = "30d",
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Revenue-Statistiken mit Zeitfilter: today, 7d, 30d, 90d, 365d"""
+    from sqlalchemy import func as sqlfunc
+
+    now = datetime.utcnow()
+    period_map = {
+        "today": (timedelta(days=1), "hour"),
+        "7d": (timedelta(days=7), "day"),
+        "30d": (timedelta(days=30), "day"),
+        "90d": (timedelta(days=90), "week"),
+        "365d": (timedelta(days=365), "month"),
+    }
+
+    delta, group_by = period_map.get(period, (timedelta(days=30), "day"))
+    start_date = now - delta
+
+    purchases = db.query(Purchase).filter(Purchase.created_at >= start_date).order_by(Purchase.created_at).all()
+
+    total_revenue_cents = sum(p.amount_cents for p in purchases)
+    total_credits = sum(p.credits for p in purchases)
+
+    # Gruppierung fuer Diagramm
+    data_points = []
+    if group_by == "hour":
+        for hour in range(24):
+            dt = start_date.replace(hour=hour, minute=0, second=0, microsecond=0)
+            dt_end = dt + timedelta(hours=1)
+            bucket = [p for p in purchases if dt <= p.created_at < dt_end]
+            data_points.append(RevenueDataPoint(
+                date=dt.strftime("%H:00"),
+                revenue_cents=sum(p.amount_cents for p in bucket),
+                purchases=len(bucket),
+                credits=sum(p.credits for p in bucket),
+            ))
+    elif group_by == "day":
+        current = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        while current <= now:
+            next_day = current + timedelta(days=1)
+            bucket = [p for p in purchases if current <= p.created_at < next_day]
+            data_points.append(RevenueDataPoint(
+                date=current.strftime("%d.%m."),
+                revenue_cents=sum(p.amount_cents for p in bucket),
+                purchases=len(bucket),
+                credits=sum(p.credits for p in bucket),
+            ))
+            current = next_day
+    elif group_by == "week":
+        current = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        while current <= now:
+            next_week = current + timedelta(weeks=1)
+            bucket = [p for p in purchases if current <= p.created_at < next_week]
+            data_points.append(RevenueDataPoint(
+                date=f"KW {current.strftime('%V')}",
+                revenue_cents=sum(p.amount_cents for p in bucket),
+                purchases=len(bucket),
+                credits=sum(p.credits for p in bucket),
+            ))
+            current = next_week
+    elif group_by == "month":
+        current = start_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        while current <= now:
+            if current.month == 12:
+                next_month = current.replace(year=current.year + 1, month=1)
+            else:
+                next_month = current.replace(month=current.month + 1)
+            bucket = [p for p in purchases if current <= p.created_at < next_month]
+            data_points.append(RevenueDataPoint(
+                date=current.strftime("%b %y"),
+                revenue_cents=sum(p.amount_cents for p in bucket),
+                purchases=len(bucket),
+                credits=sum(p.credits for p in bucket),
+            ))
+            current = next_month
+
+    return RevenueStatsResponse(
+        period=period,
+        total_revenue_cents=total_revenue_cents,
+        total_purchases=len(purchases),
+        total_credits=total_credits,
+        data_points=data_points,
+    )
+
+
+@app.get("/admin/users-chart")
+async def get_users_chart(
+    period: str = "30d",
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    """User-Registrierungen im Zeitverlauf"""
+    now = datetime.utcnow()
+    period_map = {
+        "today": (timedelta(days=1), "hour"),
+        "7d": (timedelta(days=7), "day"),
+        "30d": (timedelta(days=30), "day"),
+        "90d": (timedelta(days=90), "week"),
+        "365d": (timedelta(days=365), "month"),
+    }
+
+    delta, group_by = period_map.get(period, (timedelta(days=30), "day"))
+    start_date = now - delta
+
+    all_users = db.query(User).filter(User.created_at >= start_date).order_by(User.created_at).all()
+    total_users_db = db.query(User).count()
+
+    data_points = []
+    if group_by == "hour":
+        for hour in range(24):
+            dt = start_date.replace(hour=hour, minute=0, second=0, microsecond=0)
+            dt_end = dt + timedelta(hours=1)
+            count = len([u for u in all_users if dt <= u.created_at < dt_end])
+            data_points.append({"date": dt.strftime("%H:00"), "count": count})
+    elif group_by == "day":
+        current = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        while current <= now:
+            next_day = current + timedelta(days=1)
+            count = len([u for u in all_users if current <= u.created_at < next_day])
+            data_points.append({"date": current.strftime("%d.%m."), "count": count})
+            current = next_day
+    elif group_by == "week":
+        current = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        while current <= now:
+            next_week = current + timedelta(weeks=1)
+            count = len([u for u in all_users if current <= u.created_at < next_week])
+            data_points.append({"date": f"KW {current.strftime('%V')}", "count": count})
+            current = next_week
+    elif group_by == "month":
+        current = start_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        while current <= now:
+            if current.month == 12:
+                next_month = current.replace(year=current.year + 1, month=1)
+            else:
+                next_month = current.replace(month=current.month + 1)
+            count = len([u for u in all_users if current <= u.created_at < next_month])
+            data_points.append({"date": current.strftime("%b %y"), "count": count})
+            current = next_month
+
+    return {
+        "period": period,
+        "total_new": len(all_users),
+        "total_all": total_users_db,
+        "data_points": data_points,
     }
 
 
