@@ -174,15 +174,15 @@ function CriterionBar({ criterion, weightDiff = null, showAdjusted = false }) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <span className={`text-xs px-2 py-1 rounded-full ${
+        <div className="flex items-center gap-2">
+          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
             hasWeightChange && showAdjusted
               ? weightDiff.direction === 'up'
                 ? 'bg-[#7C8B6F]/10 text-[#7C8B6F]'
                 : 'bg-slate/10 text-[#8C7E6A]/60'
-              : 'bg-slate/10 text-[#8C7E6A]/60'
+              : 'bg-[#2C2418]/5 text-[#8C7E6A]'
           }`}>
-            {displayWeight}% Gewichtung
+            {displayWeight}%
             {hasWeightChange && showAdjusted && (
               <span className="ml-1">
                 ({weightDiff.diff > 0 ? '+' : ''}{weightDiff.diff})
@@ -190,7 +190,7 @@ function CriterionBar({ criterion, weightDiff = null, showAdjusted = false }) {
             )}
           </span>
           <span className="text-lg font-bold text-[#2C2418]">
-            {Math.round(criterion.score)}
+            {Math.round(criterion.score)}<span className="text-[12px] font-normal text-[#B5A68C]">/100</span>
           </span>
         </div>
       </div>
@@ -902,6 +902,20 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
                         {formatCurrency(result.cashflow_analyse.monatlicher_cashflow)}
                       </span>
                     </div>
+                    {/* Cashflow bei Neuvermietung */}
+                    {result.neuvermietung_potenzial && result.neuvermietung_potenzial.neuvermietung > 0 && result.cashflow_analyse.monatliche_miete > 0 && result.neuvermietung_potenzial.neuvermietung > result.cashflow_analyse.monatliche_miete && (
+                      <div className="mt-3 p-4 bg-[#F5F0E8] rounded-xl border border-[#E8E0D4]">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[13px] text-[#8C7E6A]">Cashflow bei Neuvermietung</span>
+                          <span className={`text-[16px] font-bold ${(result.neuvermietung_potenzial.neuvermietung - result.cashflow_analyse.monatliche_rate - result.cashflow_analyse.monatliche_nebenkosten) >= 0 ? 'text-[#7C8B6F]' : 'text-[#B85C5C]'}`}>
+                            {(result.neuvermietung_potenzial.neuvermietung - result.cashflow_analyse.monatliche_rate - result.cashflow_analyse.monatliche_nebenkosten) >= 0 ? '+' : ''}
+                            {formatCurrency(result.neuvermietung_potenzial.neuvermietung - result.cashflow_analyse.monatliche_rate - result.cashflow_analyse.monatliche_nebenkosten)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#B5A68C] mt-1">Bei Neuvermietung zu {formatCurrency(result.neuvermietung_potenzial.neuvermietung)}/Monat ({result.neuvermietung_potenzial.neuvermietung_qm?.toFixed(2)} €/m²)</p>
+                      </div>
+                    )}
+
                     {result.cashflow_analyse?.steuereffekt && (
                       <div className="mt-3 p-4 bg-[#7C8B6F]/5 rounded-xl border border-[#7C8B6F]/20">
                         <p className="text-[13px] font-medium text-[#7C8B6F] mb-2">Cashflow nach Steuereffekt (geschätzt)</p>
