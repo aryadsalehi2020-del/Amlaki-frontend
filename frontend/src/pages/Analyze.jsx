@@ -102,6 +102,9 @@ function PaywallModal({ onClose, token }) {
 }
 
 function Analyze() {
+  const { token, user } = useAuth();
+  const isGuest = !token;
+
   const [step, setStep] = useState('upload');
   const [propertyData, setPropertyData] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -112,10 +115,58 @@ function Analyze() {
   const [lastVerwendungszweck, setLastVerwendungszweck] = useState(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [credits, setCredits] = useState(null);
-  const { token } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+
+  // After registration: check for pending data and continue
+  const [pendingSubmit, setPendingSubmit] = useState(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    // Case 1: Pending form submission (manual entry → clicked "Bewerten")
+    const pendingForm = localStorage.getItem('pendingAnalysis');
+    if (pendingForm) {
+      try {
+        const parsed = JSON.parse(pendingForm);
+        localStorage.removeItem('pendingAnalysis');
+        setPropertyData(parsed.formData);
+        setPendingSubmit(parsed);
+      } catch (e) {
+        localStorage.removeItem('pendingAnalysis');
+      }
+      return;
+    }
+
+    // Case 2: Pending URL import
+    const pendingUrl = localStorage.getItem('pendingUrl');
+    if (pendingUrl) {
+      localStorage.removeItem('pendingUrl');
+      localStorage.removeItem('pendingAction');
+      setStep('analyzing');
+      setLoadingMessage('Inserat wird ausgelesen...');
+      apiFetch(`${API_BASE}/extract-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ url: pendingUrl }),
+      })
+        .then(async (res) => {
+          if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
+          setPropertyData(await res.json());
+          setStep('form');
+        })
+        .catch(err => { setError(err.message); setStep('upload'); });
+      return;
+    }
+
+    // Case 3: Came from PDF upload as guest — show upload step to re-upload
+    const pendingAction = localStorage.getItem('pendingAction');
+    if (pendingAction === 'pdf') {
+      localStorage.removeItem('pendingAction');
+      // Stay on upload step — user re-uploads now with auth
+    }
+  }, [token]);
 
   // Prefill from Library "Daten bearbeiten"
   useEffect(() => {
@@ -129,6 +180,7 @@ function Analyze() {
 
   // Fetch credits on mount + after payment
   useEffect(() => {
+    if (!token) return;
     const fetchCredits = async () => {
       try {
         const res = await apiFetch(`${API_BASE}/payments/credits`, {
@@ -155,6 +207,13 @@ function Analyze() {
   }, []);
 
   const handleFileUpload = useCallback(async (file) => {
+    // Guest: redirect to register, they'll re-upload after
+    if (!token) {
+      localStorage.setItem('pendingAction', 'pdf');
+      navigate('/register?redirect=analyze');
+      return;
+    }
+
     setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
     const fd = new FormData(); fd.append('file', file);
     try {
@@ -162,11 +221,23 @@ function Analyze() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       setPropertyData(await res.json()); setStep('form');
     } catch (err) { setError(err.message); setStep('upload'); }
-  }, []);
+  }, [token, navigate]);
+
+  const handleGuestUrlImport = useCallback((url) => {
+    localStorage.setItem('pendingUrl', url);
+    navigate('/register?redirect=analyze&pending=url');
+  }, [navigate]);
 
   const handleManualEntry = useCallback(() => { setPropertyData({}); setStep('form'); }, []);
 
   const handleAnalyze = useCallback(async (formData, verwendungszweck, finanzierung, investmentProfile, besichtigt, besichtigungsNotizen) => {
+    // Guest user: save data and redirect to register
+    if (!token) {
+      localStorage.setItem('pendingAnalysis', JSON.stringify({ formData, verwendungszweck, finanzierung, investmentProfile, besichtigt, besichtigungsNotizen }));
+      navigate('/register?redirect=analyze');
+      return;
+    }
+
     setError(null); setStep('analyzing'); setLoadingMessage('Immobilie wird bewertet...');
     setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
@@ -198,6 +269,15 @@ function Analyze() {
       setStep('result');
     } catch (err) { setError(err.message); setStep('form'); }
   }, [token]);
+
+  // Auto-submit pending analysis after registration
+  useEffect(() => {
+    if (pendingSubmit && token) {
+      const { formData, verwendungszweck, finanzierung, investmentProfile, besichtigt, besichtigungsNotizen } = pendingSubmit;
+      setPendingSubmit(null);
+      handleAnalyze(formData, verwendungszweck, finanzierung, investmentProfile, besichtigt, besichtigungsNotizen);
+    }
+  }, [pendingSubmit, token, handleAnalyze]);
 
   const handleSwitchVerwendungszweck = useCallback(async (v) => {
     if (!propertyData) return;
@@ -255,14 +335,14 @@ function Analyze() {
           </div>
         )}
 
-        {error && (
+        {error && !isGuest && (
           <div className="mb-8 px-5 py-4 bg-[#B85C5C]/[0.08] border border-[#B85C5C]/[0.2] rounded-[16px] fade-in">
             <p className="text-[#B85C5C] text-[14px]">{error}</p>
           </div>
         )}
 
         <main>
-          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} />}
+          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} onGuestUrlImport={handleGuestUrlImport} />}
           {step === 'form' && <PropertyForm initialData={propertyData} onAnalyze={handleAnalyze} onBack={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setError(null); }} />}
           {step === 'analyzing' && <LoadingState message={loadingMessage} />}
           {step === 'result' && analysisResult && (

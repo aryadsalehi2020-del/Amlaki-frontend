@@ -71,6 +71,52 @@ function DashboardLayout({ children }) {
   );
 }
 
+// Minimal layout for guest users on /analyze
+function GuestLayout({ children }) {
+  return (
+    <div className="min-h-screen bg-[#FAF7F2]">
+      <nav className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-4 sm:px-6" style={{ background: 'rgba(250,247,242,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(196,184,158,0.25)' }}>
+        <a href="/" className="text-xl font-bold tracking-tight select-none">
+          <span className="font-extrabold text-[#7C8B6F]">A</span>
+          <span className="text-[#2C2418]">mlak</span>
+          <span className="font-extrabold text-[#7C8B6F]">I</span>
+        </a>
+        <a href="/login" className="text-sm font-medium px-4 py-2 rounded-full border border-[#E8E0D4] text-[#5C4F3D] hover:border-[#B5A68C] transition-all">
+          Anmelden
+        </a>
+      </nav>
+      <main className="pt-16">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+// Analyze route – shows sidebar for logged-in users, minimal nav for guests
+function AnalyzeRoute() {
+  const { user, loading } = useAuth();
+
+  if (loading) return <PageLoader />;
+
+  if (user) {
+    return (
+      <DashboardLayout>
+        <Suspense fallback={<PageLoader />}>
+          <Analyze />
+        </Suspense>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <GuestLayout>
+      <Suspense fallback={<PageLoader />}>
+        <Analyze />
+      </Suspense>
+    </GuestLayout>
+  );
+}
+
 // Root Redirect – show LandingPage for guests, Chat for logged-in users
 function RootRedirect() {
   const { user, loading, token } = useAuth();
@@ -151,16 +197,7 @@ function App() {
             }
           />
           {/* /dashboard removed – Chat is the main entry point */}
-          <Route
-            path="/analyze"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Analyze />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/analyze" element={<AnalyzeRoute />} />
           <Route
             path="/library"
             element={

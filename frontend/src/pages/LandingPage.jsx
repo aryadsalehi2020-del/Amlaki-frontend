@@ -249,7 +249,7 @@ export default function LandingPage() {
               Anmelden
             </button>
             <button
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/analyze')}
               className="text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200"
               style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer' }}
               onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
@@ -319,9 +319,9 @@ export default function LandingPage() {
               className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-4 md:mb-5"
               style={{ color: C.heading, letterSpacing: '-0.035em', lineHeight: 1.1 }}
             >
-              Dein Immobilienkauf.
+              Kaufen oder lassen?
               <br />
-              <span style={{ color: C.olive }}>Fundiert analysiert.</span>
+              <span className="text-2xl sm:text-3xl md:text-5xl" style={{ color: C.olive }}>Wir analysieren. Du entscheidest.</span>
             </h1>
           </FadeInSection>
 
@@ -330,14 +330,14 @@ export default function LandingPage() {
               className="text-base sm:text-lg md:text-xl leading-relaxed mb-7 md:mb-8 max-w-xl mx-auto"
               style={{ color: C.body, fontSize: 'max(16px, 1rem)' }}
             >
-              Exposé hochladen, in 30 Sekunden wissen ob sich das Objekt lohnt -- Cashflow, fairer Preis und Finanzierung auf einen Blick.
+              Rendite, Cashflow und fairer Preis &ndash; in 30 Sekunden analysiert. Damit du kaufst, was sich rechnet.
             </p>
           </FadeInSection>
 
           <FadeInSection delay={0.3}>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={() => navigate('/register')}
+                onClick={() => navigate('/analyze')}
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
@@ -511,7 +511,7 @@ export default function LandingPage() {
           <FadeInSection delay={0.2}>
             <div className="text-center mt-10 md:mt-14">
               <button
-                onClick={() => navigate('/register')}
+                onClick={() => navigate('/analyze')}
                 className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
@@ -681,7 +681,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <button
-                    onClick={() => navigate('/register')}
+                    onClick={() => navigate('/analyze')}
                     className="w-full py-3 rounded-full font-semibold text-sm transition-all duration-200"
                     style={{
                       background: plan.popular ? C.olive : 'transparent',

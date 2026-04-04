@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { API_BASE } from '../config';
 import { useAuth } from '../contexts/AuthContext';
 
-function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
+function FileUpload({ onFileUpload, onManualEntry, onUrlImport, onGuestUrlImport }) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [url, setUrl] = useState('');
@@ -27,6 +27,13 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
   const handleUrlSubmit = useCallback(async () => {
     if (!url.trim()) return;
     setUrlError('');
+
+    // Guest: save URL and redirect to register
+    if (!token && onGuestUrlImport) {
+      onGuestUrlImport(url.trim());
+      return;
+    }
+
     setUrlLoading(true);
     try {
       const res = await fetch(`${API_BASE}/extract-url`, {
@@ -47,7 +54,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport }) {
     } finally {
       setUrlLoading(false);
     }
-  }, [url, token]);
+  }, [url, token, onGuestUrlImport]);
 
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B';
