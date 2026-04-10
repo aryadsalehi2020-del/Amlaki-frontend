@@ -1,5 +1,23 @@
 import React, { useState, useMemo } from 'react';
 
+// Error Boundary to prevent white screen crashes
+class TabErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error) { console.error('Tab crash:', error); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 text-center bg-white rounded-2xl border border-[#E8E0D4]">
+          <p className="text-[#B85C5C] font-semibold mb-2">Dieser Bereich konnte nicht geladen werden.</p>
+          <button onClick={() => this.setState({ hasError: false })} className="px-4 py-2 bg-[#7C8B6F] text-white rounded-xl text-sm">Erneut versuchen</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Info tooltip for financial terms
 function InfoTip({ text }) {
   const [show, setShow] = useState(false);
@@ -1681,7 +1699,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
       {/* Projektionen Tab */}
       {activeTab === 'projektionen' && hasExtendedData && (
         result.is_premium === false ? <PremiumLock onUpgrade={onUpgrade} /> :
-        <div className="space-y-8">
+        <TabErrorBoundary><div className="space-y-8">
           {/* NEW: Full Live Calculator */}
           <LiveCalculator
             kaufpreis={propertyData?.kaufpreis || 0}
@@ -1699,18 +1717,24 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           />
 
           {/* Charts */}
-          <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
-            <CashflowChart szenarien={result.szenarien} />
-          </div>
+          {result.szenarien && result.szenarien.length > 0 && (
+            <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
+              <CashflowChart szenarien={result.szenarien} />
+            </div>
+          )}
 
-          <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
-            <TilgungsChart tilgungsplan={activeTilgungsplan} />
-          </div>
+          {activeTilgungsplan && (
+            <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
+              <TilgungsChart tilgungsplan={activeTilgungsplan} />
+            </div>
+          )}
 
-          <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
-            <ZinsTilgungChart tilgungsplan={activeTilgungsplan} />
-          </div>
-        </div>
+          {activeTilgungsplan && (
+            <div className="bg-white rounded-2xl p-4 md:p-8 border border-[#E8E0D4]">
+              <ZinsTilgungChart tilgungsplan={activeTilgungsplan} />
+            </div>
+          )}
+        </div></TabErrorBoundary>
       )}
 
       {/* Szenarien Tab */}
