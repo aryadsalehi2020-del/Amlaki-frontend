@@ -658,7 +658,7 @@ export default function Chat() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[#FAF7F2] overflow-hidden">
+    <div className="flex h-[calc(100dvh-60px)] md:h-screen bg-[#FAF7F2] overflow-hidden">
       {/* Desktop sidebar is now in main Sidebar.jsx */}
 
       {/* Mobile sidebar is now in main Sidebar.jsx */}
@@ -860,7 +860,7 @@ export default function Chat() {
         </div>
 
         {/* Input area */}
-        <div className="shrink-0 px-4 md:px-6 pb-4 pt-2">
+        <div className="shrink-0 px-3 md:px-6 pb-[env(safe-area-inset-bottom,8px)] pt-2">
           <div className="max-w-2xl mx-auto relative">
             <textarea
               ref={textareaRef}
