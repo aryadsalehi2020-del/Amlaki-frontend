@@ -484,8 +484,39 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
       {/* Tab Content */}
       {activeTab === 'uebersicht' && (
         <>
+          {/* Premium Upsell Banner for free users */}
+          {result.is_premium === false && (
+            <div className="bg-white border-2 border-[#7C8B6F]/30 rounded-3xl p-6 md:p-10 text-center">
+              <div className="w-14 h-14 bg-[#7C8B6F]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-[#7C8B6F]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-[#2C2418] mb-2">Volle Analyse freischalten</h3>
+              <p className="text-[#8C7E6A] text-[14px] mb-6 max-w-md mx-auto">
+                Du siehst den Score und die Kaufnebenkosten. Die komplette Analyse mit Cashflow, Szenarien, Foerderungen und Verhandlungsmail gibt es mit Credits.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 max-w-lg mx-auto">
+                {['Cashflow-Analyse', 'Fairer Preis', 'KfW-Check', 'Szenarien', 'Verhandlungsmail', 'Live-Rechner', 'Mietoptimierung', 'ETF-Vergleich'].map((feature) => (
+                  <div key={feature} className="flex items-center gap-1.5 px-3 py-2 bg-[#F5F0E8] rounded-lg">
+                    <svg className="w-3.5 h-3.5 text-[#7C8B6F] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span className="text-[11px] text-[#5C4F3D] font-medium">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              {onUpgrade && (
+                <button onClick={onUpgrade} className="px-8 py-3 bg-[#7C8B6F] text-white font-semibold rounded-xl hover:bg-[#6B7A5E] transition-all shadow-lg">
+                  Credits kaufen -- ab 9 Euro
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* === PREMIUM CONTENT START: Everything below only for premium users === */}
           {/* Personalized Warnings */}
-          {isProfileComplete && dynamicData.warnings.length > 0 && showPersonalized && (
+          {result.is_premium !== false && isProfileComplete && dynamicData.warnings.length > 0 && showPersonalized && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 fade-in card-hover border-2 border-[#E8E0D4]">
               <h3 className="text-xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Personalisierte Hinweise
@@ -528,7 +559,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Potenzial-Szenarien */}
-          {result.potenzial_szenarien && result.potenzial_szenarien.szenarien?.length > 0 && (
+          {result.is_premium !== false && result.potenzial_szenarien && result.potenzial_szenarien.szenarien?.length > 0 && (
             <div className="bg-white border-2 border-[#7C8B6F]/20 rounded-3xl p-4 md:p-8 fade-in">
               <h3 className="text-xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
                 Potenzial-Rechner
@@ -587,7 +618,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Mietschätzung Hinweis (NEU) */}
-          {result.mietschaetzung && result.mietschaetzung.ist_geschaetzt && (
+          {result.is_premium !== false && result.mietschaetzung && result.mietschaetzung.ist_geschaetzt && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in border-2 border-[#B5A68C]/30">
               <h3 className="text-xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 <span className="text-[#8C7E6A]">Geschätzte Mieteinnahmen</span>
@@ -623,7 +654,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Neuvermietungs-Potenzial */}
-          {result.neuvermietung_potenzial && (
+          {result.is_premium !== false && result.neuvermietung_potenzial && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in">
               <h3 className="text-xl font-bold text-[#2C2418] mb-2">
                 Mietoptimierung
@@ -682,7 +713,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Energie-Analyse (bei schlechter Energieklasse) */}
-          {result.no_go_check?.energie_analyse && (
+          {result.is_premium !== false && result.no_go_check?.energie_analyse && (
             <div className={`bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in border-2 ${
               result.no_go_check.energie_analyse.lohnt_sich_sanierung
                 ? 'border-[#7C8B6F]/20'
@@ -808,7 +839,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Notar-Checkliste */}
-          {result.kaufnebenkosten && (
+          {result.is_premium !== false && result.kaufnebenkosten && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl p-4 md:p-8 fade-in card-hover">
               <h3 className="text-[18px] md:text-xl font-bold text-[#2C2418] mb-2">
                 Notar-Checkliste
@@ -846,7 +877,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Break-Even Calculator (new) */}
-          {result.breakeven_eigenkapital && result.verwendungszweck === 'kapitalanlage' && (
+          {result.is_premium !== false && result.breakeven_eigenkapital && result.verwendungszweck === 'kapitalanlage' && (
             <div className="fade-in-delay-1">
               <BreakEvenCalculator
                 breakeven={result.breakeven_eigenkapital}
@@ -857,7 +888,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Cashflow Analysis (for investment) */}
-          {result.cashflow_analyse && (
+          {result.is_premium !== false && result.cashflow_analyse && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 fade-in-delay-1 card-hover">
               <div className="flex flex-wrap items-center justify-between gap-4 mb-5 md:mb-8">
                 <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] flex items-center gap-3">
@@ -1052,7 +1083,8 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
             </div>
           )}
 
-          {/* Criteria Breakdown */}
+          {/* Criteria Breakdown + Strengths/Weaknesses */}
+          {result.is_premium !== false && (<>
           <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 fade-in-delay-2 card-hover">
             <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-5 md:mb-8 flex items-center gap-3">
               Detailbewertung
@@ -1126,9 +1158,10 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
               </ul>
             </div>
           </div>
+          </>)}
 
           {/* V3.0 Kennzahlen & Markt-Vergleich */}
-          {result.kennzahlen && (
+          {result.is_premium !== false && result.kennzahlen && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 fade-in-delay-3 card-hover border-2 border-[#E8E0D4]">
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Markt-Vergleich (Live-Daten)
@@ -1216,7 +1249,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Market Data */}
-          {result.marktdaten && (
+          {result.is_premium !== false && result.marktdaten && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-10 fade-in-delay-3 card-hover">
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-5 md:mb-8 flex items-center gap-3">
                 Marktdaten & Prognose
@@ -1445,7 +1478,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Leverage Effekt */}
-          {result.leverage_effekt && (
+          {result.is_premium !== false && result.leverage_effekt && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Leverage-Effekt (Hebel)
@@ -1482,7 +1515,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Quick Check */}
-          {result.quick_check_result && (
+          {result.is_premium !== false && result.quick_check_result && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-4 flex items-center gap-3">
                 Quick-Check
@@ -1507,7 +1540,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Verhandlungsnachricht */}
-          {result.verhandlungsmail && (
+          {result.is_premium !== false && result.verhandlungsmail && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
                 Verhandlungsnachricht
@@ -1531,7 +1564,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Besichtigungs-Roadmap */}
-          {result.besichtigungs_roadmap && (
+          {result.is_premium !== false && result.besichtigungs_roadmap && (
             <div className="bg-white border border-[#E8E0D4] rounded-3xl shadow-2xl p-4 md:p-8 card-hover">
               <h3 className="text-[18px] md:text-2xl font-bold text-[#2C2418] mb-2 flex items-center gap-3">
                 Dein Besichtigungs-Leitfaden
@@ -1635,7 +1668,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
           )}
 
           {/* Hinweis f\u00fcr bereits besichtigte Objekte */}
-          {result.besichtigt === true && (
+          {result.is_premium !== false && result.besichtigt === true && (
             <div className="bg-[#7C8B6F]/5 border border-[#7C8B6F]/20 rounded-2xl p-5">
               <p className="text-[13px] text-[#5C4F3D]">
                 <span className="font-semibold text-[#7C8B6F]">Tipp:</span> Du warst bereits bei der Besichtigung. Falls du neue Erkenntnisse hast (z.B. Zustand, Renovierungsbedarf, Nachbarschaft), kannst du deine Daten aktualisieren und eine noch praezisere Analyse erhalten.
@@ -1647,6 +1680,7 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
 
       {/* Projektionen Tab */}
       {activeTab === 'projektionen' && hasExtendedData && (
+        result.is_premium === false ? <PremiumLock onUpgrade={onUpgrade} /> :
         <div className="space-y-8">
           {/* NEW: Full Live Calculator */}
           <LiveCalculator
