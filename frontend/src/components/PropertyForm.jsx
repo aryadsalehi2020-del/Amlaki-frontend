@@ -10,7 +10,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     kaufpreis: initialData?.kaufpreis || '', wohnflaeche: initialData?.wohnflaeche || '', zimmer: initialData?.zimmer || '',
     baujahr: initialData?.baujahr || '', etage: initialData?.etage || '', nebenkosten: initialData?.nebenkosten || '',
     hausgeld: initialData?.hausgeld || '', hausgeld_nicht_umlagefaehig: initialData?.hausgeld_nicht_umlagefaehig || '', energieklasse: initialData?.energieklasse || '', heizungsart: initialData?.heizungsart || '',
-    adresse: initialData?.adresse || '', stadt: initialData?.stadt || '', stadtteil: initialData?.stadtteil || '',
+    adresse: initialData?.adresse || '', plz: initialData?.plz || '', stadt: initialData?.stadt || '', stadtteil: initialData?.stadtteil || '',
     objekttyp: initialData?.objekttyp || '', zustand: initialData?.zustand || '', ausstattung: initialData?.ausstattung || '',
     balkon_terrasse: initialData?.balkon_terrasse || false, keller: initialData?.keller || false,
     stellplatz: initialData?.stellplatz || '', vermietet: initialData?.vermietet || false,
@@ -320,10 +320,11 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
           </div>
 
           {sectionTitle('Lage')}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
-            <div><label className={labelClass}>Stadt *</label><input type="text" name="stadt" value={formData.stadt} onChange={handleChange} required placeholder="M&uuml;nchen" className={inputClass} /></div>
-            <div><label className={labelClass}>Stadtteil</label><input type="text" name="stadtteil" value={formData.stadtteil} onChange={handleChange} placeholder="Schwabing" className={inputClass} /></div>
-            <div className="col-span-2 md:col-span-1"><label className={labelClass}>Adresse</label><input type="text" name="adresse" value={formData.adresse} onChange={handleChange} placeholder="Musterstra&szlig;e 12" className={inputClass} /></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div><label className={labelClass}>PLZ</label><input type="text" name="plz" value={formData.plz} onChange={handleChange} placeholder="22297" className={inputClass} maxLength={5} /></div>
+            <div><label className={labelClass}>Stadt *</label><input type="text" name="stadt" value={formData.stadt} onChange={handleChange} required placeholder="Hamburg" className={inputClass} /></div>
+            <div><label className={labelClass}>Stadtteil</label><input type="text" name="stadtteil" value={formData.stadtteil} onChange={handleChange} placeholder="Winterhude" className={inputClass} /></div>
+            <div><label className={labelClass}>Adresse</label><input type="text" name="adresse" value={formData.adresse} onChange={handleChange} placeholder="Musterstra&szlig;e 12" className={inputClass} /></div>
           </div>
 
           {sectionTitle('Objektdetails')}

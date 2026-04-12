@@ -56,6 +56,110 @@
 - **Prognose 2026:** +3-5%, **2027:** +3-4% (konservativ) bis +6%
 - **Bis 2030:** +15-25% nominal moeglich (Postbank Wohnatlas)
 
+### Stadtteil-Preise A-Staedte (EUR/m2 Kauf Bestand + Neuvermietungsmiete, 2026)
+
+WICHTIG: Verwende immer die Stadtteil-Daten wenn ein Stadtteil bekannt ist! Die stadtweiten Durchschnitte oben sind nur Fallback.
+
+#### Hamburg Stadtteile
+
+| Stadtteil | Kauf EUR/m2 | Miete EUR/m2 | Segment |
+|-----------|-------------|--------------|---------|
+| HafenCity | 7.000-9.000 | 20,00 | Premium |
+| Uhlenhorst | 7.000-8.500 | 19,00 | Premium |
+| Blankenese | 6.500-9.000 | 18,00 | Premium |
+| Winterhude | 6.500-8.000 | 18,50 | Gehoben |
+| Eppendorf | 6.500-8.000 | 18,00 | Gehoben |
+| Ottensen | 5.800-7.200 | 17,50 | Gehoben |
+| Eimsbuettel | 5.500-7.000 | 17,00 | Mittel-Gehoben |
+| Altona | 5.500-7.000 | 17,50 | Mittel-Gehoben |
+| St. Georg | 5.500-7.000 | 17,00 | Mittel-Gehoben |
+| Barmbek | 4.500-5.500 | 15,00 | Mittel |
+| Stellingen | 4.000-5.000 | 14,00 | Mittel |
+| Wandsbek | 3.500-4.500 | 13,50 | Erschwinglich |
+| Rahlstedt | 3.500-4.500 | 12,50 | Erschwinglich |
+| Horn | 3.200-4.200 | 12,50 | Erschwinglich |
+| Harburg | 3.000-4.000 | 12,00 | Guenstig |
+| Bergedorf | 2.800-3.800 | 11,50 | Guenstig |
+| Billstedt | 2.800-3.800 | 11,50 | Guenstig |
+
+#### Berlin Stadtteile
+
+| Stadtteil | Kauf EUR/m2 | Miete EUR/m2 | Segment |
+|-----------|-------------|--------------|---------|
+| Grunewald | 7.000-10.000 | 18,00 | Premium |
+| Mitte | 6.500-8.500 | 18,50 | Premium |
+| Dahlem | 6.500-9.000 | 17,00 | Premium |
+| Prenzlauer Berg | 6.000-7.500 | 17,50 | Gehoben |
+| Charlottenburg | 6.000-7.500 | 17,00 | Gehoben |
+| Wilmersdorf | 5.500-7.000 | 16,50 | Gehoben |
+| Friedrichshain | 5.500-7.000 | 17,00 | Gehoben |
+| Kreuzberg | 5.500-7.000 | 17,00 | Gehoben |
+| Schoeneberg | 5.200-6.500 | 16,00 | Mittel-Gehoben |
+| Zehlendorf | 5.000-6.500 | 15,00 | Mittel-Gehoben |
+| Moabit | 4.500-5.800 | 15,50 | Mittel |
+| Pankow | 4.500-5.800 | 14,50 | Mittel |
+| Steglitz | 4.500-5.800 | 14,50 | Mittel |
+| Tempelhof | 4.200-5.500 | 14,00 | Mittel |
+| Neukoelln | 4.000-5.200 | 14,50 | Erschwinglich-Aufstrebend |
+| Treptow | 4.000-5.200 | 14,00 | Erschwinglich |
+| Wedding | 3.800-5.000 | 13,50 | Erschwinglich |
+| Koepenick | 3.800-5.000 | 13,00 | Erschwinglich |
+| Lichtenberg | 3.500-4.500 | 12,50 | Guenstig |
+| Spandau | 3.200-4.200 | 12,00 | Guenstig |
+| Reinickendorf | 3.200-4.200 | 12,00 | Guenstig |
+| Marzahn | 2.800-3.600 | 11,00 | Guenstig |
+| Hellersdorf | 2.600-3.400 | 10,50 | Guenstig |
+
+#### Muenchen Stadtteile
+
+| Stadtteil | Kauf EUR/m2 | Miete EUR/m2 | Segment |
+|-----------|-------------|--------------|---------|
+| Schwabing | 10.000-13.000 | 23,00 | Premium |
+| Maxvorstadt | 10.000-13.000 | 23,00 | Premium |
+| Bogenhausen | 9.500-13.000 | 22,00 | Premium |
+| Nymphenburg | 9.000-12.000 | 21,00 | Premium |
+| Haidhausen | 9.000-11.500 | 21,50 | Gehoben |
+| Neuhausen | 8.500-11.000 | 20,50 | Gehoben |
+| Sendling | 8.000-10.000 | 20,00 | Mittel-Gehoben |
+| Laim | 8.000-10.000 | 19,50 | Mittel-Gehoben |
+| Giesing | 7.500-9.500 | 19,00 | Mittel |
+| Pasing | 7.500-9.500 | 18,50 | Mittel |
+| Trudering | 7.000-9.000 | 18,00 | Mittel |
+| Milbertshofen | 7.000-8.500 | 18,00 | Mittel |
+| Riem | 7.000-8.500 | 18,00 | Mittel |
+
+#### Frankfurt Stadtteile
+
+| Stadtteil | Kauf EUR/m2 | Miete EUR/m2 | Segment |
+|-----------|-------------|--------------|---------|
+| Westend | 7.000-9.000 | 20,00 | Premium |
+| Europaviertel | 6.500-8.500 | 19,50 | Premium |
+| Nordend | 6.000-7.500 | 18,50 | Gehoben |
+| Sachsenhausen | 5.500-7.000 | 18,00 | Gehoben |
+| Ostend | 5.500-7.000 | 18,00 | Gehoben |
+| Riedberg | 5.500-7.000 | 17,00 | Gehoben (Neubau) |
+| Bornheim | 5.000-6.500 | 17,00 | Mittel-Gehoben |
+| Bockenheim | 4.800-6.200 | 16,50 | Mittel |
+| Gallus | 4.500-5.800 | 16,00 | Mittel-Aufstrebend |
+| Bergen-Enkheim | 4.000-5.000 | 14,50 | Erschwinglich |
+| Niederrad | 4.000-5.200 | 15,00 | Erschwinglich |
+| Hoechst | 3.500-4.500 | 13,50 | Guenstig |
+| Fechenheim | 3.200-4.200 | 13,00 | Guenstig |
+
+#### Koeln Stadtteile
+
+| Stadtteil | Kauf EUR/m2 | Miete EUR/m2 | Segment |
+|-----------|-------------|--------------|---------|
+| Lindenthal | 5.500-7.000 | 17,00 | Premium |
+| Rodenkirchen | 5.000-6.500 | 16,00 | Gehoben |
+| Suelz | 5.000-6.500 | 16,00 | Gehoben |
+| Ehrenfeld | 4.500-5.800 | 15,50 | Mittel-Gehoben |
+| Deutz | 4.500-5.800 | 15,50 | Mittel-Gehoben |
+| Nippes | 4.200-5.500 | 15,00 | Mittel |
+| Muelheim | 3.200-4.200 | 12,50 | Erschwinglich |
+| Kalk | 2.800-3.800 | 12,00 | Guenstig |
+| Porz | 2.800-3.600 | 11,50 | Guenstig |
+
 ### Kaltmieten (EUR/m2, Maerz 2026)
 
 | Stadt | Bestand | Neubau | Trend YoY |

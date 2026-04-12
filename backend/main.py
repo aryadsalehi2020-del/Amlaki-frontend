@@ -253,8 +253,20 @@ def register_user(request: Request, user: UserCreate, db: Session = Depends(get_
     db.commit()
     db.refresh(db_user)
 
-    # Log neue Registrierung (SMTP geht nicht auf Render Free Plan)
+    # Log neue Registrierung
     print(f"NEUER USER REGISTRIERT: {db_user.username} ({db_user.email})")
+
+    # Welcome-Mail senden
+    try:
+        send_welcome_email(db_user.email, db_user.username)
+    except Exception as e:
+        print(f"[WARN] Welcome-Mail fehlgeschlagen: {e}")
+
+    # Notify admin
+    try:
+        send_new_user_notification(db_user.username, db_user.email)
+    except Exception as e:
+        print(f"[WARN] Admin-Notification fehlgeschlagen: {e}")
 
     return db_user
 
@@ -427,6 +439,72 @@ def send_email_via_resend(to_email: str, subject: str, body: str, from_email: st
     except Exception as e:
         print(f"[ERROR] Resend Exception: {type(e).__name__}: {e}")
         return False
+
+
+def send_welcome_email(to_email: str, username: str):
+    """Sendet Welcome-Mail nach Registrierung"""
+    frontend_url = os.getenv("FRONTEND_URL", "https://amlaki.de")
+    subject = "Willkommen bei AmlakI -- deine erste Analyse wartet"
+    body = f"""Hallo {username},
+
+willkommen bei AmlakI -- dem KI-Immobilienberater fuer smarte Kaufentscheidungen.
+
+Du hast 1 Gratis-Credit. So nutzt du ihn:
+
+1. Geh auf {frontend_url}/analyze
+2. Fuege einen ImmoScout24-Link ein (oder lade ein Expose hoch)
+3. In 60 Sekunden hast du: Score, Cashflow, fairer Preis, KfW-Check
+
+Dein Rabattcode fuer den ersten Kauf: WILLKOMMEN20
+Damit sparst du 20% auf dein erstes Credit-Paket.
+
+Bei Fragen antworte einfach auf diese Mail.
+
+Beste Gruesse
+Arya von AmlakI
+
+PS: Der Code ist 7 Tage gueltig.
+"""
+    try:
+        send_email_via_resend(to_email, subject, body)
+    except Exception as e:
+        print(f"[WARN] Welcome Mail fehlgeschlagen: {e}")
+
+
+def send_analysis_followup_email(to_email: str, username: str, stadt: str, score: int, is_premium: bool):
+    """Sendet Follow-Up E-Mail nach einer Analyse"""
+    if is_premium:
+        return  # Premium-User brauchen kein Upsell
+
+    frontend_url = os.getenv("FRONTEND_URL", "https://amlaki.de")
+    subject = f"Deine AmlakI-Analyse fuer {stadt} -- das fehlt dir noch"
+    body = f"""Hallo {username},
+
+du hast gerade eine Immobilie in {stadt} analysiert und einen Score von {score}/100 erhalten.
+
+In deiner Gratis-Analyse siehst du den Score und die Kaufnebenkosten. Aber die wichtigsten Informationen fuer deine Kaufentscheidung fehlen noch:
+
+- Cashflow-Analyse: Traegt sich die Immobilie selbst?
+- Fairer Preis: Zahlst du zu viel?
+- KfW-Foerderungen: Welche Zuschuesse stehen dir zu?
+- Szenarien: Was passiert bei steigenden Zinsen?
+- Verhandlungsmail: Fertige Nachricht an den Makler
+
+All das bekommst du mit einem Credit -- ab 9 Euro.
+
+Dein Rabattcode: ERSTE20 (20% auf dein erstes Paket)
+
+Jetzt freischalten: {frontend_url}/pricing
+
+Bei Fragen antworte einfach auf diese Mail.
+
+Beste Gruesse
+Arya von AmlakI
+"""
+    try:
+        send_email_via_resend(to_email, subject, body)
+    except Exception as e:
+        print(f"[WARN] Follow-Up Mail fehlgeschlagen: {e}")
 
 
 def send_reset_email(to_email: str, reset_token: str):
@@ -628,12 +706,12 @@ def update_current_user(
 
 # Gewichtungen für Kapitalanlage
 WEIGHTS_INVESTMENT = {
-    "cashflow_rendite": 25,
-    "lage": 20,
+    "cashflow_rendite": 30,
+    "lage": 15,
     "kaufpreis_qm": 20,
-    "zukunftspotenzial": 10,
+    "zukunftspotenzial": 8,
     "zustand_baujahr": 10,
-    "energieeffizienz": 5,
+    "energieeffizienz": 7,
     "nebenkosten": 5,
     "grundriss": 3,
     "verkäufertyp": 2,
@@ -926,6 +1004,7 @@ class PropertyData(BaseModel):
     energieklasse: Optional[str] = None
     heizungsart: Optional[str] = None
     adresse: Optional[str] = None
+    plz: Optional[str] = None
     stadt: Optional[str] = None
     stadtteil: Optional[str] = None
     objekttyp: Optional[str] = None
@@ -948,8 +1027,8 @@ class AnalysisRequest(BaseModel):
     property_data: PropertyData
     verwendungszweck: str  # "kapitalanlage" oder "eigennutzung"
     eigenkapital: Optional[float] = 0
-    zinssatz: Optional[float] = 3.75  # Angepasst auf 3.75%
-    tilgung: Optional[float] = 1.25   # Angepasst auf 1.25%
+    zinssatz: Optional[float] = 4.0  # Aktualisiert April 2026
+    tilgung: Optional[float] = 1.25
     marktpreis_qm: Optional[float] = None  # Falls manuell eingegeben
     besichtigt: Optional[bool] = None  # Ob User schon bei Besichtigung war
     besichtigungs_notizen: Optional[str] = None  # Notizen von der Besichtigung
@@ -1012,6 +1091,8 @@ class AnalysisResult(BaseModel):
     # Besichtigungs-Roadmap
     besichtigungs_roadmap: Optional[dict] = None  # Checkliste und Tipps fuer die Besichtigung
     besichtigt: Optional[bool] = None  # Ob User schon besichtigt hat
+    # Potenzial-Szenarien
+    potenzial_szenarien: Optional[dict] = None  # Was-waere-wenn Szenarien mit Score-Veraenderung
     # Premium Status
     is_premium: bool = False  # True = alle Features sichtbar
 
@@ -1232,6 +1313,7 @@ Gib die Daten als JSON zurück mit genau diesen Feldern (null wenn nicht gefunde
     "energieklasse": "<A+ bis H>",
     "heizungsart": "<z.B. Gas-Zentralheizung>",
     "adresse": "<Straße und Hausnummer>",
+    "plz": "<Postleitzahl, z.B. 22297>",
     "stadt": "<Stadt>",
     "stadtteil": "<Stadtteil/Bezirk>",
     "objekttyp": "<z.B. Eigentumswohnung, Einfamilienhaus>",
@@ -1351,6 +1433,147 @@ KNOWN_CITIES = {
     "münchen": {"kauf_von": 8800, "kauf_bis": 9500, "miete": 21.0, "trend": "+2,5%", "faktor": "32-38"},
     "berlin": {"kauf_von": 5600, "kauf_bis": 6200, "miete": 15.5, "trend": "+3,0%", "faktor": "26-32"},
     "hamburg": {"kauf_von": 5300, "kauf_bis": 5800, "miete": 15.5, "trend": "+2,0%", "faktor": "25-30"},
+    # Hamburg Stadtteile (Neuvermietungspreise 2026)
+    "hamburg-uhlenhorst": {"kauf_von": 7000, "kauf_bis": 8500, "miete": 19.0, "trend": "+2,5%", "faktor": "28-35"},
+    "hamburg-winterhude": {"kauf_von": 6500, "kauf_bis": 8000, "miete": 18.5, "trend": "+2,5%", "faktor": "27-34"},
+    "hamburg-eppendorf": {"kauf_von": 6500, "kauf_bis": 8000, "miete": 18.0, "trend": "+2,0%", "faktor": "27-33"},
+    "hamburg-eimsbüttel": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,5%", "faktor": "25-30"},
+    "hamburg-eimsbuettel": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,5%", "faktor": "25-30"},
+    "hamburg-altona": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.5, "trend": "+2,5%", "faktor": "25-31"},
+    "hamburg-ottensen": {"kauf_von": 5800, "kauf_bis": 7200, "miete": 17.5, "trend": "+2,0%", "faktor": "25-31"},
+    "hamburg-barmbek": {"kauf_von": 4500, "kauf_bis": 5500, "miete": 15.0, "trend": "+3,0%", "faktor": "23-28"},
+    "hamburg-wandsbek": {"kauf_von": 3500, "kauf_bis": 4500, "miete": 13.5, "trend": "+2,5%", "faktor": "20-25"},
+    "hamburg-harburg": {"kauf_von": 3000, "kauf_bis": 4000, "miete": 12.0, "trend": "+3,0%", "faktor": "18-24"},
+    "hamburg-bergedorf": {"kauf_von": 2800, "kauf_bis": 3800, "miete": 11.5, "trend": "+3,0%", "faktor": "17-23"},
+    "hamburg-horn": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.5, "trend": "+3,0%", "faktor": "19-25"},
+    "hamburg-billstedt": {"kauf_von": 2800, "kauf_bis": 3800, "miete": 11.5, "trend": "+3,5%", "faktor": "17-23"},
+    "hamburg-st. georg": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,0%", "faktor": "25-30"},
+    "hamburg-st.georg": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,0%", "faktor": "25-30"},
+    "hamburg-hafencity": {"kauf_von": 7000, "kauf_bis": 9000, "miete": 20.0, "trend": "+2,0%", "faktor": "28-35"},
+    "hamburg-blankenese": {"kauf_von": 6500, "kauf_bis": 9000, "miete": 18.0, "trend": "+1,5%", "faktor": "28-35"},
+    "hamburg-stellingen": {"kauf_von": 4000, "kauf_bis": 5000, "miete": 14.0, "trend": "+2,5%", "faktor": "22-27"},
+    "hamburg-rahlstedt": {"kauf_von": 3500, "kauf_bis": 4500, "miete": 12.5, "trend": "+2,5%", "faktor": "20-25"},
+    # Berlin Stadtteile (Neuvermietungspreise 2026)
+    "berlin-mitte": {"kauf_von": 6500, "kauf_bis": 8500, "miete": 18.5, "trend": "+3,5%", "faktor": "28-35"},
+    "berlin-prenzlauer berg": {"kauf_von": 6000, "kauf_bis": 7500, "miete": 17.5, "trend": "+3,0%", "faktor": "27-33"},
+    "berlin-friedrichshain": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+3,5%", "faktor": "25-31"},
+    "berlin-kreuzberg": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+3,0%", "faktor": "25-31"},
+    "berlin-charlottenburg": {"kauf_von": 6000, "kauf_bis": 7500, "miete": 17.0, "trend": "+2,5%", "faktor": "27-33"},
+    "berlin-wilmersdorf": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 16.5, "trend": "+2,5%", "faktor": "26-32"},
+    "berlin-schöneberg": {"kauf_von": 5200, "kauf_bis": 6500, "miete": 16.0, "trend": "+3,0%", "faktor": "25-30"},
+    "berlin-schoeneberg": {"kauf_von": 5200, "kauf_bis": 6500, "miete": 16.0, "trend": "+3,0%", "faktor": "25-30"},
+    "berlin-steglitz": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-29"},
+    "berlin-zehlendorf": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.0, "trend": "+2,0%", "faktor": "25-32"},
+    "berlin-tempelhof": {"kauf_von": 4200, "kauf_bis": 5500, "miete": 14.0, "trend": "+3,0%", "faktor": "22-28"},
+    "berlin-neukölln": {"kauf_von": 4000, "kauf_bis": 5200, "miete": 14.5, "trend": "+4,0%", "faktor": "21-27"},
+    "berlin-neukoelln": {"kauf_von": 4000, "kauf_bis": 5200, "miete": 14.5, "trend": "+4,0%", "faktor": "21-27"},
+    "berlin-wedding": {"kauf_von": 3800, "kauf_bis": 5000, "miete": 13.5, "trend": "+4,0%", "faktor": "20-26"},
+    "berlin-moabit": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.5, "trend": "+3,5%", "faktor": "23-28"},
+    "berlin-pankow": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 14.5, "trend": "+3,0%", "faktor": "23-29"},
+    "berlin-lichtenberg": {"kauf_von": 3500, "kauf_bis": 4500, "miete": 12.5, "trend": "+4,0%", "faktor": "20-26"},
+    "berlin-treptow": {"kauf_von": 4000, "kauf_bis": 5200, "miete": 14.0, "trend": "+3,5%", "faktor": "21-27"},
+    "berlin-köpenick": {"kauf_von": 3800, "kauf_bis": 5000, "miete": 13.0, "trend": "+3,0%", "faktor": "21-27"},
+    "berlin-koepenick": {"kauf_von": 3800, "kauf_bis": 5000, "miete": 13.0, "trend": "+3,0%", "faktor": "21-27"},
+    "berlin-spandau": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.0, "trend": "+3,0%", "faktor": "19-25"},
+    "berlin-reinickendorf": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.0, "trend": "+2,5%", "faktor": "19-25"},
+    "berlin-marzahn": {"kauf_von": 2800, "kauf_bis": 3600, "miete": 11.0, "trend": "+4,0%", "faktor": "17-23"},
+    "berlin-hellersdorf": {"kauf_von": 2600, "kauf_bis": 3400, "miete": 10.5, "trend": "+4,5%", "faktor": "17-23"},
+    "berlin-grunewald": {"kauf_von": 7000, "kauf_bis": 10000, "miete": 18.0, "trend": "+2,0%", "faktor": "30-40"},
+    "berlin-dahlem": {"kauf_von": 6500, "kauf_bis": 9000, "miete": 17.0, "trend": "+2,0%", "faktor": "29-38"},
+    # München Stadtteile (Neuvermietungspreise 2026)
+    "muenchen-schwabing": {"kauf_von": 10000, "kauf_bis": 13000, "miete": 23.0, "trend": "+2,5%", "faktor": "34-42"},
+    "münchen-schwabing": {"kauf_von": 10000, "kauf_bis": 13000, "miete": 23.0, "trend": "+2,5%", "faktor": "34-42"},
+    "muenchen-maxvorstadt": {"kauf_von": 10000, "kauf_bis": 13000, "miete": 23.0, "trend": "+2,5%", "faktor": "34-42"},
+    "münchen-maxvorstadt": {"kauf_von": 10000, "kauf_bis": 13000, "miete": 23.0, "trend": "+2,5%", "faktor": "34-42"},
+    "muenchen-bogenhausen": {"kauf_von": 9500, "kauf_bis": 13000, "miete": 22.0, "trend": "+2,0%", "faktor": "33-42"},
+    "münchen-bogenhausen": {"kauf_von": 9500, "kauf_bis": 13000, "miete": 22.0, "trend": "+2,0%", "faktor": "33-42"},
+    "muenchen-haidhausen": {"kauf_von": 9000, "kauf_bis": 11500, "miete": 21.5, "trend": "+2,5%", "faktor": "32-40"},
+    "münchen-haidhausen": {"kauf_von": 9000, "kauf_bis": 11500, "miete": 21.5, "trend": "+2,5%", "faktor": "32-40"},
+    "muenchen-sendling": {"kauf_von": 8000, "kauf_bis": 10000, "miete": 20.0, "trend": "+2,5%", "faktor": "30-38"},
+    "münchen-sendling": {"kauf_von": 8000, "kauf_bis": 10000, "miete": 20.0, "trend": "+2,5%", "faktor": "30-38"},
+    "muenchen-giesing": {"kauf_von": 7500, "kauf_bis": 9500, "miete": 19.0, "trend": "+3,0%", "faktor": "29-37"},
+    "münchen-giesing": {"kauf_von": 7500, "kauf_bis": 9500, "miete": 19.0, "trend": "+3,0%", "faktor": "29-37"},
+    "muenchen-laim": {"kauf_von": 8000, "kauf_bis": 10000, "miete": 19.5, "trend": "+2,5%", "faktor": "30-38"},
+    "münchen-laim": {"kauf_von": 8000, "kauf_bis": 10000, "miete": 19.5, "trend": "+2,5%", "faktor": "30-38"},
+    "muenchen-neuhausen": {"kauf_von": 8500, "kauf_bis": 11000, "miete": 20.5, "trend": "+2,5%", "faktor": "31-40"},
+    "münchen-neuhausen": {"kauf_von": 8500, "kauf_bis": 11000, "miete": 20.5, "trend": "+2,5%", "faktor": "31-40"},
+    "muenchen-nymphenburg": {"kauf_von": 9000, "kauf_bis": 12000, "miete": 21.0, "trend": "+2,0%", "faktor": "32-42"},
+    "münchen-nymphenburg": {"kauf_von": 9000, "kauf_bis": 12000, "miete": 21.0, "trend": "+2,0%", "faktor": "32-42"},
+    "muenchen-pasing": {"kauf_von": 7500, "kauf_bis": 9500, "miete": 18.5, "trend": "+2,5%", "faktor": "29-37"},
+    "münchen-pasing": {"kauf_von": 7500, "kauf_bis": 9500, "miete": 18.5, "trend": "+2,5%", "faktor": "29-37"},
+    "muenchen-trudering": {"kauf_von": 7000, "kauf_bis": 9000, "miete": 18.0, "trend": "+3,0%", "faktor": "28-36"},
+    "münchen-trudering": {"kauf_von": 7000, "kauf_bis": 9000, "miete": 18.0, "trend": "+3,0%", "faktor": "28-36"},
+    "muenchen-milbertshofen": {"kauf_von": 7000, "kauf_bis": 8500, "miete": 18.0, "trend": "+3,0%", "faktor": "28-35"},
+    "münchen-milbertshofen": {"kauf_von": 7000, "kauf_bis": 8500, "miete": 18.0, "trend": "+3,0%", "faktor": "28-35"},
+    "muenchen-riem": {"kauf_von": 7000, "kauf_bis": 8500, "miete": 18.0, "trend": "+3,0%", "faktor": "28-35"},
+    "münchen-riem": {"kauf_von": 7000, "kauf_bis": 8500, "miete": 18.0, "trend": "+3,0%", "faktor": "28-35"},
+    # Frankfurt Stadtteile (Neuvermietungspreise 2026)
+    "frankfurt-westend": {"kauf_von": 7000, "kauf_bis": 9000, "miete": 20.0, "trend": "+2,0%", "faktor": "28-35"},
+    "frankfurt-nordend": {"kauf_von": 6000, "kauf_bis": 7500, "miete": 18.5, "trend": "+2,0%", "faktor": "25-31"},
+    "frankfurt-sachsenhausen": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 18.0, "trend": "+2,0%", "faktor": "24-30"},
+    "frankfurt-bornheim": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 17.0, "trend": "+2,5%", "faktor": "23-28"},
+    "frankfurt-bockenheim": {"kauf_von": 4800, "kauf_bis": 6200, "miete": 16.5, "trend": "+2,5%", "faktor": "22-28"},
+    "frankfurt-ostend": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 18.0, "trend": "+3,0%", "faktor": "24-30"},
+    "frankfurt-gallus": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 16.0, "trend": "+3,5%", "faktor": "21-27"},
+    "frankfurt-höchst": {"kauf_von": 3500, "kauf_bis": 4500, "miete": 13.5, "trend": "+3,0%", "faktor": "19-24"},
+    "frankfurt-hoechst": {"kauf_von": 3500, "kauf_bis": 4500, "miete": 13.5, "trend": "+3,0%", "faktor": "19-24"},
+    "frankfurt-niederrad": {"kauf_von": 4000, "kauf_bis": 5200, "miete": 15.0, "trend": "+2,5%", "faktor": "20-25"},
+    "frankfurt-fechenheim": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 13.0, "trend": "+3,5%", "faktor": "18-23"},
+    "frankfurt-bergen-enkheim": {"kauf_von": 4000, "kauf_bis": 5000, "miete": 14.5, "trend": "+2,5%", "faktor": "20-25"},
+    "frankfurt-riedberg": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,0%", "faktor": "24-30"},
+    "frankfurt-europaviertel": {"kauf_von": 6500, "kauf_bis": 8500, "miete": 19.5, "trend": "+2,0%", "faktor": "26-33"},
+    # Köln Stadtteile (Neuvermietungspreise 2026)
+    "köln-lindenthal": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,5%", "faktor": "25-31"},
+    "koeln-lindenthal": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,5%", "faktor": "25-31"},
+    "köln-ehrenfeld": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.5, "trend": "+3,0%", "faktor": "22-28"},
+    "koeln-ehrenfeld": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.5, "trend": "+3,0%", "faktor": "22-28"},
+    "köln-nippes": {"kauf_von": 4200, "kauf_bis": 5500, "miete": 15.0, "trend": "+3,0%", "faktor": "21-27"},
+    "koeln-nippes": {"kauf_von": 4200, "kauf_bis": 5500, "miete": 15.0, "trend": "+3,0%", "faktor": "21-27"},
+    "köln-sülz": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 16.0, "trend": "+2,5%", "faktor": "24-30"},
+    "koeln-suelz": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 16.0, "trend": "+2,5%", "faktor": "24-30"},
+    "köln-deutz": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.5, "trend": "+3,0%", "faktor": "22-28"},
+    "koeln-deutz": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.5, "trend": "+3,0%", "faktor": "22-28"},
+    "köln-mülheim": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.5, "trend": "+3,5%", "faktor": "19-24"},
+    "koeln-muelheim": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.5, "trend": "+3,5%", "faktor": "19-24"},
+    "köln-kalk": {"kauf_von": 2800, "kauf_bis": 3800, "miete": 12.0, "trend": "+4,0%", "faktor": "17-23"},
+    "koeln-kalk": {"kauf_von": 2800, "kauf_bis": 3800, "miete": 12.0, "trend": "+4,0%", "faktor": "17-23"},
+    "köln-porz": {"kauf_von": 2800, "kauf_bis": 3600, "miete": 11.5, "trend": "+3,0%", "faktor": "17-22"},
+    "koeln-porz": {"kauf_von": 2800, "kauf_bis": 3600, "miete": 11.5, "trend": "+3,0%", "faktor": "17-22"},
+    "köln-rodenkirchen": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 16.0, "trend": "+2,0%", "faktor": "24-30"},
+    "koeln-rodenkirchen": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 16.0, "trend": "+2,0%", "faktor": "24-30"},
+    # Stuttgart Stadtteile (Neuvermietungspreise 2026)
+    "stuttgart-mitte": {"kauf_von": 6000, "kauf_bis": 7500, "miete": 18.5, "trend": "+2,0%", "faktor": "25-31"},
+    "stuttgart-west": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.5, "trend": "+2,0%", "faktor": "24-30"},
+    "stuttgart-süd": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 17.0, "trend": "+2,5%", "faktor": "23-29"},
+    "stuttgart-sued": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 17.0, "trend": "+2,5%", "faktor": "23-29"},
+    "stuttgart-nord": {"kauf_von": 5200, "kauf_bis": 6500, "miete": 17.0, "trend": "+2,0%", "faktor": "23-29"},
+    "stuttgart-ost": {"kauf_von": 4800, "kauf_bis": 6200, "miete": 16.5, "trend": "+2,5%", "faktor": "22-28"},
+    "stuttgart-degerloch": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 17.0, "trend": "+2,0%", "faktor": "25-30"},
+    "stuttgart-vaihingen": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.5, "trend": "+2,5%", "faktor": "22-28"},
+    "stuttgart-bad cannstatt": {"kauf_von": 4200, "kauf_bis": 5500, "miete": 15.0, "trend": "+3,0%", "faktor": "21-27"},
+    "stuttgart-feuerbach": {"kauf_von": 4200, "kauf_bis": 5500, "miete": 15.0, "trend": "+2,5%", "faktor": "21-27"},
+    "stuttgart-zuffenhausen": {"kauf_von": 3800, "kauf_bis": 5000, "miete": 14.0, "trend": "+3,0%", "faktor": "20-26"},
+    # Düsseldorf Stadtteile (Neuvermietungspreise 2026)
+    "düsseldorf-oberkassel": {"kauf_von": 6000, "kauf_bis": 8000, "miete": 17.0, "trend": "+2,0%", "faktor": "27-35"},
+    "duesseldorf-oberkassel": {"kauf_von": 6000, "kauf_bis": 8000, "miete": 17.0, "trend": "+2,0%", "faktor": "27-35"},
+    "düsseldorf-pempelfort": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.5, "trend": "+2,5%", "faktor": "24-31"},
+    "duesseldorf-pempelfort": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.5, "trend": "+2,5%", "faktor": "24-31"},
+    "düsseldorf-bilk": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 14.5, "trend": "+3,0%", "faktor": "23-29"},
+    "duesseldorf-bilk": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 14.5, "trend": "+3,0%", "faktor": "23-29"},
+    "düsseldorf-unterbilk": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.5, "trend": "+2,5%", "faktor": "24-31"},
+    "duesseldorf-unterbilk": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.5, "trend": "+2,5%", "faktor": "24-31"},
+    "düsseldorf-flingern": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.0, "trend": "+3,0%", "faktor": "23-29"},
+    "duesseldorf-flingern": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 15.0, "trend": "+3,0%", "faktor": "23-29"},
+    "düsseldorf-derendorf": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-29"},
+    "duesseldorf-derendorf": {"kauf_von": 4500, "kauf_bis": 5800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-29"},
+    "düsseldorf-golzheim": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 16.0, "trend": "+2,0%", "faktor": "26-33"},
+    "duesseldorf-golzheim": {"kauf_von": 5500, "kauf_bis": 7000, "miete": 16.0, "trend": "+2,0%", "faktor": "26-33"},
+    "düsseldorf-kaiserswerth": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.0, "trend": "+2,0%", "faktor": "25-32"},
+    "duesseldorf-kaiserswerth": {"kauf_von": 5000, "kauf_bis": 6500, "miete": 15.0, "trend": "+2,0%", "faktor": "25-32"},
+    "düsseldorf-eller": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.0, "trend": "+3,0%", "faktor": "19-25"},
+    "duesseldorf-eller": {"kauf_von": 3200, "kauf_bis": 4200, "miete": 12.0, "trend": "+3,0%", "faktor": "19-25"},
+    "düsseldorf-garath": {"kauf_von": 2500, "kauf_bis": 3500, "miete": 10.5, "trend": "+3,5%", "faktor": "17-23"},
+    "duesseldorf-garath": {"kauf_von": 2500, "kauf_bis": 3500, "miete": 10.5, "trend": "+3,5%", "faktor": "17-23"},
     "frankfurt": {"kauf_von": 5000, "kauf_bis": 5500, "miete": 16.5, "trend": "+1,5%", "faktor": "24-29"},
     "koeln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-28"},
     "köln": {"kauf_von": 4200, "kauf_bis": 4800, "miete": 14.5, "trend": "+2,5%", "faktor": "23-28"},
@@ -1368,9 +1591,286 @@ KNOWN_CITIES = {
     "chemnitz": {"kauf_von": 1000, "kauf_bis": 1600, "miete": 7.0, "trend": "+5,0%", "faktor": "12-16"},
 }
 
-def quick_market_lookup(stadt: str) -> Optional[dict]:
-    """Schneller Lookup aus Knowledge Base - kein API Call noetig"""
+# PLZ-zu-Stadtteil Mapping fuer automatische Aufloesung
+PLZ_STADTTEIL_MAP = {
+    # Hamburg
+    "20095": ("hamburg", "mitte"), "20097": ("hamburg", "hammerbrook"), "20099": ("hamburg", "st. georg"),
+    "20144": ("hamburg", "eimsbüttel"), "20146": ("hamburg", "eimsbüttel"), "20148": ("hamburg", "rotherbaum"),
+    "20149": ("hamburg", "harvestehude"), "20249": ("hamburg", "eppendorf"), "20251": ("hamburg", "eppendorf"),
+    "20253": ("hamburg", "hoheluft"), "20255": ("hamburg", "eimsbüttel"), "20257": ("hamburg", "eimsbüttel"),
+    "20259": ("hamburg", "eimsbüttel"), "20357": ("hamburg", "karolinenviertel"), "20359": ("hamburg", "st. pauli"),
+    "20457": ("hamburg", "hafencity"), "20459": ("hamburg", "neustadt"), "20535": ("hamburg", "hamm"),
+    "20537": ("hamburg", "hamm"), "20539": ("hamburg", "veddel"), "22041": ("hamburg", "wandsbek"),
+    "22043": ("hamburg", "wandsbek"), "22049": ("hamburg", "dulsberg"), "22081": ("hamburg", "barmbek"),
+    "22083": ("hamburg", "barmbek"), "22085": ("hamburg", "uhlenhorst"), "22087": ("hamburg", "uhlenhorst"),
+    "22089": ("hamburg", "eilbek"), "22111": ("hamburg", "horn"), "22113": ("hamburg", "billstedt"),
+    "22115": ("hamburg", "billstedt"), "22117": ("hamburg", "billstedt"), "22119": ("hamburg", "horn"),
+    "22143": ("hamburg", "rahlstedt"), "22145": ("hamburg", "rahlstedt"), "22147": ("hamburg", "rahlstedt"),
+    "22159": ("hamburg", "farmsen"), "22175": ("hamburg", "bramfeld"), "22177": ("hamburg", "bramfeld"),
+    "22297": ("hamburg", "winterhude"), "22299": ("hamburg", "winterhude"), "22301": ("hamburg", "winterhude"),
+    "22303": ("hamburg", "winterhude"), "22305": ("hamburg", "barmbek"), "22307": ("hamburg", "barmbek"),
+    "22335": ("hamburg", "fuhlsbüttel"), "22337": ("hamburg", "ohlsdorf"),
+    "22391": ("hamburg", "wellingsbüttel"), "22393": ("hamburg", "sasel"),
+    "22395": ("hamburg", "bergstedt"), "22397": ("hamburg", "duvenstedt"),
+    "22399": ("hamburg", "poppenbüttel"), "22453": ("hamburg", "niendorf"),
+    "22455": ("hamburg", "niendorf"), "22457": ("hamburg", "schnelsen"),
+    "22459": ("hamburg", "niendorf"), "22523": ("hamburg", "eidelstedt"),
+    "22525": ("hamburg", "stellingen"), "22527": ("hamburg", "stellingen"),
+    "22529": ("hamburg", "lokstedt"), "22547": ("hamburg", "lurup"),
+    "22549": ("hamburg", "osdorf"), "22559": ("hamburg", "blankenese"),
+    "22587": ("hamburg", "blankenese"), "22589": ("hamburg", "iserbrook"),
+    "22605": ("hamburg", "othmarschen"), "22607": ("hamburg", "gross flottbek"),
+    "22609": ("hamburg", "nienstedten"), "22761": ("hamburg", "bahrenfeld"),
+    "22763": ("hamburg", "ottensen"), "22765": ("hamburg", "ottensen"),
+    "22767": ("hamburg", "altona"), "22769": ("hamburg", "altona"),
+    "21029": ("hamburg", "bergedorf"), "21031": ("hamburg", "bergedorf"),
+    "21033": ("hamburg", "bergedorf"), "21035": ("hamburg", "bergedorf"),
+    "21037": ("hamburg", "kirchwerder"), "21039": ("hamburg", "bergedorf"),
+    "21073": ("hamburg", "harburg"), "21075": ("hamburg", "harburg"),
+    "21077": ("hamburg", "harburg"), "21079": ("hamburg", "harburg"),
+    "21107": ("hamburg", "wilhelmsburg"), "21109": ("hamburg", "wilhelmsburg"),
+    # Berlin
+    "10115": ("berlin", "mitte"), "10117": ("berlin", "mitte"), "10119": ("berlin", "mitte"),
+    "10178": ("berlin", "mitte"), "10179": ("berlin", "mitte"),
+    "10243": ("berlin", "friedrichshain"), "10245": ("berlin", "friedrichshain"),
+    "10247": ("berlin", "friedrichshain"), "10249": ("berlin", "friedrichshain"),
+    "10317": ("berlin", "lichtenberg"), "10318": ("berlin", "lichtenberg"),
+    "10319": ("berlin", "lichtenberg"),
+    "10367": ("berlin", "lichtenberg"), "10369": ("berlin", "lichtenberg"),
+    "10405": ("berlin", "prenzlauer berg"), "10407": ("berlin", "prenzlauer berg"),
+    "10409": ("berlin", "prenzlauer berg"), "10435": ("berlin", "prenzlauer berg"),
+    "10437": ("berlin", "prenzlauer berg"), "10439": ("berlin", "prenzlauer berg"),
+    "10551": ("berlin", "moabit"), "10553": ("berlin", "moabit"),
+    "10555": ("berlin", "moabit"), "10557": ("berlin", "moabit"),
+    "10559": ("berlin", "moabit"),
+    "10585": ("berlin", "charlottenburg"), "10587": ("berlin", "charlottenburg"),
+    "10589": ("berlin", "charlottenburg"), "10623": ("berlin", "charlottenburg"),
+    "10625": ("berlin", "charlottenburg"), "10627": ("berlin", "charlottenburg"),
+    "10629": ("berlin", "charlottenburg"),
+    "10707": ("berlin", "wilmersdorf"), "10709": ("berlin", "wilmersdorf"),
+    "10711": ("berlin", "wilmersdorf"), "10713": ("berlin", "wilmersdorf"),
+    "10715": ("berlin", "wilmersdorf"), "10717": ("berlin", "wilmersdorf"),
+    "10719": ("berlin", "charlottenburg"),
+    "10777": ("berlin", "schöneberg"), "10779": ("berlin", "schöneberg"),
+    "10781": ("berlin", "schöneberg"), "10783": ("berlin", "schöneberg"),
+    "10785": ("berlin", "kreuzberg"), "10787": ("berlin", "schöneberg"),
+    "10789": ("berlin", "schöneberg"),
+    "10961": ("berlin", "kreuzberg"), "10963": ("berlin", "kreuzberg"),
+    "10965": ("berlin", "kreuzberg"), "10967": ("berlin", "kreuzberg"),
+    "10969": ("berlin", "kreuzberg"), "10997": ("berlin", "kreuzberg"),
+    "10999": ("berlin", "kreuzberg"),
+    "12043": ("berlin", "neukölln"), "12045": ("berlin", "neukölln"),
+    "12047": ("berlin", "neukölln"), "12049": ("berlin", "neukölln"),
+    "12051": ("berlin", "neukölln"), "12053": ("berlin", "neukölln"),
+    "12055": ("berlin", "neukölln"), "12057": ("berlin", "neukölln"),
+    "12059": ("berlin", "neukölln"),
+    "12099": ("berlin", "tempelhof"), "12101": ("berlin", "tempelhof"),
+    "12103": ("berlin", "tempelhof"), "12105": ("berlin", "tempelhof"),
+    "12107": ("berlin", "tempelhof"), "12109": ("berlin", "tempelhof"),
+    "12157": ("berlin", "steglitz"), "12159": ("berlin", "steglitz"),
+    "12161": ("berlin", "steglitz"), "12163": ("berlin", "steglitz"),
+    "12165": ("berlin", "steglitz"), "12167": ("berlin", "steglitz"),
+    "12169": ("berlin", "steglitz"),
+    "12203": ("berlin", "steglitz"), "12205": ("berlin", "zehlendorf"),
+    "12207": ("berlin", "zehlendorf"), "12209": ("berlin", "zehlendorf"),
+    "12247": ("berlin", "steglitz"),
+    "12277": ("berlin", "tempelhof"),
+    "12347": ("berlin", "neukölln"), "12349": ("berlin", "neukölln"),
+    "12351": ("berlin", "neukölln"), "12353": ("berlin", "neukölln"),
+    "12435": ("berlin", "treptow"), "12437": ("berlin", "treptow"),
+    "12439": ("berlin", "treptow"),
+    "12459": ("berlin", "treptow"),
+    "12487": ("berlin", "treptow"),
+    "12489": ("berlin", "treptow"),
+    "12524": ("berlin", "treptow"),
+    "12527": ("berlin", "köpenick"), "12555": ("berlin", "köpenick"),
+    "12557": ("berlin", "köpenick"), "12559": ("berlin", "köpenick"),
+    "12587": ("berlin", "köpenick"), "12589": ("berlin", "köpenick"),
+    "12619": ("berlin", "hellersdorf"), "12621": ("berlin", "hellersdorf"),
+    "12623": ("berlin", "hellersdorf"), "12627": ("berlin", "hellersdorf"),
+    "12629": ("berlin", "hellersdorf"),
+    "12679": ("berlin", "marzahn"), "12681": ("berlin", "marzahn"),
+    "12683": ("berlin", "marzahn"), "12685": ("berlin", "marzahn"),
+    "12687": ("berlin", "marzahn"), "12689": ("berlin", "marzahn"),
+    "13051": ("berlin", "pankow"), "13053": ("berlin", "pankow"),
+    "13055": ("berlin", "pankow"), "13057": ("berlin", "pankow"),
+    "13059": ("berlin", "pankow"),
+    "13086": ("berlin", "pankow"), "13088": ("berlin", "pankow"),
+    "13089": ("berlin", "pankow"),
+    "13347": ("berlin", "wedding"), "13349": ("berlin", "wedding"),
+    "13351": ("berlin", "wedding"), "13353": ("berlin", "wedding"),
+    "13355": ("berlin", "wedding"), "13357": ("berlin", "wedding"),
+    "13359": ("berlin", "wedding"),
+    "13403": ("berlin", "reinickendorf"), "13405": ("berlin", "reinickendorf"),
+    "13407": ("berlin", "reinickendorf"), "13409": ("berlin", "reinickendorf"),
+    "13435": ("berlin", "reinickendorf"),
+    "13503": ("berlin", "reinickendorf"), "13505": ("berlin", "reinickendorf"),
+    "13507": ("berlin", "reinickendorf"), "13509": ("berlin", "reinickendorf"),
+    "13581": ("berlin", "spandau"), "13583": ("berlin", "spandau"),
+    "13585": ("berlin", "spandau"), "13587": ("berlin", "spandau"),
+    "13589": ("berlin", "spandau"),
+    "14050": ("berlin", "charlottenburg"), "14052": ("berlin", "charlottenburg"),
+    "14053": ("berlin", "charlottenburg"), "14055": ("berlin", "charlottenburg"),
+    "14057": ("berlin", "charlottenburg"),
+    "14163": ("berlin", "zehlendorf"), "14165": ("berlin", "zehlendorf"),
+    "14167": ("berlin", "zehlendorf"), "14169": ("berlin", "zehlendorf"),
+    "14193": ("berlin", "grunewald"), "14195": ("berlin", "dahlem"),
+    "14197": ("berlin", "wilmersdorf"), "14199": ("berlin", "wilmersdorf"),
+    # München
+    "80331": ("muenchen", "altstadt"), "80333": ("muenchen", "maxvorstadt"),
+    "80335": ("muenchen", "maxvorstadt"), "80336": ("muenchen", "sendling"),
+    "80337": ("muenchen", "sendling"), "80339": ("muenchen", "laim"),
+    "80469": ("muenchen", "giesing"), "80538": ("muenchen", "bogenhausen"),
+    "80539": ("muenchen", "maxvorstadt"), "80634": ("muenchen", "neuhausen"),
+    "80636": ("muenchen", "neuhausen"), "80637": ("muenchen", "nymphenburg"),
+    "80638": ("muenchen", "nymphenburg"), "80639": ("muenchen", "nymphenburg"),
+    "80686": ("muenchen", "laim"), "80687": ("muenchen", "laim"),
+    "80689": ("muenchen", "pasing"), "80796": ("muenchen", "schwabing"),
+    "80797": ("muenchen", "schwabing"), "80798": ("muenchen", "maxvorstadt"),
+    "80799": ("muenchen", "maxvorstadt"), "80801": ("muenchen", "schwabing"),
+    "80802": ("muenchen", "schwabing"), "80803": ("muenchen", "schwabing"),
+    "80804": ("muenchen", "milbertshofen"), "80805": ("muenchen", "milbertshofen"),
+    "80807": ("muenchen", "milbertshofen"), "80809": ("muenchen", "milbertshofen"),
+    "80933": ("muenchen", "feldmoching"), "80935": ("muenchen", "hasenbergl"),
+    "80937": ("muenchen", "hasenbergl"), "80939": ("muenchen", "freimann"),
+    "80992": ("muenchen", "moosach"), "80993": ("muenchen", "moosach"),
+    "80995": ("muenchen", "feldmoching"), "80997": ("muenchen", "allach"),
+    "80999": ("muenchen", "allach"),
+    "81241": ("muenchen", "pasing"), "81243": ("muenchen", "pasing"),
+    "81245": ("muenchen", "pasing"), "81247": ("muenchen", "obermenzing"),
+    "81249": ("muenchen", "aubing"),
+    "81369": ("muenchen", "sendling"), "81371": ("muenchen", "sendling"),
+    "81373": ("muenchen", "sendling"), "81375": ("muenchen", "hadern"),
+    "81377": ("muenchen", "hadern"),
+    "81475": ("muenchen", "solln"), "81477": ("muenchen", "solln"),
+    "81479": ("muenchen", "solln"),
+    "81539": ("muenchen", "giesing"), "81541": ("muenchen", "giesing"),
+    "81543": ("muenchen", "giesing"), "81545": ("muenchen", "harlaching"),
+    "81547": ("muenchen", "harlaching"),
+    "81667": ("muenchen", "haidhausen"), "81669": ("muenchen", "haidhausen"),
+    "81671": ("muenchen", "riem"), "81673": ("muenchen", "riem"),
+    "81675": ("muenchen", "bogenhausen"), "81677": ("muenchen", "bogenhausen"),
+    "81679": ("muenchen", "bogenhausen"),
+    "81735": ("muenchen", "ramersdorf"), "81737": ("muenchen", "ramersdorf"),
+    "81739": ("muenchen", "neuperlach"), "81925": ("muenchen", "bogenhausen"),
+    "81927": ("muenchen", "bogenhausen"), "81929": ("muenchen", "trudering"),
+    "81671": ("muenchen", "trudering"),
+    # Frankfurt
+    "60311": ("frankfurt", "innenstadt"), "60313": ("frankfurt", "innenstadt"),
+    "60314": ("frankfurt", "ostend"), "60316": ("frankfurt", "nordend"),
+    "60318": ("frankfurt", "nordend"), "60320": ("frankfurt", "nordend"),
+    "60322": ("frankfurt", "westend"), "60323": ("frankfurt", "westend"),
+    "60325": ("frankfurt", "westend"), "60327": ("frankfurt", "gallus"),
+    "60329": ("frankfurt", "bahnhofsviertel"),
+    "60385": ("frankfurt", "bornheim"), "60386": ("frankfurt", "fechenheim"),
+    "60388": ("frankfurt", "bergen-enkheim"), "60389": ("frankfurt", "bornheim"),
+    "60431": ("frankfurt", "dornbusch"), "60433": ("frankfurt", "eschersheim"),
+    "60435": ("frankfurt", "eckenheim"), "60437": ("frankfurt", "nieder-eschbach"),
+    "60438": ("frankfurt", "riedberg"), "60439": ("frankfurt", "heddernheim"),
+    "60486": ("frankfurt", "bockenheim"), "60487": ("frankfurt", "bockenheim"),
+    "60488": ("frankfurt", "rödelheim"), "60489": ("frankfurt", "rödelheim"),
+    "60528": ("frankfurt", "niederrad"), "60529": ("frankfurt", "goldstein"),
+    "60594": ("frankfurt", "sachsenhausen"), "60596": ("frankfurt", "sachsenhausen"),
+    "60598": ("frankfurt", "sachsenhausen"), "60599": ("frankfurt", "oberrad"),
+    "65929": ("frankfurt", "höchst"), "65931": ("frankfurt", "sindlingen"),
+    "65933": ("frankfurt", "griesheim"), "65934": ("frankfurt", "nied"),
+    "65936": ("frankfurt", "sossenheim"),
+    # Köln
+    "50667": ("koeln", "altstadt"), "50668": ("koeln", "neustadt-nord"),
+    "50670": ("koeln", "neustadt-nord"), "50672": ("koeln", "neustadt-nord"),
+    "50674": ("koeln", "neustadt-süd"), "50676": ("koeln", "neustadt-süd"),
+    "50677": ("koeln", "neustadt-süd"), "50678": ("koeln", "neustadt-süd"),
+    "50679": ("koeln", "deutz"), "50733": ("koeln", "nippes"),
+    "50735": ("koeln", "nippes"), "50737": ("koeln", "longerich"),
+    "50739": ("koeln", "bilderstöckchen"),
+    "50823": ("koeln", "ehrenfeld"), "50825": ("koeln", "ehrenfeld"),
+    "50827": ("koeln", "ehrenfeld"), "50829": ("koeln", "bickendorf"),
+    "50858": ("koeln", "junkersdorf"), "50859": ("koeln", "lövenich"),
+    "50931": ("koeln", "lindenthal"), "50933": ("koeln", "lindenthal"),
+    "50935": ("koeln", "sülz"), "50937": ("koeln", "sülz"),
+    "50939": ("koeln", "klettenberg"),
+    "50968": ("koeln", "rodenkirchen"), "50969": ("koeln", "zollstock"),
+    "50996": ("koeln", "rodenkirchen"), "50997": ("koeln", "rodenkirchen"),
+    "50999": ("koeln", "sürth"),
+    "51063": ("koeln", "mülheim"), "51065": ("koeln", "mülheim"),
+    "51067": ("koeln", "holweide"), "51069": ("koeln", "dünnwald"),
+    "51103": ("koeln", "kalk"), "51105": ("koeln", "kalk"),
+    "51107": ("koeln", "rath"), "51109": ("koeln", "brück"),
+    "51143": ("koeln", "porz"), "51145": ("koeln", "porz"),
+    "51147": ("koeln", "porz"), "51149": ("koeln", "porz"),
+    # Stuttgart
+    "70173": ("stuttgart", "mitte"), "70174": ("stuttgart", "mitte"),
+    "70176": ("stuttgart", "west"), "70178": ("stuttgart", "süd"),
+    "70180": ("stuttgart", "süd"), "70182": ("stuttgart", "mitte"),
+    "70184": ("stuttgart", "ost"), "70186": ("stuttgart", "ost"),
+    "70188": ("stuttgart", "ost"), "70190": ("stuttgart", "ost"),
+    "70191": ("stuttgart", "nord"), "70192": ("stuttgart", "nord"),
+    "70193": ("stuttgart", "west"), "70195": ("stuttgart", "botnang"),
+    "70197": ("stuttgart", "west"),
+    "70327": ("stuttgart", "bad cannstatt"), "70329": ("stuttgart", "bad cannstatt"),
+    "70372": ("stuttgart", "bad cannstatt"), "70374": ("stuttgart", "bad cannstatt"),
+    "70376": ("stuttgart", "bad cannstatt"),
+    "70435": ("stuttgart", "zuffenhausen"), "70437": ("stuttgart", "zuffenhausen"),
+    "70439": ("stuttgart", "stammheim"),
+    "70469": ("stuttgart", "feuerbach"), "70499": ("stuttgart", "weilimdorf"),
+    "70563": ("stuttgart", "vaihingen"), "70565": ("stuttgart", "vaihingen"),
+    "70567": ("stuttgart", "möhringen"), "70569": ("stuttgart", "vaihingen"),
+    "70597": ("stuttgart", "degerloch"), "70599": ("stuttgart", "plieningen"),
+    # Düsseldorf
+    "40210": ("duesseldorf", "stadtmitte"), "40211": ("duesseldorf", "stadtmitte"),
+    "40212": ("duesseldorf", "stadtmitte"), "40213": ("duesseldorf", "altstadt"),
+    "40215": ("duesseldorf", "friedrichstadt"), "40217": ("duesseldorf", "unterbilk"),
+    "40219": ("duesseldorf", "bilk"), "40221": ("duesseldorf", "bilk"),
+    "40223": ("duesseldorf", "bilk"), "40225": ("duesseldorf", "bilk"),
+    "40227": ("duesseldorf", "oberbilk"), "40229": ("duesseldorf", "eller"),
+    "40231": ("duesseldorf", "eller"), "40233": ("duesseldorf", "flingern"),
+    "40235": ("duesseldorf", "flingern"), "40237": ("duesseldorf", "düsseltal"),
+    "40239": ("duesseldorf", "düsseltal"),
+    "40468": ("duesseldorf", "derendorf"), "40470": ("duesseldorf", "mörsenbroich"),
+    "40472": ("duesseldorf", "rath"), "40474": ("duesseldorf", "golzheim"),
+    "40476": ("duesseldorf", "derendorf"), "40477": ("duesseldorf", "pempelfort"),
+    "40479": ("duesseldorf", "pempelfort"),
+    "40545": ("duesseldorf", "oberkassel"), "40547": ("duesseldorf", "oberkassel"),
+    "40549": ("duesseldorf", "heerdt"),
+    "40589": ("duesseldorf", "wersten"), "40591": ("duesseldorf", "wersten"),
+    "40593": ("duesseldorf", "benrath"), "40595": ("duesseldorf", "garath"),
+    "40597": ("duesseldorf", "benrath"), "40599": ("duesseldorf", "hassels"),
+    "40625": ("duesseldorf", "gerresheim"), "40627": ("duesseldorf", "gerresheim"),
+    "40629": ("duesseldorf", "gerresheim"),
+    "40667": ("duesseldorf", "kaiserswerth"), "40668": ("duesseldorf", "kaiserswerth"),
+}
+
+def resolve_plz_to_stadtteil(plz: str) -> Optional[tuple]:
+    """Resolved eine PLZ zu (stadt, stadtteil). Gibt None zurueck wenn unbekannt."""
+    if not plz:
+        return None
+    clean_plz = plz.strip().replace(" ", "")
+    if clean_plz in PLZ_STADTTEIL_MAP:
+        return PLZ_STADTTEIL_MAP[clean_plz]
+    return None
+
+
+def quick_market_lookup(stadt: str, stadtteil: str = None, plz: str = None) -> Optional[dict]:
+    """Schneller Lookup aus Knowledge Base - kein API Call noetig. Prueft PLZ → Stadtteil → Stadt."""
     key = stadt.lower().strip()
+
+    # PLZ-Aufloesung: wenn PLZ vorhanden aber kein Stadtteil, versuche PLZ zu resolven
+    if plz and not stadtteil:
+        plz_result = resolve_plz_to_stadtteil(plz)
+        if plz_result:
+            resolved_stadt, resolved_stadtteil = plz_result
+            # PLZ-aufgeloesten Stadtteil verwenden
+            stadtteil = resolved_stadtteil
+            # Stadt aus PLZ nehmen falls nicht angegeben
+            if not stadt:
+                key = resolved_stadt
+
+    # Stadtteil-spezifisch zuerst pruefen (z.B. "hamburg-uhlenhorst")
+    if stadtteil:
+        stadtteil_key = f"{key}-{stadtteil.lower().strip()}"
+        if stadtteil_key in KNOWN_CITIES:
+            key = stadtteil_key
+
     if key in KNOWN_CITIES:
         d = KNOWN_CITIES[key]
         return {
@@ -1423,7 +1923,7 @@ async def extract_url_data(request: Request, data: dict = Body(...), current_use
                 [{"role": "user", "content": f"""Extrahiere alle Immobiliendaten aus folgendem Expose-Text.
 
 Gib die Daten als JSON zurueck:
-{{"kaufpreis": null, "wohnflaeche": null, "zimmer": null, "baujahr": null, "stadt": null, "stadtteil": null, "objekttyp": null, "aktuelle_miete": null, "hausgeld": null, "hausgeld_nicht_umlagefaehig": null, "energieklasse": null, "heizungsart": null, "zustand": null, "balkon_terrasse": null, "keller": null, "stellplatz": null, "vermietet": null, "provision": null, "beschreibung": null}}
+{{"kaufpreis": null, "wohnflaeche": null, "zimmer": null, "baujahr": null, "plz": null, "stadt": null, "stadtteil": null, "objekttyp": null, "aktuelle_miete": null, "hausgeld": null, "hausgeld_nicht_umlagefaehig": null, "energieklasse": null, "heizungsart": null, "zustand": null, "balkon_terrasse": null, "keller": null, "stellplatz": null, "vermietet": null, "provision": null, "beschreibung": null}}
 
 Expose-Text:
 {url[:5000]}"""}],
@@ -1559,14 +2059,14 @@ HTML (gekuerzt):
         raise HTTPException(status_code=500, detail="Fehler bei der Extraktion. Bitte versuche es erneut.")
 
 
-async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp: str = "Eigentumswohnung") -> dict:
+async def fetch_live_market_data(stadt: str, stadtteil: Optional[str], objekttyp: str = "Eigentumswohnung", plz: str = None) -> dict:
     """
     V3.1 - MARKTDATEN mit Fast-Path
-    1. Erst Knowledge Base Lookup (instant)
+    1. Erst Knowledge Base Lookup (instant, mit PLZ-Aufloesung)
     2. Nur bei unbekannten Staedten: Web-Suche + Claude
     """
-    # Fast-Path: Knowledge Base Lookup
-    fast_result = quick_market_lookup(stadt)
+    # Fast-Path: Knowledge Base Lookup (PLZ wird zu Stadtteil aufgeloest)
+    fast_result = quick_market_lookup(stadt, stadtteil, plz=plz)
     if fast_result:
         if stadtteil:
             fast_result["standort"] = f"{stadtteil}, {stadt}"
@@ -1754,14 +2254,14 @@ def calculate_cashflow(
     monatliche_miete: float,
     nebenkosten: float,
     eigenkapital: float = 0,
-    zinssatz: float = 3.75,
+    zinssatz: float = 4.0,
     tilgung: float = 1.25
 ) -> dict:
     """
     Berechnet Cashflow mit 100% Finanzierung
 
     Standard-Finanzierung:
-    - Zinssatz: 3.75%
+    - Zinssatz: 4.0%
     - Tilgung: 1.25%
     - Gesamt: 5.0% p.a.
 
@@ -1770,7 +2270,7 @@ def calculate_cashflow(
         monatliche_miete: Monatliche Kaltmiete
         nebenkosten: Monatliche Nebenkosten (Hausgeld etc.)
         eigenkapital: Eigenkapitalanteil (default: 0 = 100% Finanzierung)
-        zinssatz: Zinssatz in % (default: 3.75%)
+        zinssatz: Zinssatz in % (default: 4.0%)
         tilgung: Tilgung in % (default: 1.25%)
     """
 
@@ -2431,9 +2931,9 @@ def calculate_financing_options(
     # Verschiedene Zins/Tilgung Kombinationen
     kombinationen = [
         {"name": "Niedrige Rate", "zins": 3.5, "tilgung": 1.0},
-        {"name": "Standard", "zins": 3.75, "tilgung": 1.25},
-        {"name": "Schnelle Tilgung", "zins": 3.75, "tilgung": 2.0},
-        {"name": "Aggressive Tilgung", "zins": 3.75, "tilgung": 3.0},
+        {"name": "Standard", "zins": 4.0, "tilgung": 1.25},
+        {"name": "Schnelle Tilgung", "zins": 4.0, "tilgung": 2.0},
+        {"name": "Aggressive Tilgung", "zins": 4.0, "tilgung": 3.0},
         {"name": "Hoher Zins Szenario", "zins": 5.0, "tilgung": 1.5},
     ]
 
@@ -2485,7 +2985,7 @@ async def analyze_property(
     Führt die vollständige Immobilienanalyse durch mit:
     - No-Go-Prüfung (K.O.-Kriterien)
     - Kaufpreisfaktor & Bruttorendite
-    - Cashflow-Berechnung (3.75% Zins, 1.25% Tilgung)
+    - Cashflow-Berechnung (4.0% Zins, 1.25% Tilgung)
     - Warnsignal-Erkennung
     - Gewichtete Score-Berechnung
     """
@@ -2533,7 +3033,8 @@ async def analyze_property(
             marktdaten = await fetch_live_market_data(
                 stadt=data.stadt,
                 stadtteil=data.stadtteil,
-                objekttyp=objekttyp
+                objekttyp=objekttyp,
+                plz=data.plz
             )
             # Prüfe ob Live-Daten erfolgreich
             if marktdaten and marktdaten.get("recherche_methode") == "live_web_search_v3":
@@ -2622,7 +3123,7 @@ async def analyze_property(
         # Cashflow-Berechnung: nur nicht-umlagefähige NK abziehen
         nebenkosten = hausgeld_nicht_umlagefaehig
         ek = max(0, request.eigenkapital or 0)  # Prevent negative EK
-        zins = request.zinssatz or 3.75
+        zins = request.zinssatz or 4.0
         tilg = request.tilgung or 1.25
 
         cashflow_analyse = calculate_cashflow(
@@ -2673,7 +3174,7 @@ async def analyze_property(
 
         # Jährliche Zinsen (Finanzierungssumme * Zinssatz)
         finanzierungssumme = data.kaufpreis - (ek or 0)
-        jaehrliche_zinsen = finanzierungssumme * ((zins or 3.75) / 100)
+        jaehrliche_zinsen = finanzierungssumme * ((zins or 4.0) / 100)
 
         # Absetzbare Kosten = AfA + Zinsen + nicht-umlagefähige NK
         absetzbar_jahr = jaehrliche_afa + jaehrliche_zinsen + (nebenkosten * 12)
@@ -2760,7 +3261,7 @@ async def analyze_property(
 
         nebenkosten = hausgeld_nicht_umlagefaehig
         ek = request.eigenkapital or 0
-        zins = request.zinssatz or 3.75
+        zins = request.zinssatz or 4.0
         tilg = request.tilgung or 1.25
 
         # Tilgungsplan: relevant für beide Zwecke (Kapitalanlage & Eigennutzung)
@@ -2820,7 +3321,7 @@ async def analyze_property(
 
         nebenkosten = hausgeld_nicht_umlagefaehig
         ek = request.eigenkapital or 0
-        zins = request.zinssatz or 3.75
+        zins = request.zinssatz or 4.0
         tilg = request.tilgung or 1.25
 
         # Finanzierungsoptionen: relevant für beide Zwecke
@@ -2878,7 +3379,7 @@ async def analyze_property(
 
         nebenkosten = hausgeld_nicht_umlagefaehig
         ek = request.eigenkapital or 0
-        zins = request.zinssatz or 3.75
+        zins = request.zinssatz or 4.0
         tilg = request.tilgung or 1.25
         jahresmiete = miete * 12
 
@@ -3010,7 +3511,7 @@ PFLICHT-VERGLEICH:
 {json.dumps(cashflow_analyse, indent=2, ensure_ascii=False) if cashflow_analyse else "Nicht berechnet"}
 
 {"=== ACHTUNG: WARMMIETE-KORREKTUR ===" + chr(10) + f"Im Exposé war NUR eine Warmmiete von {data.warmmiete_aus_expose}€ angegeben (KEINE Kaltmiete)." + chr(10) + f"Die Kaltmiete wurde auf {data.aktuelle_miete}€ geschätzt. ALLE Berechnungen basieren auf dieser geschätzten Kaltmiete." + chr(10) + "DU MUSST den Nutzer in deiner Analyse DEUTLICH darauf hinweisen, dass die Miete aus der Warmmiete abgeleitet wurde und er den tatsächlichen Mietvertrag prüfen soll!" + chr(10) if data.miete_typ_im_expose == "warmmiete" and data.warmmiete_aus_expose else ""}
-Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
+Standard-Finanzierung: 4.0% Zins + 1.25% Tilgung = 5.25% Gesamtrate
 
 === BEWERTUNGSKRITERIEN für {zweck.upper()} ===
 {json.dumps(weights, indent=2, ensure_ascii=False)}
@@ -3018,16 +3519,25 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 [WICHTIG] V3.0 - BEWERTUNGSREGELN MIT LIVE-DATEN:
 
 {"" if zweck == "eigennutzung" else """1. **cashflow_rendite** (Gewichtung: """ + str(weights['cashflow_rendite']) + """%)
-   - Kaufpreisfaktor: <20 sehr gut, 20-25 gut, >25 kritisch
-   - Bruttorendite: >5% sehr gut, 4-5% gut, <3% kritisch
-   - Cashflow-Bewertung NACH STEUER (nicht vor Steuer!):
-     * Berechne zuerst den Cashflow NACH Steuer (AfA + Zinsabzug bei 42% Steuersatz)
-     * Wenn Cashflow nach Steuer positiv oder nur leicht negativ = GUTER Score (60-80)
-     * Negativer Cashflow vor Steuer ist KEIN Grund fuer einen schlechten Score wenn er nach Steuer positiv wird
-     * Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat VOR Steuer ist akzeptabel
-   - NEUVERMIETUNGSPOTENZIAL MUSS in den Score einfliessen:
-     * Wenn Neuvermietung den Cashflow deutlich verbessert, Score ERHOEHEN (z.B. +10-20 Punkte)
-     * Wenn Wohnung in Kuerze frei wird = fast wie Neuvermietungs-Cashflow bewerten
+   - Kaufpreisfaktor: <20 sehr gut, 20-25 akzeptabel, 25-30 kritisch, >30 schlecht
+   - Bruttorendite: >5% sehr gut, 4-5% gut, 3.5-4% knapp, <3.5% schlecht (bei aktuellen Zinsen von 4% ist <4% Bruttorendite = negativer Leverage!)
+   - Cashflow-Bewertung REALISTISCH:
+     * Cashflow VOR Steuer ist die primaere Kennzahl
+     * Positiver Cashflow = Score 70-100
+     * Leicht negativer Cashflow (bis -100 EUR/Monat) = Score 45-65
+     * Negativer Cashflow (-100 bis -300 EUR/Monat) = Score 25-45
+     * Stark negativer Cashflow (unter -300 EUR/Monat) = Score 10-25
+     * Steuereffekte koennen den Score um maximal +10 Punkte verbessern, NICHT mehr
+     * WICHTIG: Steuervorteile sind Stundung, KEIN Geschenk. Ein Investment das nur wegen Steuern funktioniert ist KEIN gutes Investment.
+   - Neuvermietungspotenzial:
+     * Kann den Score um maximal +5-10 Punkte verbessern
+     * Aber NUR wenn die aktuelle Miete nachweislich deutlich unter Markt liegt (>20% unter Markt)
+     * Leerstehende Wohnungen (geschaetzte Miete) bekommen einen Abzug von -5 Punkten (Vermietungsrisiko)
+   - STAFFELMIETE BONUS:
+     * Wenn ein Staffelmietvertrag vorliegt (vertraglich gesicherte Mieterhoehungen), ist das ein STARKER Pluspunkt
+     * Staffelmiete = planbare, gesicherte Einkommenssteigerung ohne Verhandlung oder Mietspiegel-Abhaengigkeit
+     * Score-Bonus: +8-12 Punkte auf cashflow_rendite wenn Staffelmiete vorhanden
+     * Erwaehne die Staffelmiete explizit in der Zusammenfassung und den Staerken
 """}{"1. **cashflow_rendite** (Gewichtung: 0% - NICHT RELEVANT fuer Eigennutzung)" + chr(10) + "   - Bewerte trotzdem mit einem Score, aber dieser fliesst NICHT in den Gesamtscore ein." + chr(10) + "   - Gib einen fairen Score basierend auf monatlicher Belastung vs. vergleichbare Miete." + chr(10) if zweck == "eigennutzung" else ""}
 2. **lage** (Gewichtung: {weights['lage']}%)
    - Stadtteil-Bewertung aus LIVE-Marktdaten
@@ -3048,11 +3558,22 @@ Standard-Finanzierung: 3.75% Zins + 1.25% Tilgung = 5.0% Gesamtrate
 4. **zukunftspotenzial** (Gewichtung: {weights['zukunftspotenzial']}%)
    - Tendenz aus LIVE-Marktdaten (steigend/stabil/fallend)
    - Prognose beruecksichtigen
+   - INFRASTRUKTURPROJEKTE erkennen und stark gewichten:
+     * Geplante U-Bahn/S-Bahn-Anbindung (z.B. U4, U5) = Score +15-25 Punkte (Game-Changer fuer Wertsteigerung!)
+     * Neue Einkaufszentren, Universitaeten, Gewerbegebiete in der Naehe = Score +5-10
+     * Stadtentwicklungsgebiete (z.B. HafenCity-Erweiterung, Oberbillwerder) = Score +10-15
+     * Erwaehne konkrete Projekte in der Begruendung wenn bekannt
 {"   - EIGENNUTZUNG: Wertsteigerung ist relevant fuer langfristigen Vermoegensaufbau auch bei Selbstnutzung" if zweck == "eigennutzung" else ""}
 
 5. **zustand_baujahr** (Gewichtung: {weights['zustand_baujahr']}%)
    - Zustand, Baujahr, Sanierungsbedarf
    - Fertighaeuser 1960-1990 kritisch pruefen
+   - DENKMALSCHUTZ-BONUS: Wenn das Objekt unter Denkmalschutz steht:
+     * Denkmal-AfA = 100% der Sanierungskosten absetzbar in 12 Jahren (8x9% + 4x7%) bei Vermietung
+     * Das ist der staerkste Steuervorteil bei Immobilien ueberhaupt
+     * Score-Bonus: +10-15 Punkte auf zustand_baujahr
+     * Erwaehne in Staerken: "Denkmalschutz mit Denkmal-AfA (§7i EStG) -- 100% Sanierungskosten absetzbar"
+     * ABER: Denkmalschutz bedeutet auch Auflagen (Abstimmung mit Behoerde VOR jeder Sanierung) -- erwaehne in Schwaechen
 {"   - EIGENNUTZUNG: Bewerte grosszuegiger! Ein renovierungsbeduerfiger Altbau ist fuer Eigennutzer oft OK (man kann selbst renovieren). Bewerte den CHARME und das POTENZIAL, nicht nur den aktuellen Zustand. Score mindestens 50 wenn keine gravierenden Maengel." if zweck == "eigennutzung" else ""}
 
 6. **energieeffizienz** (Gewichtung: {weights['energieeffizienz']}%)
@@ -3089,19 +3610,58 @@ FAIRER PREIS (WICHTIG - REALISTISCH BLEIBEN):
 - Wenn die Berechnung einen fairen Preis ergibt der >25% unter Kaufpreis liegt, setze ihn auf Kaufpreis minus 25%.
 - Begruende den fairen Preis mit Marktdaten und konkreten Maengeln.
 
-{"EIGENNUTZUNG - BEWERTUNGSPHILOSOPHIE (KRITISCH WICHTIG):" + chr(10) + "- Bei Eigennutzung geht es um WOHNQUALITAET und PREIS-LEISTUNG, NICHT um Rendite!" + chr(10) + "- Monatliche Belastung (Kreditrate + Hausgeld) vs. vergleichbare Miete ist der wichtigste Vergleich" + chr(10) + "- Wenn Kaufen guenstiger oder gleich teuer wie Mieten ist = POSITIV (man baut Vermoegen auf!)" + chr(10) + "- Unter Marktpreis kaufen = EXZELLENT fuer Eigennutzer (sofortiger Vermoegensgewinn)" + chr(10) + "- Lage und Grundriss sind die wichtigsten Kriterien - hier lebt man!" + chr(10) + "- FEHLENDE INFOS zu Grundriss/Zustand: NEUTRAL bewerten (Score 60-65), NICHT bestrafen!" + chr(10) + "- Ein Objekt 18% unter Markt in guter Lage ist fuer Eigennutzer EMPFEHLENSWERT (Score 65-80)!" + chr(10) + "- Energieklasse ist weniger kritisch - man kann schrittweise sanieren mit KfW-Foerderung" + chr(10) + "- STEUERFREIER VERKAUF: Nach nur 3 Jahren Selbstnutzung (im Kaufjahr + 2 Folgejahre) ist der Verkauf komplett steuerfrei (§23 EStG)! Das ist ein RIESIGER Vorteil gegenueber Kapitalanlage (10 Jahre Spekulationsfrist). Erwaehne dies in der Zusammenfassung als Pluspunkt!" if zweck == "eigennutzung" else """GESAMTBILD BEWERTEN (KRITISCH WICHTIG - NICHT NUR CASHFLOW!):
-- Negativer Cashflow VOR STEUER allein ist KEIN Grund fuer einen niedrigen Score!
-- Du MUSST das GESAMTBILD bewerten. Einzelne Kriterien-Scores muessen das reflektieren:
-  1) Kaufpreis relativ zum Markt: >20% unter Markt = EXZELLENTER Einkauf, cashflow_rendite Score MUSS das belohnen
-  2) Cashflow NACH STEUER ist relevanter als vor Steuer
-  3) Neuvermietungspotenzial: Wenn Miete deutlich unter Markt liegt, ist das POSITIV (Score erhoehen!)
-  4) Steuerliche Vorteile (AfA + Zinsabzug) MUESSEN den cashflow_rendite Score positiv beeinflussen
-  5) Wertsteigerungspotenzial (Lage, Trend)
-  6) Vermögensaufbau durch Tilgung
-- BEISPIEL: Objekt 30% unter Markt, Cashflow vor Steuer -400€ aber nach Steuer +50€, Neuvermietung bringt +500€
-  = Das ist ein GUTER Deal! Score sollte 70-80 sein, NICHT 50-60!
-- Ein Objekt das deutlich unter Markt liegt mit temporaer negativem Cashflow ist EMPFEHLENSWERT!
-- Cashflow-Toleranz: bis -0.15% des Kaufpreises/Monat VOR Steuer ist akzeptabel."""}
+{"EIGENNUTZUNG - BEWERTUNGSPHILOSOPHIE (KRITISCH WICHTIG):" + chr(10) + "- Bei Eigennutzung geht es um WOHNQUALITAET und PREIS-LEISTUNG, NICHT um Rendite!" + chr(10) + "- Monatliche Belastung (Kreditrate + Hausgeld) vs. vergleichbare Miete ist der wichtigste Vergleich" + chr(10) + "- Wenn Kaufen guenstiger oder gleich teuer wie Mieten ist = POSITIV (man baut Vermoegen auf!)" + chr(10) + "- Unter Marktpreis kaufen = EXZELLENT fuer Eigennutzer (sofortiger Vermoegensgewinn)" + chr(10) + "- Lage und Grundriss sind die wichtigsten Kriterien - hier lebt man!" + chr(10) + "- FEHLENDE INFOS zu Grundriss/Zustand: NEUTRAL bewerten (Score 60-65), NICHT bestrafen!" + chr(10) + "- Ein Objekt 18% unter Markt in guter Lage ist fuer Eigennutzer EMPFEHLENSWERT (Score 65-80)!" + chr(10) + "- Energieklasse ist weniger kritisch - man kann schrittweise sanieren mit KfW-Foerderung" + chr(10) + "- STEUERFREIER VERKAUF: Nach nur 3 Jahren Selbstnutzung (im Kaufjahr + 2 Folgejahre) ist der Verkauf komplett steuerfrei (§23 EStG)! Das ist ein RIESIGER Vorteil gegenueber Kapitalanlage (10 Jahre Spekulationsfrist). Erwaehne dies in der Zusammenfassung als Pluspunkt!" if zweck == "eigennutzung" else """GESAMTBILD BEWERTEN (KRITISCH WICHTIG - EHRLICH UND AUSGEWOGEN!):
+- Du bewertest das GESAMTBILD: Cashflow, Potenzial, Steuereffekt, Wertsteigerung, Lage.
+- Aber bleibe REALISTISCH -- kein Schoenreden von schlechten Zahlen!
+
+CASHFLOW-BEWERTUNG:
+- Cashflow VOR Steuer ist die primaere Kennzahl.
+- Negativer Cashflow ist ein Minuspunkt, aber NICHT automatisch ein K.O.-Kriterium.
+- JEDOCH: Bei negativem Cashflow MUSS der Steuereffekt und das Neuvermietungspotenzial den Verlust realistisch kompensieren koennen.
+- Cashflow-Toleranz: bis -0.08% des Kaufpreises/Monat VOR Steuer ist akzeptabel (z.B. bei 300.000 EUR = max -240 EUR/Monat).
+- Darueber hinaus = klarer Score-Abzug im cashflow_rendite Kriterium.
+
+STEUEREFFEKT:
+- Steuervorteile (AfA + Zinsabzug) duerfen den cashflow_rendite Score um bis zu +15 Punkte verbessern.
+- ABER: AfA ist Steuerstundung, kein Geschenk. Erwaehne das in der Begruendung.
+- Ein Investment das NUR wegen Steuern funktioniert sollte maximal Score 55 bekommen.
+
+NEUVERMIETUNGSPOTENZIAL:
+- Wenn die aktuelle Miete nachweislich unter Markt liegt, ist das ein echter Pluspunkt.
+- Darf den cashflow_rendite Score um bis zu +10-15 Punkte verbessern.
+- ABER: Bei alten Mietern (ueber 70) ist Neuvermietung unrealistisch auf absehbare Zeit -> nur +5 Punkte maximal.
+- Bei leerstehenden Wohnungen: geschaetzte Miete ist unsicher, leichter Abzug (-3 Punkte).
+
+WERTSTEIGERUNG:
+- Fliesse in zukunftspotenzial ein, NICHT in cashflow_rendite.
+- Unter Markt kaufen = guter Einkauf, aber rettet keinen negativen Cashflow.
+
+SANIERUNGSRISIKEN:
+- Oel-Heizung = GEG-Sanierungspflicht absehbar, Kosten 20.000-35.000 EUR -> zustand_baujahr Score maximal 45
+- Gas-Heizung bei Baujahr vor 1990 = mittelfristiger Handlungsbedarf -> zustand_baujahr Score maximal 60
+- Energieklasse F/G/H = energieeffizienz Score maximal 35
+- Energieklasse E = energieeffizienz Score maximal 55
+
+KAUFPREISFAKTOR:
+- Bei aktuellen Zinsen von 4%: Kaufpreisfaktor ueber 25 bedeutet fast immer negativen Cashflow.
+- Kaufpreisfaktor 25-30 mit negativem Cashflow = cashflow_rendite Score maximal 50
+- Kaufpreisfaktor ueber 30 = cashflow_rendite Score maximal 35
+
+MIETER-SITUATION (WICHTIG fuer Verbesserungsvorschlaege und Schwaechen!):
+- Wenn die Wohnung VERMIETET ist und die Miete deutlich unter Markt liegt, MUSS die Analyse folgendes ansprechen:
+  1) Wie lange der Mieter schon drin wohnt (aus Einzugsdatum berechnen)
+  2) Kuendigungsschutz: Je laenger der Mieter wohnt, desto schwieriger die Kuendigung
+     * Ueber 8 Jahre = 9 Monate Kuendigungsfrist
+     * Aeltere Mieter (ueber 65) = Haertefall-Schutz, Eigenbedarfskuendigung extrem schwierig
+     * Mieter ueber 20 Jahre = praktisch unkuendbar ausser bei schweren Vertragsverstoessen
+  3) Realistische Optionen fuer den Kaeufer:
+     * Aufhebungsvertrag anbieten (Abfindung typisch 3-12 Monatsmieten, manchmal mehr bei alten Mietern)
+     * Mieterhoehung nach §558 BGB bis zur ortsueblichen Vergleichsmiete (Kappungsgrenze 15% in Hamburg alle 3 Jahre)
+     * Modernisierungsumlage §559 BGB (8% der Kosten/Jahr, Kappung 2-3 EUR/m2 in 6 Jahren)
+     * Abwarten und Neuvermietung bei natuerlichem Auszug
+     * Eigenbedarfskuendigung NUR bei tatsaechlichem Eigenbedarf und NICHT bei Kapitalanlage
+  4) In den Verbesserungsvorschlaegen konkrete Strategien zur Mietsteigerung nennen mit realistischen Zeitrahmen
+  5) In den Schwaechen ehrlich erwaehnen wenn Neuvermietung auf absehbare Zeit unrealistisch ist"""}
 
 Antworte als JSON:
 {{
@@ -3273,6 +3833,110 @@ Antworte NUR mit dem JSON."""
                 "bruttorendite": round((data.aktuelle_miete * 12 / data.kaufpreis) * 100, 2) if data.aktuelle_miete else None
             }
 
+        # ========================================
+        # POTENZIAL-SZENARIEN (Was-waere-wenn)
+        # ========================================
+        potenzial_szenarien = None
+        if zweck == "kapitalanlage" and data.kaufpreis and cashflow_analyse:
+            szenarien_list = []
+            aktueller_cf = cashflow_analyse.get("monatlicher_cashflow", 0)
+            aktuelle_rate = cashflow_analyse.get("monatliche_rate", 0)
+            aktuelle_nk = cashflow_analyse.get("monatliche_nebenkosten", 0)
+            aktuelle_miete = cashflow_analyse.get("monatliche_miete", 0)
+
+            # Basis-Score-Berechnung: cashflow_rendite Score schaetzen
+            def schaetze_cf_score(cf_monat, kaufpreis, bruttorendite_pct):
+                """Schaetzt den cashflow_rendite Score basierend auf Cashflow"""
+                base = 50
+                # Cashflow-Komponente
+                if cf_monat >= 0: base = 75
+                elif cf_monat >= -100: base = 55
+                elif cf_monat >= -200: base = 40
+                elif cf_monat >= -300: base = 30
+                else: base = 20
+                # Bruttorendite-Bonus
+                if bruttorendite_pct >= 5: base += 15
+                elif bruttorendite_pct >= 4: base += 8
+                elif bruttorendite_pct >= 3.5: base += 3
+                return min(100, max(0, base))
+
+            # Nicht-CF Anteil des Scores (bleibt in allen Szenarien gleich)
+            cf_gewichtung = 0.30
+            nicht_cf_score = gesamtscore - (schaetze_cf_score(aktueller_cf, data.kaufpreis,
+                cashflow_analyse.get("bruttorendite_prozent", 0)) * cf_gewichtung)
+
+            def berechne_szenario_score(neuer_cf, neuer_kp, neue_miete):
+                """Berechnet geschaetzten Gesamtscore fuer ein Szenario"""
+                neue_br = (neue_miete * 12 / neuer_kp * 100) if neuer_kp > 0 else 0
+                neuer_cf_score = schaetze_cf_score(neuer_cf, neuer_kp, neue_br)
+                # Kaufpreis-Anpassung wenn Preis sich aendert
+                kp_bonus = 0
+                if neuer_kp < data.kaufpreis:
+                    einsparung_pct = (data.kaufpreis - neuer_kp) / data.kaufpreis * 100
+                    kp_bonus = min(5, einsparung_pct * 0.5)  # Max +5 Punkte
+                return min(100, round(nicht_cf_score + neuer_cf_score * cf_gewichtung + kp_bonus, 0))
+
+            # Szenario 1: Neuvermietung
+            if neuvermietung_potenzial and neuvermietung_potenzial.get("neuvermietung", 0) > aktuelle_miete:
+                neue_miete_nv = neuvermietung_potenzial["neuvermietung"]
+                neuer_cf_nv = neue_miete_nv - aktuelle_rate - aktuelle_nk
+                neuer_score_nv = berechne_szenario_score(neuer_cf_nv, data.kaufpreis, neue_miete_nv)
+                szenarien_list.append({
+                    "name": "Bei Neuvermietung",
+                    "beschreibung": f"Miete steigt auf {round(neue_miete_nv)} EUR/Monat ({neuvermietung_potenzial.get('neuvermietung_qm', 0):.1f} EUR/m2)",
+                    "cashflow": round(neuer_cf_nv),
+                    "score": int(neuer_score_nv),
+                    "aenderung": int(neuer_score_nv - gesamtscore),
+                })
+
+            # Szenario 2: Preisverhandlung (fairer Preis oder -10%)
+            verhandlungs_preis = None
+            if fairer_preis_result and fairer_preis_result.get("fairer_preis"):
+                fp = fairer_preis_result["fairer_preis"]
+                if fp < data.kaufpreis:
+                    verhandlungs_preis = fp
+            if not verhandlungs_preis:
+                verhandlungs_preis = round(data.kaufpreis * 0.9)  # -10% als Default
+
+            if verhandlungs_preis < data.kaufpreis:
+                neue_rate_vh = verhandlungs_preis * ((zins or 4.0) + (tilg or 1.25)) / 100 / 12
+                neuer_cf_vh = aktuelle_miete - neue_rate_vh - aktuelle_nk
+                neuer_score_vh = berechne_szenario_score(neuer_cf_vh, verhandlungs_preis, aktuelle_miete)
+                einsparung = data.kaufpreis - verhandlungs_preis
+                szenarien_list.append({
+                    "name": "Bei Preisverhandlung",
+                    "beschreibung": f"Kaufpreis auf {round(verhandlungs_preis):,} EUR (-{round(einsparung):,} EUR)",
+                    "cashflow": round(neuer_cf_vh),
+                    "score": int(neuer_score_vh),
+                    "aenderung": int(neuer_score_vh - gesamtscore),
+                })
+
+            # Szenario 3: Kombiniert (Neuvermietung + Preisverhandlung)
+            if neuvermietung_potenzial and neuvermietung_potenzial.get("neuvermietung", 0) > aktuelle_miete and verhandlungs_preis < data.kaufpreis:
+                neue_miete_kombi = neuvermietung_potenzial["neuvermietung"]
+                neue_rate_kombi = verhandlungs_preis * ((zins or 4.0) + (tilg or 1.25)) / 100 / 12
+                neuer_cf_kombi = neue_miete_kombi - neue_rate_kombi - aktuelle_nk
+                neuer_score_kombi = berechne_szenario_score(neuer_cf_kombi, verhandlungs_preis, neue_miete_kombi)
+                szenarien_list.append({
+                    "name": "Neuvermietung + Verhandlung",
+                    "beschreibung": "Alle Optimierungen kombiniert",
+                    "cashflow": round(neuer_cf_kombi),
+                    "score": int(neuer_score_kombi),
+                    "aenderung": int(neuer_score_kombi - gesamtscore),
+                })
+
+            if szenarien_list:
+                bester = max(szenarien_list, key=lambda s: s["score"])
+                potenzial_szenarien = {
+                    "aktuell": {
+                        "score": int(round(gesamtscore)),
+                        "cashflow": round(aktueller_cf),
+                    },
+                    "szenarien": szenarien_list,
+                    "bestes_szenario": bester,
+                    "max_score": bester["score"],
+                }
+
         result = AnalysisResult(
             gesamtscore=gesamtscore,
             verwendungszweck=zweck,
@@ -3307,7 +3971,8 @@ Antworte NUR mit dem JSON."""
             mietschaetzung=mietschaetzung_info,
             # NEU: Kaufnebenkosten
             kaufnebenkosten=kaufnebenkosten_result,
-            neuvermietung_potenzial=neuvermietung_potenzial
+            neuvermietung_potenzial=neuvermietung_potenzial,
+            potenzial_szenarien=potenzial_szenarien,
         )
 
         # Verhandlungsmail generieren (nur Premium)
@@ -3474,7 +4139,7 @@ Antworte NUR mit dem JSON."""
             db_analysis.analysis_result = result.dict()
             db_analysis.verwendungszweck = zweck
             db_analysis.eigenkapital = request.eigenkapital or 0
-            db_analysis.zinssatz = request.zinssatz or 3.75
+            db_analysis.zinssatz = request.zinssatz or 4.0
             db_analysis.tilgung = request.tilgung or 1.25
             db_analysis.kaufpreis = data.kaufpreis
             db_analysis.wohnflaeche = data.wohnflaeche
@@ -3493,7 +4158,7 @@ Antworte NUR mit dem JSON."""
                 analysis_result=result.dict(),
                 verwendungszweck=zweck,
                 eigenkapital=request.eigenkapital or 0,
-                zinssatz=request.zinssatz or 3.75,
+                zinssatz=request.zinssatz or 4.0,
                 tilgung=request.tilgung or 1.25,
                 kaufpreis=data.kaufpreis,
                 wohnflaeche=data.wohnflaeche,
@@ -3509,6 +4174,19 @@ Antworte NUR mit dem JSON."""
 
         # Include the analysis ID in the result
         result.analysis_id = db_analysis.id
+
+        # Send follow-up email for free analyses
+        if not is_premium:
+            try:
+                send_analysis_followup_email(
+                    to_email=current_user.email,
+                    username=current_user.username or "dort",
+                    stadt=data.stadt or "deiner Stadt",
+                    score=gesamtscore or 0,
+                    is_premium=is_premium
+                )
+            except Exception as e:
+                print(f"[WARN] Follow-up email failed: {e}")
 
         return result
         
@@ -3876,6 +4554,37 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
 """
             except:
                 analysis_context = ""
+    else:
+        # No specific analysis linked -- load ALL user analyses as library context
+        try:
+            user_analyses = db.query(Analysis).filter(
+                Analysis.user_id == current_user.id
+            ).order_by(Analysis.created_at.desc()).limit(10).all()
+
+            if user_analyses:
+                summaries = []
+                for a in user_analyses:
+                    try:
+                        r = json.loads(a.analysis_result) if isinstance(a.analysis_result, str) else a.analysis_result
+                        cf = r.get("cashflow_analyse", {})
+                        summaries.append(
+                            f"- {a.title or 'Unbekannt'}: Score {a.gesamtscore or 'N/A'}/100, "
+                            f"Kaufpreis {a.kaufpreis or 'N/A'} EUR, "
+                            f"{a.wohnflaeche or 'N/A'} m2, "
+                            f"Cashflow {cf.get('monatlicher_cashflow', 'N/A')} EUR/Monat, "
+                            f"Verwendung: {a.verwendungszweck or 'N/A'}"
+                        )
+                    except:
+                        summaries.append(f"- {a.title or 'Unbekannt'}: Score {a.gesamtscore or 'N/A'}/100")
+
+                analysis_context = f"""
+BIBLIOTHEK DES NUTZERS (gespeicherte Analysen):
+{chr(10).join(summaries)}
+
+Du hast Zugriff auf die Bibliothek des Nutzers. Wenn er nach seinen Immobilien fragt, vergleiche sie anhand der obigen Daten.
+"""
+        except:
+            pass
 
     # Save user message to DB
     user_msg = ChatMessage(
@@ -3916,23 +4625,19 @@ Wenn der Nutzer nach Finanzierung, Foerderungen oder Verhandlung fragt, nutze di
     knowledge_section = build_knowledge_prompt(message, max_topics=3)
 
     # System Prompt
-    system_prompt = f"""STRIKTE FORMATIERUNGSREGELN (IMMER EINHALTEN):
-1. ABSOLUT KEINE Emojis. Kein einziges Emoji-Zeichen in deiner gesamten Antwort. Keine Ausnahmen. Auch keine Unicode-Symbole wie Pfeile, Haekchen oder Sterne.
-2. Verwende ## und ### fuer Ueberschriften. Nutze **Fettschrift** fuer wichtige Begriffe innerhalb von Absaetzen.
-3. Verwende Aufzaehlungszeichen (-) fuer Listen.
-4. Halte den Ton professionell, sachlich und kompetent.
-5. Strukturiere Antworten klar mit Absaetzen und Zwischenueberschriften.
+    system_prompt = f"""WICHTIGSTE REGEL: Antworte so KURZ wie moeglich. Wenn eine Zahl reicht, antworte nur mit der Zahl. Wenn ein Satz reicht, schreibe nur einen Satz. Keine Ueberschriften, keine Listen, keine Erklaerungen -- es sei denn der Nutzer fragt explizit nach Details oder einer ausfuehrlichen Erklaerung. Orientiere dich an der Laenge der Frage: kurze Frage = kurze Antwort.
 
-Antworte in einfacher, verstaendlicher Sprache. Vermeide Fachjargon wo moeglich - erklaere komplexe Begriffe kurz in Klammern wenn noetig. Strukturiere Antworten mit kurzen Absaetzen und Aufzaehlungen. Jede Antwort soll so klar sein, dass auch jemand ohne Vorwissen sie versteht.
+FORMATIERUNGSREGELN:
+1. ABSOLUT KEINE Emojis oder Unicode-Symbole.
+2. Nutze **Fettschrift** nur fuer einzelne wichtige Begriffe.
+3. Ueberschriften und Listen NUR bei komplexen Fragen die eine strukturierte Antwort erfordern.
+4. Duze den Nutzer. Professionell aber knapp.
 
-Du bist AmlakI, ein professioneller Immobilienberater fuer den DACH-Markt (Deutschland, Oesterreich, Schweiz).
-Du verfuegst ueber Expertenwissen in: Immobilienbewertung, Finanzierung, Steueroptimierung, Foerderprogramme, Mietrecht, WEG-Recht, Due Diligence und Verhandlungsfuehrung.
-Deine Beratung basiert auf aktuellen Marktdaten, geltendem Recht und anerkannten Bewertungsverfahren.
+Du bist AmlakI, ein Immobilienberater fuer den DACH-Markt.
+Expertenwissen: Bewertung, Finanzierung, Steuer, Foerderungen, Mietrecht, WEG, Due Diligence.
 
-WICHTIG V4.0:
-- Bei Fragen zu konkreten Preisen/Maerkten IMMER die Live-Daten unten verwenden
-- Keine generischen Antworten wie "zwischen 2.000 und 10.000 EUR/m2"
-- Konkrete Zahlen fuer den gefragten Standort nennen
+- Bei Preisfragen: konkrete Zahlen aus den Live-Daten nennen, keine Spannen
+- Einfache Sprache, kein Fachjargon
 
 {analysis_context}
 
@@ -3953,44 +4658,72 @@ Nutze Markdown fuer Formatierung (fett, Listen, etc.).
 Bei Preisfragen: IMMER konkrete Zahlen aus den Live-Daten!"""
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY nicht konfiguriert")
 
     async def generate():
         full_response = ""
         try:
-            async with httpx.AsyncClient(timeout=120.0) as http_client:
-                async with http_client.stream(
-                    "POST",
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": api_key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json",
-                    },
-                    json={
-                        "model": "claude-sonnet-4-20250514",
-                        "max_tokens": 4096,
-                        "stream": True,
-                        "system": system_prompt,
-                        "messages": messages_for_claude,
-                    },
-                ) as response:
-                    async for line in response.aiter_lines():
-                        if line.startswith("data: "):
-                            try:
-                                chunk = json.loads(line[6:])
-                                if chunk.get("type") == "content_block_delta":
-                                    text = chunk.get("delta", {}).get("text", "")
-                                    if text:
-                                        text = strip_emojis(text)
+            max_retries = 3
+            for attempt in range(max_retries):
+                async with httpx.AsyncClient(timeout=120.0) as http_client:
+                    async with http_client.stream(
+                        "POST",
+                        "https://api.anthropic.com/v1/messages",
+                        headers={
+                            "x-api-key": api_key,
+                            "anthropic-version": "2023-06-01",
+                            "content-type": "application/json",
+                        },
+                        json={
+                            "model": "claude-sonnet-4-20250514",
+                            "max_tokens": 4096,
+                            "stream": True,
+                            "system": system_prompt,
+                            "messages": messages_for_claude,
+                        },
+                    ) as response:
+                        # Check HTTP status before reading stream
+                        if response.status_code == 529 or response.status_code == 503 or response.status_code == 500:
+                            # Overloaded/unavailable - retry
+                            if attempt < max_retries - 1:
+                                print(f"[WARN] Claude API {response.status_code}, Retry {attempt + 1}/{max_retries}...")
+                                import asyncio
+                                await asyncio.sleep(2 * (attempt + 1))
+                                continue
+                        if response.status_code != 200:
+                            error_body = ""
+                            async for chunk in response.aiter_bytes():
+                                error_body += chunk.decode("utf-8", errors="replace")
+                            print(f"[ERROR] Claude API returned {response.status_code}: {error_body[:500]}")
+                            yield f"data: {json.dumps({'error': f'API-Fehler ({response.status_code}). Bitte versuche es spaeter erneut.'})}\n\n"
+                            return
+
+                        async for line in response.aiter_lines():
+                            if line.startswith("data: "):
+                                try:
+                                    chunk = json.loads(line[6:])
+                                    if chunk.get("type") == "content_block_delta":
+                                        text = chunk.get("delta", {}).get("text", "")
                                         if text:
-                                            full_response += text
-                                            yield f"data: {json.dumps({'text': text})}\n\n"
-                                elif chunk.get("type") == "message_stop":
+                                            text = strip_emojis(text)
+                                            if text:
+                                                full_response += text
+                                                yield f"data: {json.dumps({'text': text})}\n\n"
+                                    elif chunk.get("type") == "error":
+                                        error_msg = chunk.get("error", {}).get("message", "Unbekannter Fehler")
+                                        print(f"[ERROR] Claude stream error: {error_msg}")
+                                        yield f"data: {json.dumps({'error': error_msg})}\n\n"
+                                    elif chunk.get("type") == "message_stop":
+                                        pass
+                                except json.JSONDecodeError:
                                     pass
-                            except json.JSONDecodeError:
-                                pass
+                        break  # Success - exit retry loop
+        except httpx.ReadTimeout:
+            print("[ERROR] Claude API timeout nach 120s")
+            yield f"data: {json.dumps({'error': 'Die Antwort hat zu lange gedauert. Bitte versuche es erneut.'})}\n\n"
         except Exception as e:
-            print(f"[ERROR] Streaming-Fehler: {str(e)}")
+            print(f"[ERROR] Streaming-Fehler: {type(e).__name__}: {str(e)}")
             yield f"data: {json.dumps({'error': 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.'})}\n\n"
 
         # Save to DB after streaming complete
@@ -4068,10 +4801,35 @@ def create_checkout_session(
         raise HTTPException(status_code=500, detail="Stripe ist noch nicht konfiguriert.")
 
     package_id = data.get("package", "single")
+    coupon_code = data.get("coupon", "").strip().upper()
     if package_id not in CREDIT_PACKAGES:
         raise HTTPException(status_code=400, detail="Ungueltiges Paket")
 
     package = CREDIT_PACKAGES[package_id]
+    price_cents = package["price_cents"]
+
+    # Rabattcode pruefen
+    discount_applied = False
+    VALID_COUPONS = {
+        "WILLKOMMEN20": {"discount_percent": 20, "max_uses_per_user": 1},
+        "ERSTE20": {"discount_percent": 20, "max_uses_per_user": 1},
+    }
+
+    if coupon_code and coupon_code in VALID_COUPONS:
+        coupon = VALID_COUPONS[coupon_code]
+        # Check if user already used this coupon (via purchase history)
+        existing_use = db.query(Purchase).filter(
+            Purchase.user_id == current_user.id,
+            Purchase.coupon_code == coupon_code
+        ).first() if hasattr(Purchase, 'coupon_code') else None
+
+        if not existing_use:
+            discount = coupon["discount_percent"]
+            price_cents = int(price_cents * (100 - discount) / 100)
+            discount_applied = True
+            print(f"[COUPON] {coupon_code} angewendet fuer User {current_user.id}: {discount}% Rabatt")
+    elif coupon_code:
+        print(f"[COUPON] Ungueltiger Code: {coupon_code}")
 
     try:
         session = stripe.checkout.Session.create(
@@ -4080,10 +4838,10 @@ def create_checkout_session(
             line_items=[{
                 "price_data": {
                     "currency": "eur",
-                    "unit_amount": package["price_cents"],
+                    "unit_amount": price_cents,
                     "product_data": {
-                        "name": f"AmlakiAI - {package['label']}",
-                        "description": f"{package['credits']} Analyse-Credit{'s' if package['credits'] > 1 else ''}",
+                        "name": f"AmlakiAI - {package['label']}" + (f" ({coupon_code})" if discount_applied else ""),
+                        "description": f"{package['credits']} Analyse-Credit{'s' if package['credits'] > 1 else ''}" + (f" - {VALID_COUPONS[coupon_code]['discount_percent']}% Rabatt" if discount_applied else ""),
                     },
                 },
                 "quantity": 1,
@@ -4096,6 +4854,7 @@ def create_checkout_session(
                 "user_id": str(current_user.id),
                 "package": package_id,
                 "credits": str(package["credits"]),
+                "coupon": coupon_code if discount_applied else "",
             },
         )
 
