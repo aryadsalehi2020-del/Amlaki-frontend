@@ -2,15 +2,24 @@ import React, { useState, useMemo } from 'react';
 
 // Error Boundary to prevent white screen crashes
 class TabErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false }; }
-  static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error) { console.error('Tab crash:', error); }
+  constructor(props) { super(props); this.state = { hasError: false, error: null, info: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  componentDidCatch(error, info) {
+    console.error('Tab crash:', error, info);
+    this.setState({ error, info });
+  }
   render() {
     if (this.state.hasError) {
       return (
         <div className="p-8 text-center bg-white rounded-2xl border border-[#E8E0D4]">
           <p className="text-[#B85C5C] font-semibold mb-2">Dieser Bereich konnte nicht geladen werden.</p>
-          <button onClick={() => this.setState({ hasError: false })} className="px-4 py-2 bg-[#7C8B6F] text-white rounded-xl text-sm">Erneut versuchen</button>
+          {this.state.error && (
+            <pre className="text-left text-[11px] text-[#B85C5C] bg-[#FBF2F2] p-3 rounded-lg mb-3 overflow-auto max-h-60 whitespace-pre-wrap">
+              [DEBUG] {String(this.state.error?.message || this.state.error)}
+              {this.state.info?.componentStack ? '\n\nComponent stack:' + this.state.info.componentStack.split('\n').slice(0, 6).join('\n') : ''}
+            </pre>
+          )}
+          <button onClick={() => this.setState({ hasError: false, error: null, info: null })} className="px-4 py-2 bg-[#7C8B6F] text-white rounded-xl text-sm">Erneut versuchen</button>
         </div>
       );
     }
