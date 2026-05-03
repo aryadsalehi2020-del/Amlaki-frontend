@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
 import { CheckCircle2, Zap, TrendingUp, Crown } from 'lucide-react';
+import { track } from '../utils/track';
 
 function Pricing() {
   const { token, user } = useAuth();
@@ -10,6 +11,7 @@ function Pricing() {
   const [purchaseError, setPurchaseError] = useState('');
 
   useEffect(() => {
+    track('pricing_view', { authed: !!token });
     const fetchCredits = async () => {
       try {
         const res = await fetch(`${API_BASE}/payments/credits`, {
@@ -25,6 +27,7 @@ function Pricing() {
   }, [token]);
 
   const handlePurchase = async (packageId) => {
+    track('package_click', { package: packageId });
     setLoading(packageId);
     try {
       const res = await fetch(`${API_BASE}/payments/create-checkout`, {
@@ -34,13 +37,16 @@ function Pricing() {
       });
       if (!res.ok) {
         const d = await res.json();
+        track('checkout_error', { package: packageId, status: res.status, detail: d.detail });
         setPurchaseError(d.detail || 'Fehler beim Erstellen der Zahlung');
         setLoading(null);
         return;
       }
       const data = await res.json();
+      track('checkout_start', { package: packageId });
       window.location.href = data.checkout_url;
     } catch (err) {
+      track('checkout_error', { package: packageId, network: true });
       setPurchaseError('Verbindungsfehler. Bitte versuche es erneut.');
       setLoading(null);
     }
