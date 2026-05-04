@@ -17,6 +17,10 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     aktuelle_miete: initialData?.aktuelle_miete || '',
     verkaufertyp: initialData?.verkaufertyp || initialData?.['verkäufertyp'] || (initialData?.provision ? 'Makler' : ''),
     provision: initialData?.provision || '',
+    erbbaurecht: initialData?.erbbaurecht || false,
+    erbbauzins_jahr: initialData?.erbbauzins_jahr || '',
+    erbbau_restlaufzeit_jahre: initialData?.erbbau_restlaufzeit_jahre || '',
+    erbbau_vertragsende: initialData?.erbbau_vertragsende || '',
   });
 
   const [verwendungszweck, setVerwendungszweck] = useState('kapitalanlage');
@@ -63,7 +67,7 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
     const wohnflaeche = formData.wohnflaeche ? parseFloat(formData.wohnflaeche) : 0;
     if (!kaufpreis || kaufpreis < 1000) { setValidationError('Bitte gib einen g\u00fcltigen Kaufpreis ein (min. 1.000)'); return; }
     if (!wohnflaeche || wohnflaeche < 5) { setValidationError('Bitte gib eine g\u00fcltige Wohnfl\u00e4che ein (min. 5 m\u00b2)'); return; }
-    const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, hausgeld_nicht_umlagefaehig: formData.hausgeld_nicht_umlagefaehig ? parseFloat(formData.hausgeld_nicht_umlagefaehig) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null };
+    const processedData = { ...formData, kaufpreis, wohnflaeche, zimmer: formData.zimmer ? parseFloat(formData.zimmer) : null, baujahr: formData.baujahr ? parseInt(formData.baujahr) : null, nebenkosten: formData.nebenkosten ? parseFloat(formData.nebenkosten) : null, hausgeld: formData.hausgeld ? parseFloat(formData.hausgeld) : null, hausgeld_nicht_umlagefaehig: formData.hausgeld_nicht_umlagefaehig ? parseFloat(formData.hausgeld_nicht_umlagefaehig) : null, aktuelle_miete: formData.aktuelle_miete ? parseFloat(formData.aktuelle_miete) : null, erbbauzins_jahr: formData.erbbaurecht && formData.erbbauzins_jahr ? parseFloat(formData.erbbauzins_jahr) : null, erbbau_restlaufzeit_jahre: formData.erbbaurecht && formData.erbbau_restlaufzeit_jahre ? parseInt(formData.erbbau_restlaufzeit_jahre) : null, erbbau_vertragsende: formData.erbbaurecht ? (formData.erbbau_vertragsende || null) : null };
     const activeProfile = verwendungszweck === 'kapitalanlage' ? getActiveProfile() : null;
     onAnalyze(processedData, verwendungszweck, finanzierung, activeProfile, besichtigt, besichtigungsNotizen);
   }, [formData, verwendungszweck, finanzierung, onAnalyze, getActiveProfile]);
@@ -349,6 +353,67 @@ function PropertyForm({ initialData, onAnalyze, onBack }) {
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div><label className={labelClass}>Verk&auml;ufertyp</label><select name="verkaufertyp" value={formData.verkaufertyp} onChange={handleChange} className={selectClass}><option value="">Bitte wählen</option><option value="Privat">Privat</option><option value="Makler">Makler</option></select></div>
             <div><label className={labelClass}>Provision</label><input type="text" name="provision" value={formData.provision} onChange={handleChange} placeholder="z.B. 3,57% oder provisionsfrei" className={inputClass} /></div>
+          </div>
+
+          {sectionTitle('Rechtliches')}
+          <div className="mb-5">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                name="erbbaurecht"
+                checked={!!formData.erbbaurecht}
+                onChange={handleChange}
+                className="w-5 h-5 rounded bg-white border-[#E8E0D4] text-[#7C8B6F] focus:ring-[#7C8B6F]/50"
+              />
+              <div>
+                <span className="text-[#5C4F3D] group-hover:text-[#2C2418] transition-colors text-[14px] font-medium">Erbpacht / Erbbaurecht</span>
+                <p className="text-[11px] text-[#B5A68C] mt-0.5">Steht im Exposé unter &bdquo;Eintragungen Abteilung II&ldquo; oder als &bdquo;Erbbauzins im Hausgeld enthalten&ldquo;</p>
+              </div>
+            </label>
+
+            {formData.erbbaurecht && (
+              <div className="mt-3 p-4 bg-[#FAF7F2] border border-[#E8E0D4] rounded-[12px]">
+                <p className="text-[11px] uppercase tracking-wider text-[#7C8B6F] font-semibold mb-3">Details zum Erbbaurecht</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className={labelClass}>Erbbauzins / Jahr (&euro;)</label>
+                    <input
+                      type="number"
+                      name="erbbauzins_jahr"
+                      value={formData.erbbauzins_jahr}
+                      onChange={handleChange}
+                      placeholder="z.B. 383"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Restlaufzeit (Jahre)</label>
+                    <input
+                      type="number"
+                      name="erbbau_restlaufzeit_jahre"
+                      value={formData.erbbau_restlaufzeit_jahre}
+                      onChange={handleChange}
+                      placeholder="z.B. 46"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Vertragsende</label>
+                    <input
+                      type="text"
+                      name="erbbau_vertragsende"
+                      value={formData.erbbau_vertragsende}
+                      onChange={handleChange}
+                      placeholder="z.B. 05.12.2072"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#B85C5C] mt-3 leading-snug">
+                  Hinweis: Restlaufzeit unter 50 Jahren gilt fuer Kapitalanleger als Dealbreaker (Finanzierung schwierig, Werthaltigkeit niedrig).
+                </p>
+              </div>
+            )}
           </div>
 
           {sectionTitle('Ausstattung')}
