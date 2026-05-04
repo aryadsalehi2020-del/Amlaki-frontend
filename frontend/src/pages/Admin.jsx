@@ -672,6 +672,7 @@ function Admin() {
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Credits</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Umsatz</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Analysen</th>
+                  <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Bewertung</th>
                   <th className="text-left p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Registriert</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Status</th>
                   <th className="text-center p-4 text-[#8C7E6A] text-[12px] uppercase tracking-wider font-medium">Aktionen</th>
@@ -711,6 +712,22 @@ function Admin() {
                       )}
                     </td>
                     <td className="p-4 text-center"><span className="text-[#7C8B6F] font-bold">{u.analyses_count}</span></td>
+                    <td className="p-4 text-center">
+                      {u.reviews_count > 0 ? (
+                        <button onClick={() => setExpandedUser(expandedUser === u.id ? null : u.id)}
+                          className="hover:bg-[#7C8B6F]/5 rounded-[6px] px-2 py-1 transition-all">
+                          <div className="text-[14px] font-bold text-[#C9A85C]" style={{ letterSpacing: '0.05em' }}>
+                            {'★'.repeat(Math.round(u.avg_rating || 0))}
+                            <span className="text-[#E8E0D4]">{'★'.repeat(5 - Math.round(u.avg_rating || 0))}</span>
+                          </div>
+                          <div className="text-[11px] text-[#8C7E6A]">
+                            {(u.avg_rating || 0).toFixed(1)} ({u.reviews_count})
+                          </div>
+                        </button>
+                      ) : (
+                        <span className="text-[13px] text-[#B5A68C]">-</span>
+                      )}
+                    </td>
                     <td className="p-4 text-[#8C7E6A] text-[13px]">{formatDate(u.created_at)}</td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -737,21 +754,48 @@ function Admin() {
                       </div>
                     </td>
                   </tr>
-                  {/* Expanded Purchase History */}
-                  {expandedUser === u.id && u.purchases && u.purchases.length > 0 && (
+                  {/* Expanded Purchase + Reviews */}
+                  {expandedUser === u.id && ((u.purchases && u.purchases.length > 0) || (u.reviews && u.reviews.length > 0)) && (
                     <tr>
-                      <td colSpan={8} className="p-0">
-                        <div className="bg-[#FAF7F2] px-6 py-4 border-t border-[#E8E0D4]">
-                          <p className="text-[12px] font-semibold text-[#5C4F3D] mb-2">Kaufhistorie von {u.username}</p>
-                          <div className="space-y-1.5">
-                            {u.purchases.map(p => (
-                              <div key={p.id} className="flex items-center justify-between text-[12px] bg-white px-3 py-2 rounded-[8px] border border-[#E8E0D4]">
-                                <span className="text-[#8C7E6A]">{new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                <span className="font-medium text-[#2C2418]">{packageLabel(p.package)}</span>
-                                <span className="font-bold text-[#7C8B6F]">{formatEur(p.amount_cents)}</span>
+                      <td colSpan={9} className="p-0">
+                        <div className="bg-[#FAF7F2] px-6 py-4 border-t border-[#E8E0D4] space-y-4">
+                          {u.purchases && u.purchases.length > 0 && (
+                            <div>
+                              <p className="text-[12px] font-semibold text-[#5C4F3D] mb-2">Kaufhistorie von {u.username}</p>
+                              <div className="space-y-1.5">
+                                {u.purchases.map(p => (
+                                  <div key={p.id} className="flex items-center justify-between text-[12px] bg-white px-3 py-2 rounded-[8px] border border-[#E8E0D4]">
+                                    <span className="text-[#8C7E6A]">{new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span className="font-medium text-[#2C2418]">{packageLabel(p.package)}</span>
+                                    <span className="font-bold text-[#7C8B6F]">{formatEur(p.amount_cents)}</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          )}
+                          {u.reviews && u.reviews.length > 0 && (
+                            <div>
+                              <p className="text-[12px] font-semibold text-[#5C4F3D] mb-2">Bewertungen von {u.username}</p>
+                              <div className="space-y-1.5">
+                                {u.reviews.map(r => (
+                                  <div key={r.id} className="bg-white px-3 py-2 rounded-[8px] border border-[#E8E0D4]">
+                                    <div className="flex items-center justify-between text-[12px]">
+                                      <span className="text-[#C9A85C] font-bold" style={{ letterSpacing: '0.08em' }}>
+                                        {'★'.repeat(r.rating)}<span className="text-[#E8E0D4]">{'★'.repeat(5 - r.rating)}</span>
+                                      </span>
+                                      <span className="text-[#8C7E6A]">
+                                        {new Date(r.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        {r.source && <span className="ml-2 px-1.5 py-0.5 bg-[#F5F0E8] text-[#8C7E6A] text-[10px] rounded">{r.source}</span>}
+                                      </span>
+                                    </div>
+                                    {r.comment && (
+                                      <p className="mt-1.5 text-[13px] text-[#2C2418] leading-snug whitespace-pre-wrap">{r.comment}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
