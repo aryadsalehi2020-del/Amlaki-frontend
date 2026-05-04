@@ -25,6 +25,7 @@ const Impressum = React.lazy(() => import('./pages/Impressum'));
 const Datenschutz = React.lazy(() => import('./pages/Datenschutz'));
 const BlogIndex = React.lazy(() => import('./pages/BlogIndex'));
 const BlogArticle = React.lazy(() => import('./pages/BlogArticle'));
+const Redeem = React.lazy(() => import('./pages/Redeem'));
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -174,6 +175,7 @@ function App() {
           <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/redeem/:token" element={<Redeem />} />
 
           {/* Protected Routes with Sidebar */}
           <Route
