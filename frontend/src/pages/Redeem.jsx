@@ -42,6 +42,48 @@ function Star({ filled, onClick, onHover, onLeave, size = 36 }) {
   );
 }
 
+// Wrapper MUSS ausserhalb der Hauptkomponente leben — sonst wird er bei jedem
+// State-Update neu erstellt, React mountet die Children remountet und das
+// Textarea verliert seinen Focus nach jedem getippten Zeichen.
+function Wrapper({ children }) {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: COLORS.bgOuter,
+      padding: '48px 16px',
+      fontFamily: "'Inter','Helvetica Neue',Helvetica,Arial,sans-serif",
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+    }}>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 6px 24px' }}>
+          <div style={{ width: 8, height: 8, background: COLORS.accent, borderRadius: '50%' }} />
+          <span style={{
+            fontSize: 18, letterSpacing: '0.22em', color: COLORS.accent,
+            fontWeight: 700, textTransform: 'uppercase',
+          }}>amlaki</span>
+        </div>
+        <div style={{
+          background: COLORS.card,
+          border: `1px solid ${COLORS.cardBorder}`,
+          borderRadius: 18,
+          padding: '44px 36px',
+          boxShadow: '0 1px 0 rgba(44,36,24,0.04)',
+        }}>
+          {children}
+        </div>
+        <p style={{
+          textAlign: 'center', marginTop: 24,
+          color: '#B5A68C', fontSize: 12, letterSpacing: '0.04em', fontWeight: 500,
+        }}>
+          <Link to="/" style={{ color: '#8C7E6A', textDecoration: 'none' }}>amlaki.de</Link>
+          {' · '}Hamburg
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Redeem() {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -83,43 +125,6 @@ export default function Redeem() {
       setState(s => ({ ...s, status: 'valid' }));
     }
   };
-
-  const Wrapper = ({ children }) => (
-    <div style={{
-      minHeight: '100vh',
-      background: COLORS.bgOuter,
-      padding: '48px 16px',
-      fontFamily: "'Inter','Helvetica Neue',Helvetica,Arial,sans-serif",
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-    }}>
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 6px 24px' }}>
-          <div style={{ width: 8, height: 8, background: COLORS.accent, borderRadius: '50%' }} />
-          <span style={{
-            fontSize: 18, letterSpacing: '0.22em', color: COLORS.accent,
-            fontWeight: 700, textTransform: 'uppercase',
-          }}>amlaki</span>
-        </div>
-        <div style={{
-          background: COLORS.card,
-          border: `1px solid ${COLORS.cardBorder}`,
-          borderRadius: 18,
-          padding: '44px 36px',
-          boxShadow: '0 1px 0 rgba(44,36,24,0.04)',
-        }}>
-          {children}
-        </div>
-        <p style={{
-          textAlign: 'center', marginTop: 24,
-          color: '#B5A68C', fontSize: 12, letterSpacing: '0.04em', fontWeight: 500,
-        }}>
-          <Link to="/" style={{ color: '#8C7E6A', textDecoration: 'none' }}>amlaki.de</Link>
-          {' · '}Hamburg
-        </p>
-      </div>
-    </div>
-  );
 
   if (state.status === 'loading') {
     return <Wrapper><p style={{ color: COLORS.textMuted, margin: 0 }}>Wird geladen ...</p></Wrapper>;
