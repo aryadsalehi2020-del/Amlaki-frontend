@@ -302,16 +302,13 @@ function AnalysisResult({ result, propertyData, onNewAnalysis, onEditData, onSwi
     }
 
     let adjustedScore = calculateAdjustedScore(result.kriterien, profile);
-    // Hard-Cap respektieren: wenn der Server-Score (result.gesamtscore) durch einen
-    // No-Go (z.B. Erbbaurecht <50J) gekappt wurde, darf die Personalisierung
-    // diesen Cap nicht ueberschreiben. Sonst zeigt das UI einen unrealistisch
-    // hohen Score trotz Dealbreaker.
-    if (result.no_go_check?.no_go) {
-      adjustedScore = Math.min(adjustedScore, result.gesamtscore);
-    } else if (result.gesamtscore < 35 && adjustedScore > result.gesamtscore + 10) {
-      // Auch bei niedrigem Basis-Score begrenzen, falls eine zukuenftige Cap-Logik
-      // nicht durch no_go_check exposed ist.
-      adjustedScore = result.gesamtscore + 10;
+    // Server-side Penalties (Erbbaurecht etc.) werden auf gesamtscore-Ebene
+    // angewendet, nicht auf Kriterien-Ebene. Die Personalisierung re-weighted nur
+    // Kriterien -> wuerde die Penalties uebergehen. Deshalb: max +5 ueber Basis,
+    // damit Personalisierung wirken darf, aber objektive Risiko-Penalties bleiben.
+    const upperBound = result.gesamtscore + 5;
+    if (adjustedScore > upperBound) {
+      adjustedScore = upperBound;
     }
 
     const weightDiffs = getWeightDifferences(profile);
