@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
@@ -10,22 +10,16 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [slowServer, setSlowServer] = useState(false);
-  const slowTimer = useRef(null);
   const navigate = useNavigate();
   const { login, googleLogin } = useAuth();
-
-  useEffect(() => () => clearTimeout(slowTimer.current), []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setSlowServer(false);
-    slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
     try { await login(email, password); navigate('/chat'); }
     catch (err) { setError(err.message || 'Login fehlgeschlagen'); }
-    finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -51,11 +45,10 @@ function Login() {
 
           <GoogleLoginButton
             onSuccess={async (credential) => {
-              setError(''); setLoading(true); setSlowServer(false);
-              slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
+              setError(''); setLoading(true);
               try { await googleLogin(credential); navigate('/chat'); }
               catch (err) { setError(err.message || 'Google Login fehlgeschlagen'); }
-              finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
+              finally { setLoading(false); }
             }}
             onError={(msg) => setError(msg)}
             text="signin_with"
@@ -90,15 +83,9 @@ function Login() {
               type="submit" disabled={loading}
               className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-50 active:scale-[0.98]"
             >
-              {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Fortfahren'}
+              {loading ? 'Laden...' : 'Fortfahren'}
             </button>
           </form>
-
-          {slowServer && (
-            <p className="mt-3 text-center text-[12px] text-[#B5A68C] pulse-neon">
-              Einen Moment bitte - der Server wird gerade hochgefahren...
-            </p>
-          )}
 
           <p className="mt-6 text-center">
             <Link to="/forgot-password" className="text-[13px] text-[#B5A68C] hover:text-[#7C8B6F] transition-colors">

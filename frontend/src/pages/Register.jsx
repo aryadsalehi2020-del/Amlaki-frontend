@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
@@ -9,8 +9,6 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [slowServer, setSlowServer] = useState(false);
-  const slowTimer = useRef(null);
   const navigate = useNavigate();
   const { register, googleLogin } = useAuth();
   const [searchParams] = useSearchParams();
@@ -20,8 +18,6 @@ function Register() {
     if (redirectTarget === 'analyze') return '/analyze';
     return '/chat';
   };
-
-  useEffect(() => () => clearTimeout(slowTimer.current), []);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -35,11 +31,9 @@ function Register() {
     const username = formData.email.split('@')[0].replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 30);
     if (username.length < 3) { setError('E-Mail-Adresse ist zu kurz'); return; }
     setLoading(true);
-    setSlowServer(false);
-    slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
     try { await register(formData.email, username, formData.password, ''); navigate(getRedirectPath()); }
     catch (err) { setError(err.message || 'Fehler'); }
-    finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
+    finally { setLoading(false); }
   };
 
   const fields = [
@@ -78,11 +72,10 @@ function Register() {
 
           <GoogleLoginButton
             onSuccess={async (credential) => {
-              setError(''); setLoading(true); setSlowServer(false);
-              slowTimer.current = setTimeout(() => setSlowServer(true), 5000);
+              setError(''); setLoading(true);
               try { await googleLogin(credential); navigate(getRedirectPath()); }
               catch (err) { setError(err.message || 'Google Login fehlgeschlagen'); }
-              finally { setLoading(false); setSlowServer(false); clearTimeout(slowTimer.current); }
+              finally { setLoading(false); }
             }}
             onError={(msg) => setError(msg)}
             text="signup_with"
@@ -126,15 +119,9 @@ function Register() {
             })}
             <button type="submit" disabled={loading}
               className="w-full py-3.5 bg-[#7C8B6F] text-white text-[15px] font-semibold rounded-[12px] hover:bg-[#6B7A5E] transition-all disabled:opacity-50 active:scale-[0.98]">
-              {loading ? (slowServer ? 'Server startet...' : 'Laden...') : 'Erste Analyse starten'}
+              {loading ? 'Wird erstellt...' : 'Erste Analyse starten'}
             </button>
           </form>
-
-          {slowServer && (
-            <p className="mt-3 text-center text-[12px] text-[#B5A68C] pulse-neon">
-              Einen Moment bitte - der Server wird gerade hochgefahren...
-            </p>
-          )}
 
           <p className="mt-6 text-center text-[13px] text-[#8C7E6A]">
             Bereits registriert?{' '}
