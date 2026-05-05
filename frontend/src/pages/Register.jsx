@@ -5,7 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 
 function Register() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: '', password: '', password_confirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +29,8 @@ function Register() {
     e.preventDefault(); setError('');
     if (formData.password.length < 8) { setError('Passwort muss mindestens 8 Zeichen lang sein'); return; }
     if (!/[0-9]/.test(formData.password)) { setError('Passwort muss mindestens eine Zahl enthalten'); return; }
+    if (!/[A-Z]/.test(formData.password)) { setError('Passwort muss mindestens einen Großbuchstaben enthalten'); return; }
+    if (formData.password !== formData.password_confirm) { setError('Passwörter stimmen nicht überein'); return; }
     // Auto-generate username from email prefix
     const username = formData.email.split('@')[0].replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 30);
     if (username.length < 3) { setError('E-Mail-Adresse ist zu kurz'); return; }
@@ -42,7 +44,8 @@ function Register() {
 
   const fields = [
     { name: 'email', type: 'email', ph: 'E-Mail', auto: 'email' },
-    { name: 'password', type: 'password', ph: 'Passwort (min. 8 Zeichen + Zahl)', auto: 'new-password' },
+    { name: 'password', type: 'password', ph: 'Passwort (min. 8 Zeichen, 1 Großbuchstabe, 1 Zahl)', auto: 'new-password' },
+    { name: 'password_confirm', type: 'password', ph: 'Passwort wiederholen', auto: 'new-password' },
   ];
 
   return (
@@ -93,7 +96,7 @@ function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             {fields.map(f => {
-              const isPassword = f.name === 'password';
+              const isPassword = f.type === 'password';
 
               const input = (
                 <input

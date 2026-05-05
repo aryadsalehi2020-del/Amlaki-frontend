@@ -29,6 +29,7 @@ function ResetPassword() {
 
     if (password !== confirmPassword) { setError('Passw\u00f6rter stimmen nicht \u00fcberein'); return; }
     if (password.length < 8) { setError('Mindestens 8 Zeichen'); return; }
+    if (!/[A-Z]/.test(password)) { setError('Mindestens ein Gro\u00dfbuchstabe erforderlich'); return; }
     if (!/[0-9]/.test(password)) { setError('Mindestens eine Zahl erforderlich'); return; }
 
     setLoading(true);
@@ -81,7 +82,7 @@ function ResetPassword() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <input
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                required placeholder="Neues Passwort (min. 8 Zeichen + Zahl)"
+                required placeholder="Neues Passwort (min. 8 Zeichen, 1 Großbuchstabe, 1 Zahl)"
                 className="w-full px-4 py-3.5 bg-white border border-[#E8E0D4] rounded-[12px] text-[#2C2418] text-[15px] placeholder:text-[#B5A68C] focus:outline-none focus:border-[#7C8B6F] focus:ring-4 focus:ring-[#7C8B6F]/[0.1] transition-all"
               />
               <input
