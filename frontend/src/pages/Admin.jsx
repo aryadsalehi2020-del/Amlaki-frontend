@@ -1,10 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
 import { Navigate } from 'react-router-dom';
 
+// Uebersetzt cryptic Browser-Fehler in lesbare Nachrichten
+function friendlyError(err) {
+  const msg = (err && err.message) || String(err || 'Unbekannter Fehler');
+  if (msg === 'Failed to fetch' || msg.toLowerCase().includes('networkerror')) {
+    return 'Verbindung zum Server fehlgeschlagen. Versuch es gleich nochmal.';
+  }
+  if (msg.includes('NetworkError when attempting')) {
+    return 'Netzwerkfehler. Pruefe deine Verbindung und versuch es erneut.';
+  }
+  return msg;
+}
+
 function Admin() {
   const { user, token } = useAuth();
+  // Top-of-page Toast statt nativem alert()
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const notify = (message, kind = 'error') => {
+    setToast({ message, kind });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 5000);
+  };
+  useEffect(() => () => toastTimer.current && clearTimeout(toastTimer.current), []);
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +89,7 @@ function Admin() {
         body: JSON.stringify({ enabled: !currentEnabled }),
       });
       await fetchAgents();
-    } catch (err) { alert(err.message); }
+    } catch (err) { notify(friendlyError(err)); }
   };
 
   const runAgent = async (agentId) => {
@@ -80,10 +101,10 @@ function Admin() {
       });
       const data = await res.json();
       if (data.status === 'error') {
-        alert('Agent Fehler: ' + (data.error || 'Unbekannt'));
+        notify('Agent Fehler: ' + (data.error || 'Unbekannt'));
       }
       await fetchAgents();
-    } catch (err) { alert(err.message); }
+    } catch (err) { notify(friendlyError(err)); }
     finally { setAgentRunning(null); }
   };
 
@@ -96,7 +117,7 @@ function Admin() {
       });
       setEditingAgent(null);
       await fetchAgents();
-    } catch (err) { alert(err.message); }
+    } catch (err) { notify(friendlyError(err)); }
   };
 
   const createAgent = async (data) => {
@@ -109,7 +130,7 @@ function Admin() {
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail); }
       setShowCreateAgent(false);
       await fetchAgents();
-    } catch (err) { alert(err.message); }
+    } catch (err) { notify(friendlyError(err)); }
   };
 
   const deleteAgent = async (agentId, name) => {
@@ -120,7 +141,7 @@ function Admin() {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       await fetchAgents();
-    } catch (err) { alert(err.message); }
+    } catch (err) { notify(friendlyError(err)); }
   };
 
   const fetchData = async () => {
@@ -212,7 +233,7 @@ function Admin() {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ is_active: !currentStatus }) });
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Fehler'); }
       await fetchData();
-    } catch (err) { alert(err.message); } finally { setActionLoading(false); }
+    } catch (err) { notify(friendlyError(err)); } finally { setActionLoading(false); }
   };
 
   const toggleAdminStatus = async (userId, currentStatus) => {
@@ -221,7 +242,7 @@ function Admin() {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ is_superuser: !currentStatus }) });
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Fehler'); }
       await fetchData();
-    } catch (err) { alert(err.message); } finally { setActionLoading(false); }
+    } catch (err) { notify(friendlyError(err)); } finally { setActionLoading(false); }
   };
 
   const deleteUser = async (userId, username) => {
@@ -231,7 +252,7 @@ function Admin() {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Fehler'); }
       await fetchData(); setSelectedUser(null);
-    } catch (err) { alert(err.message); } finally { setActionLoading(false); }
+    } catch (err) { notify(friendlyError(err)); } finally { setActionLoading(false); }
   };
 
   const updateLimit = async (userId, newLimit) => {
@@ -240,7 +261,7 @@ function Admin() {
       const res = await fetch(`${API_BASE}/admin/users/${userId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ usage_limit_usd: parseFloat(newLimit) }) });
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Fehler'); }
       await fetchData(); setEditingLimit(null);
-    } catch (err) { alert(err.message); } finally { setActionLoading(false); }
+    } catch (err) { notify(friendlyError(err)); } finally { setActionLoading(false); }
   };
 
   const formatDate = (dateString) => new Date(dateString).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -280,6 +301,21 @@ function Admin() {
 
   return (
     <div className="px-6 md:px-16 lg:px-20 py-12 md:py-20">
+      {/* Toast top-right */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 max-w-[380px] animate-in fade-in slide-in-from-top-2">
+          <div className={`px-4 py-3 rounded-[12px] shadow-lg border text-[14px] leading-snug ${
+            toast.kind === 'success'
+              ? 'bg-[#7C8B6F] text-white border-[#7C8B6F]'
+              : 'bg-[#B85C5C] text-white border-[#B85C5C]'
+          }`}>
+            <div className="flex items-start justify-between gap-3">
+              <span>{toast.message}</span>
+              <button onClick={() => setToast(null)} className="opacity-70 hover:opacity-100 text-white text-[18px] leading-none">&times;</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-[1100px] space-y-8">
         {/* Header */}
         <div className="fade-in">
