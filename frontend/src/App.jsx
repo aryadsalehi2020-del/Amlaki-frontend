@@ -95,28 +95,28 @@ function GuestLayout({ children }) {
   );
 }
 
-// Analyze route – shows sidebar for logged-in users, minimal nav for guests
+// Analyze route – auth required. Guests are redirected to register flow.
 function AnalyzeRoute() {
   const { user, loading } = useAuth();
 
   if (loading) return <PageLoader />;
 
-  if (user) {
-    return (
-      <DashboardLayout>
-        <Suspense fallback={<PageLoader />}>
-          <Analyze />
-        </Suspense>
-      </DashboardLayout>
-    );
+  if (!user) {
+    // Stale state aufraeumen damit nichts Komisches in localStorage haengen bleibt
+    try {
+      localStorage.removeItem('pendingAnalysis');
+      localStorage.removeItem('pendingUrl');
+      localStorage.removeItem('pendingAction');
+    } catch {}
+    return <Navigate to="/register?redirect=analyze" replace />;
   }
 
   return (
-    <GuestLayout>
+    <DashboardLayout>
       <Suspense fallback={<PageLoader />}>
         <Analyze />
       </Suspense>
-    </GuestLayout>
+    </DashboardLayout>
   );
 }
 
