@@ -28,6 +28,24 @@ function Admin() {
   const [expandedUser, setExpandedUser] = useState(null);
   const [chartMode, setChartMode] = useState('revenue'); // 'revenue' | 'users'
   const [usersChart, setUsersChart] = useState(null);
+  const [perfData, setPerfData] = useState(null);
+  const [perfHours, setPerfHours] = useState(24);
+  const [perfLoading, setPerfLoading] = useState(false);
+
+  const fetchPerf = async (hours) => {
+    setPerfLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/perf?hours=${hours}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) setPerfData(await res.json());
+    } catch (err) { /* ignore */ }
+    finally { setPerfLoading(false); }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'perf' && user?.is_superuser) fetchPerf(perfHours);
+  }, [activeTab, perfHours]);
 
   useEffect(() => { if (user?.is_superuser) { fetchData(); fetchAgents(); fetchRevenue('30d'); } }, []);
 
@@ -275,6 +293,10 @@ function Admin() {
               className={`px-4 py-2 rounded-[10px] text-[14px] font-medium transition-all ${activeTab === 'agents' ? 'bg-[#7C8B6F]/10 text-[#7C8B6F] border border-[#7C8B6F]/30' : 'text-[#8C7E6A] hover:text-[#5C4F3D]'}`}>
               Research Agents
             </button>
+            <button onClick={() => setActiveTab('perf')}
+              className={`px-4 py-2 rounded-[10px] text-[14px] font-medium transition-all ${activeTab === 'perf' ? 'bg-[#7C8B6F]/10 text-[#7C8B6F] border border-[#7C8B6F]/30' : 'text-[#8C7E6A] hover:text-[#5C4F3D]'}`}>
+              Performance
+            </button>
           </div>
         </div>
 
@@ -442,6 +464,79 @@ function Admin() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ===== PERF TAB ===== */}
+        {activeTab === 'perf' && (
+          <div className="space-y-4 fade-in">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[20px] font-semibold text-[#2C2418]">Performance</h2>
+              <div className="flex items-center gap-2">
+                {[1, 6, 24, 168].map(h => (
+                  <button key={h} onClick={() => setPerfHours(h)}
+                    className={`px-3 py-1.5 rounded-[8px] text-[12px] font-medium transition-all ${perfHours === h ? 'bg-[#7C8B6F] text-white' : 'bg-[#F5F0E8] text-[#5C4F3D] hover:bg-[#E8E0D4]'}`}>
+                    {h === 168 ? '7T' : `${h}h`}
+                  </button>
+                ))}
+                <button onClick={() => fetchPerf(perfHours)} className="px-3 py-1.5 text-[12px] text-[#8C7E6A] hover:text-[#7C8B6F]">Refresh</button>
+              </div>
+            </div>
+
+            {perfLoading && <p className="text-[13px] text-[#8C7E6A]">Lade...</p>}
+
+            {perfData && (
+              <>
+                <div className="text-[13px] text-[#8C7E6A]">
+                  Letzte {perfData.period_hours}h: <span className="font-semibold text-[#2C2418]">{perfData.total_requests.toLocaleString('de-DE')} Requests</span> ueber {perfData.endpoints.length} Endpoints
+                </div>
+
+                <div className="bg-white border border-[#E8E0D4] rounded-[14px] overflow-hidden">
+                  <table className="w-full text-[13px]">
+                    <thead className="bg-[#FAF7F2] border-b border-[#E8E0D4]">
+                      <tr>
+                        <th className="text-left p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">Endpoint</th>
+                        <th className="text-right p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">Calls</th>
+                        <th className="text-right p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">Errors</th>
+                        <th className="text-right p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">P50</th>
+                        <th className="text-right p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">P95</th>
+                        <th className="text-right p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">P99</th>
+                        <th className="text-right p-3 text-[#8C7E6A] text-[11px] uppercase tracking-wider font-medium">Max</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E8E0D4]">
+                      {perfData.endpoints.map(e => {
+                        const colorFor = (ms) => ms >= 5000 ? '#B85C5C' : ms >= 2000 ? '#C9A85C' : ms >= 800 ? '#8C7E6A' : '#7C8B6F';
+                        const fmt = ms => ms >= 1000 ? `${(ms/1000).toFixed(1)}s` : `${ms}ms`;
+                        return (
+                          <tr key={e.endpoint} className="hover:bg-[#FAF7F2]">
+                            <td className="p-3 font-mono text-[#2C2418]">{e.endpoint}</td>
+                            <td className="p-3 text-right text-[#5C4F3D]">{e.count}</td>
+                            <td className="p-3 text-right">
+                              {e.errors > 0 ? <span className="text-[#B85C5C] font-semibold">{e.errors} ({e.error_rate_pct}%)</span> : <span className="text-[#B5A68C]">0</span>}
+                            </td>
+                            <td className="p-3 text-right" style={{ color: colorFor(e.p50_ms) }}>{fmt(e.p50_ms)}</td>
+                            <td className="p-3 text-right" style={{ color: colorFor(e.p95_ms) }}>{fmt(e.p95_ms)}</td>
+                            <td className="p-3 text-right" style={{ color: colorFor(e.p99_ms) }}>{fmt(e.p99_ms)}</td>
+                            <td className="p-3 text-right" style={{ color: colorFor(e.max_ms) }}>{fmt(e.max_ms)}</td>
+                          </tr>
+                        );
+                      })}
+                      {perfData.endpoints.length === 0 && (
+                        <tr><td colSpan={7} className="p-6 text-center text-[#B5A68C]">Keine Daten in diesem Zeitraum.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="text-[11px] text-[#B5A68C] flex flex-wrap gap-4">
+                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#7C8B6F' }} /> &lt;800ms gut</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#8C7E6A' }} /> 800-2000ms ok</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#C9A85C' }} /> 2-5s langsam</span>
+                  <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#B85C5C' }} /> &gt;5s kritisch (User springen ab)</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
