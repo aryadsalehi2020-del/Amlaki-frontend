@@ -50,13 +50,22 @@ export default function CheckEmail() {
           <h1 style={{ margin: '0 0 16px 0', color: C.textDark, fontSize: 28, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>
             Bestätige deine E-Mail
           </h1>
-          <p style={{ margin: '0 0 14px 0', color: C.textMid, fontSize: 16, lineHeight: 1.6 }}>
+          <p style={{ margin: '0 0 22px 0', color: C.textMid, fontSize: 16, lineHeight: 1.6 }}>
             Wir haben dir eine Mail geschickt{email && (<> an <strong style={{ color: C.textDark }}>{email}</strong></>)}.
             Klicke den Bestätigungs-Link in der Mail und dein Account ist aktiv.
           </p>
-          <p style={{ margin: '0 0 28px 0', color: C.muted, fontSize: 14, lineHeight: 1.55 }}>
-            Tipp: Schau auch im Spam-Ordner nach. Die Mail kann 1-2 Minuten brauchen.
-          </p>
+
+          <div style={{
+            background: '#F5EFE2', border: `1px solid #E8DCC2`,
+            borderRadius: 10, padding: '16px 20px', marginBottom: 28,
+          }}>
+            <p style={{ margin: '0 0 4px 0', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#A38649', fontWeight: 700 }}>
+              Wichtig
+            </p>
+            <p style={{ margin: 0, color: C.textDark, fontSize: 14, lineHeight: 1.55, fontWeight: 500 }}>
+              Die Mail kann im <strong>Spam-Ordner</strong> landen — bitte dort auch nachschauen. Die Zustellung dauert in seltenen Fällen 1-2 Minuten.
+            </p>
+          </div>
 
           {email && (
             <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 22 }}>
