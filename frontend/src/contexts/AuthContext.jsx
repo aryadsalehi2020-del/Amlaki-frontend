@@ -104,9 +104,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const data = await response.json();
-
-    await login(email, password);
-
+    // Kein Auto-Login mehr: User muss erst Email bestätigen.
     return data;
   };
 

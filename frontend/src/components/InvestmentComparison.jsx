@@ -113,7 +113,6 @@ function InvestmentComparison({ vergleich }) {
         {/* Immobilie */}
         <div className="p-4 bg-green-50 rounded-xl border border-green-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl"></span>
             <span className="font-bold text-green-700">Immobilie</span>
           </div>
           <div className="space-y-2 text-sm">
@@ -121,14 +120,34 @@ function InvestmentComparison({ vergleich }) {
               <span className="text-slate/60">Endvermögen:</span>
               <span className="font-bold text-green-600">{formatCurrency(vergleich.immobilie.endvermoegen)}</span>
             </div>
+            {vergleich.immobilie.immobilien_equity != null && (
+              <div className="flex justify-between text-xs">
+                <span className="text-slate/50">davon Equity Wohnung:</span>
+                <span>{formatCurrency(vergleich.immobilie.immobilien_equity)}</span>
+              </div>
+            )}
+            {vergleich.immobilie.side_etf_netto != null && vergleich.immobilie.side_etf_netto > 0 && (
+              <div className="flex justify-between text-xs">
+                <span className="text-slate/50">davon Side-ETF:</span>
+                <span>{formatCurrency(vergleich.immobilie.side_etf_netto)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
-              <span className="text-slate/60">Eigenkapital:</span>
+              <span className="text-slate/60">Eingesetztes Kapital:</span>
               <span>{formatCurrency(vergleich.immobilie.eingesetztes_kapital)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate/60">Mtl. Zuzahlung:</span>
-              <span>{formatCurrency(vergleich.immobilie.monatliche_zuzahlung)}</span>
+              <span className="text-slate/60">Zuzahlung Jahr 1:</span>
+              <span>{formatCurrency(vergleich.immobilie.monatliche_zuzahlung_jahr_1 ?? vergleich.immobilie.monatliche_zuzahlung)}/Mo</span>
             </div>
+            {vergleich.immobilie.cashflow_jahr_letztes_monat != null && (
+              <div className="flex justify-between">
+                <span className="text-slate/60">Cashflow Jahr {vergleich.cashflow_pro_jahr?.length || 30}:</span>
+                <span className={vergleich.immobilie.cashflow_jahr_letztes_monat >= 0 ? 'text-green-600 font-medium' : 'text-amber-600'}>
+                  {vergleich.immobilie.cashflow_jahr_letztes_monat >= 0 ? '+' : ''}{formatCurrency(vergleich.immobilie.cashflow_jahr_letztes_monat)}/Mo
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-slate/60">Faktor:</span>
               <span className="font-bold">{vergleich.immobilie.rendite_faktor}x</span>
@@ -140,7 +159,6 @@ function InvestmentComparison({ vergleich }) {
         {hasEigenkapital && (
         <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl"></span>
             <span className="font-bold text-blue-700">ETF (nur EK)</span>
           </div>
           <div className="space-y-2 text-sm">
@@ -148,6 +166,12 @@ function InvestmentComparison({ vergleich }) {
               <span className="text-slate/60">Endvermögen:</span>
               <span className="font-bold text-blue-600">{formatCurrency(vergleich.etf_nur_eigenkapital.endvermoegen)}</span>
             </div>
+            {vergleich.etf_nur_eigenkapital.endvermoegen_brutto != null && (
+              <div className="flex justify-between text-xs">
+                <span className="text-slate/50">vor Steuer:</span>
+                <span>{formatCurrency(vergleich.etf_nur_eigenkapital.endvermoegen_brutto)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-slate/60">Investiert:</span>
               <span>{formatCurrency(vergleich.etf_nur_eigenkapital.eingesetztes_kapital)}</span>
@@ -163,7 +187,6 @@ function InvestmentComparison({ vergleich }) {
         {/* ETF mit Sparrate */}
         <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl"></span>
             <span className="font-bold text-purple-700">ETF + Sparrate</span>
           </div>
           <div className="space-y-2 text-sm">
@@ -171,9 +194,15 @@ function InvestmentComparison({ vergleich }) {
               <span className="text-slate/60">Endvermögen:</span>
               <span className="font-bold text-purple-600">{formatCurrency(vergleich.etf_mit_sparrate.endvermoegen)}</span>
             </div>
+            {vergleich.etf_mit_sparrate.endvermoegen_brutto != null && (
+              <div className="flex justify-between text-xs">
+                <span className="text-slate/50">vor Steuer:</span>
+                <span>{formatCurrency(vergleich.etf_mit_sparrate.endvermoegen_brutto)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
-              <span className="text-slate/60">Mtl. Sparrate:</span>
-              <span>{formatCurrency(vergleich.etf_mit_sparrate.monatliche_sparrate)}</span>
+              <span className="text-slate/60">Sparrate Jahr 1:</span>
+              <span>{formatCurrency(vergleich.etf_mit_sparrate.monatliche_sparrate_jahr_1 ?? vergleich.etf_mit_sparrate.monatliche_sparrate)}/Mo</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate/60">Gesamt investiert:</span>
@@ -183,8 +212,18 @@ function InvestmentComparison({ vergleich }) {
         </div>
       </div>
 
-      <p className="text-xs text-slate/50 mt-4 text-center">
-        ETF-Berechnung basiert auf 7% durchschnittlicher Jahresrendite. Die tatsächlichen Ergebnisse können erheblich abweichen.
+      {vergleich.annahmen && (
+        <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
+          <p className="font-semibold text-slate-700 mb-1">Annahmen für diesen Vergleich</p>
+          <p>Wertsteigerung Immobilie: {vergleich.annahmen.wertsteigerung_pa}% p.a. · Mietsteigerung: {vergleich.annahmen.mietsteigerung_pa}% p.a. · ETF brutto: {vergleich.annahmen.etf_rendite_pa}% p.a.</p>
+          <p>Steuer Immobilie: AfA {(vergleich.annahmen.afa_satz * 100).toFixed(0)}% + Zinsabzug bei {(vergleich.annahmen.grenzsteuersatz * 100).toFixed(0)}% Grenzsteuersatz. Verkauf nach 10+ Jahren steuerfrei.</p>
+          <p>Steuer ETF: KESt + Soli abzgl. 30% Teilfreistellung Aktienfonds = {(vergleich.annahmen.etf_steuer_auf_gewinn * 100).toFixed(2)}% effektiv auf Gewinn.</p>
+          <p>Beide Szenarien committen denselben Cash-Stream. Positive Cashflows der Immobilie fließen in einen Side-ETF (gleiche 7% Rendite).</p>
+        </div>
+      )}
+
+      <p className="text-xs text-slate/50 mt-3 text-center">
+        Modellrechnung mit historischen Durchschnittsannahmen. Tatsächliche Ergebnisse können erheblich abweichen.
       </p>
     </div>
   );

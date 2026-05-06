@@ -31,7 +31,10 @@ function Register() {
     const username = formData.email.split('@')[0].replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 30);
     if (username.length < 3) { setError('E-Mail-Adresse ist zu kurz'); return; }
     setLoading(true);
-    try { await register(formData.email, username, formData.password, ''); navigate(getRedirectPath()); }
+    try {
+      await register(formData.email, username, formData.password, '');
+      navigate('/check-email', { state: { email: formData.email } });
+    }
     catch (err) { setError(err.message || 'Fehler'); }
     finally { setLoading(false); }
   };

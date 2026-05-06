@@ -199,7 +199,6 @@ function Sidebar() {
       <div className="px-4 pb-8">
         <div className="px-3 mb-4">
           <p className="text-[13px] text-[#5C4F3D] font-medium truncate">{user?.username}</p>
-          <p className="text-[11px] text-[#8C7E6A] truncate">{user?.email}</p>
         </div>
         <button
           onClick={() => setShowLogoutDialog(true)}

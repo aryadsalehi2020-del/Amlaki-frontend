@@ -3,12 +3,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import { API_BASE } from '../config';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [needsVerify, setNeedsVerify] = useState(false);
+  const [resendState, setResendState] = useState('idle');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, googleLogin } = useAuth();
@@ -16,10 +19,37 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setNeedsVerify(false);
     setLoading(true);
-    try { await login(email, password); navigate('/chat'); }
-    catch (err) { setError(err.message || 'Login fehlgeschlagen'); }
-    finally { setLoading(false); }
+    try {
+      await login(email, password);
+      navigate('/chat');
+    } catch (err) {
+      const msg = err.message || 'Login fehlgeschlagen';
+      if (msg === 'EMAIL_NOT_VERIFIED') {
+        setNeedsVerify(true);
+        setError('');
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendVerify = async () => {
+    if (!email) return;
+    setResendState('sending');
+    try {
+      const res = await fetch(`${API_BASE}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setResendState(res.ok ? 'sent' : 'error');
+    } catch {
+      setResendState('error');
+    }
   };
 
   return (
@@ -41,6 +71,23 @@ function Login() {
 
           {error && (
             <div className="mb-6 px-4 py-3 bg-[#B85C5C]/[0.08] border border-[#B85C5C]/[0.2] rounded-[12px] text-[#B85C5C] text-[13px]">{error}</div>
+          )}
+
+          {needsVerify && (
+            <div className="mb-6 px-4 py-4 bg-[#7C8B6F]/[0.08] border border-[#7C8B6F]/[0.25] rounded-[12px]">
+              <p className="text-[13px] font-semibold text-[#2C2418] mb-1">E-Mail noch nicht best&auml;tigt</p>
+              <p className="text-[12px] text-[#5C4F3D] mb-3 leading-relaxed">
+                Wir haben dir bei der Registrierung eine Best&auml;tigungs-Mail geschickt. Klick den Link darin und du kannst dich einloggen.
+              </p>
+              <button type="button" onClick={resendVerify}
+                disabled={resendState === 'sending' || resendState === 'sent' || !email}
+                className="px-3 py-1.5 bg-[#7C8B6F] text-white text-[12px] font-medium rounded-[8px] disabled:opacity-50">
+                {resendState === 'sending' ? 'Wird gesendet ...'
+                  : resendState === 'sent' ? 'Mail erneut gesendet'
+                  : resendState === 'error' ? 'Fehler — nochmal'
+                  : 'Best&auml;tigungs-Mail erneut senden'}
+              </button>
+            </div>
           )}
 
           <GoogleLoginButton

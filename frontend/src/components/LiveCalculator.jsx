@@ -44,15 +44,15 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
     const monatlicheRate = jaehrlicheRate / 12;
 
     // Nebenkosten: exakter Wert wenn vorhanden, sonst 30% vom Hausgeld
-    const nichtUmlagefahig = hausgeldNichtUmlagefaehig || (hausgeld || 0) * 0.35;
+    const nichtUmlagefaehig = hausgeldNichtUmlagefaehig || (hausgeld || 0) * 0.35;
 
     // Cashflow
-    const monatlichCashflow = aktiveMiete - monatlicheRate - nichtUmlagefahig;
+    const monatlichCashflow = aktiveMiete - monatlicheRate - nichtUmlagefaehig;
     const jaehrlichCashflow = monatlichCashflow * 12;
 
     // Renditen
     const bruttorendite = (jahresmiete / kaufpreis) * 100;
-    const nettorendite = ((jahresmiete - (nichtUmlagefahig * 12)) / (kaufpreis + kaufnebenkosten)) * 100;
+    const nettorendite = ((jahresmiete - (nichtUmlagefaehig * 12)) / (kaufpreis + kaufnebenkosten)) * 100;
     const kaufpreisfaktor = kaufpreis / jahresmiete;
 
     // Eigenkapitalrendite
@@ -100,7 +100,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
       aktuelleMiete *= (1 + values.mietsteigerung / 100);
       aktuellerWert *= (1 + values.wertsteigerung / 100);
 
-      const cashflowJahr = (aktuelleMiete * 12) - jaehrlicheRate - (nichtUmlagefahig * 12);
+      const cashflowJahr = (aktuelleMiete * 12) - jaehrlicheRate - (nichtUmlagefaehig * 12);
       const eigenkapitalAufbau = values.eigenkapital + (finanzierungssumme - aktuelleRestschuld);
       const gesamtVermoegen = aktuellerWert - aktuelleRestschuld;
 
@@ -128,7 +128,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
       monatlicheRate,
       jaehrlicheRate,
       gesamtrate,
-      nichtUmlagefahig,
+      nichtUmlagefaehig,
 
       // Cashflow
       monatlichCashflow,
@@ -407,7 +407,7 @@ function LiveCalculator({ kaufpreis, monatlicheMiete, hausgeld, hausgeldNichtUml
             <div>
               <p className="text-[#8C7E6A] font-medium mb-1">Monatlicher Cashflow</p>
               <p className="text-xs text-[#B5A68C]">
-                Miete {formatCurrency(aktiveMiete)} - Rate {formatCurrency(calculations.monatlicheRate)} - NK {formatCurrency(calculations.nichtUmlagefahig)}
+                Miete {formatCurrency(aktiveMiete)} - Rate {formatCurrency(calculations.monatlicheRate)} - NK {formatCurrency(calculations.nichtUmlagefaehig)}
               </p>
             </div>
             <div className="text-right">

@@ -3707,6 +3707,562 @@ const blogArticles = [
       </>
     ),
   },
+
+  // ========== NEUE SEO-ARTIKEL ==========
+
+  {
+    slug: 'immobilienbewertung-ki-online-kostenlos',
+    title: 'Immobilienbewertung mit KI: So bewertest du jede Immobilie in 30 Sekunden',
+    metaTitle: 'Immobilienbewertung mit KI -- online, schnell & kostenlos | AmlakI',
+    metaDescription: 'Immobilie online bewerten mit kuenstlicher Intelligenz. Score, Cashflow, fairer Preis und Risiko-Check in 30 Sekunden. Erste Bewertung kostenlos.',
+    publishedAt: '2026-04-19',
+    author: 'AmlakI Redaktion',
+    category: 'Tools',
+    readingTime: '8 Min.',
+    excerpt: 'Klassische Gutachten kosten 1.500 EUR und dauern Wochen. KI-Bewertungen liefern in Sekunden ein Ergebnis. Was taugen sie wirklich?',
+    body: () => (
+      <>
+        <p>
+          Du hast eine Wohnung auf ImmoScout gefunden und willst wissen: Ist der Preis fair? Lohnt sich das als Kapitalanlage? Frueher musstest du dafuer einen Gutachter beauftragen -- Kosten: 1.500 bis 3.000 EUR, Wartezeit: mehrere Wochen. Heute geht das in 30 Sekunden.
+        </p>
+
+        <h2>Was ist eine KI-Immobilienbewertung?</h2>
+        <p>
+          Eine KI-Immobilienbewertung analysiert ein Objekt automatisch anhand von Marktdaten, Lage, Baujahr, Energieeffizienz und Vergleichstransaktionen. Das Ergebnis ist keine vage Schaetzung, sondern eine strukturierte Analyse mit konkreten Kennzahlen.
+        </p>
+        <p>
+          Anders als klassische Online-Rechner, die nur den Quadratmeterpreis vergleichen, prueft eine echte KI-Bewertung deutlich mehr Faktoren: Cashflow, Rendite, Foerderfaehigkeit, Risiken und Wertsteigerungspotenzial.
+        </p>
+
+        <h2>Wie funktioniert AmlakI?</h2>
+        <p>
+          AmlakI ist ein KI-Immobilienberater, der speziell fuer den deutschen Markt entwickelt wurde. So funktioniert die Bewertung:
+        </p>
+        <ol>
+          <li><strong>Daten eingeben:</strong> Kaufpreis, Wohnflaeche, Baujahr, Kaltmiete und Lage. Oder einfach den Expose-Link einfuegen.</li>
+          <li><strong>KI analysiert:</strong> Die KI prueft Marktpreise, berechnet Cashflow, Bruttorendite, <a href="/blog/kaufpreisfaktor-immobilien-guter-wert">Kaufpreisfaktor</a> und identifiziert Red Flags.</li>
+          <li><strong>Ergebnis:</strong> Du erhaeltst einen Score von 0 bis 100, eine Kauf-Empfehlung und einen vollstaendigen Bericht.</li>
+          <li><strong>Chat:</strong> Du kannst der KI Folgefragen stellen -- zu Foerderungen, Steuervorteilen, Risiken oder Verhandlungsstrategien.</li>
+        </ol>
+
+        <h2>Was bekommst du konkret?</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Analyse-Bereich</th>
+              <th>Was geprueft wird</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Preis-Check</td><td>Vergleich mit Marktdaten, fairer Preis, Verhandlungsspielraum</td></tr>
+            <tr><td>Cashflow</td><td>Monatlicher Cashflow nach Kredit, Hausgeld, Ruecklagen</td></tr>
+            <tr><td>Rendite</td><td>Bruttorendite, Nettorendite, Eigenkapitalrendite</td></tr>
+            <tr><td>Scoring</td><td>Gesamtscore 0-100 basierend auf Lage, Preis, Zustand, Energie</td></tr>
+            <tr><td>Risiken</td><td>Red Flags wie Erbpacht, schlechte Energieklasse, Sanierungsstau</td></tr>
+            <tr><td>Foerderungen</td><td>KfW-Programme, Landesfoerderungen, Heizungsfoerderung</td></tr>
+            <tr><td>Steuereffekt</td><td><a href="/blog/afa-immobilien-steuer-absetzen">AfA-Berechnung</a>, Werbungskosten, Netto-Cashflow nach Steuer</td></tr>
+          </tbody>
+        </table>
+
+        <h2>KI-Bewertung vs. Gutachter vs. Online-Rechner</h2>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Online-Rechner</th>
+              <th>KI-Bewertung (AmlakI)</th>
+              <th>Gutachter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Kosten</td><td>Kostenlos</td><td>Ab 0 EUR (erste gratis)</td><td>1.500-3.000 EUR</td></tr>
+            <tr><td>Dauer</td><td>Sofort</td><td>30 Sekunden</td><td>2-4 Wochen</td></tr>
+            <tr><td>Tiefe</td><td>Nur Quadratmeterpreis</td><td>Vollstaendige Analyse</td><td>Vollstaendige Analyse</td></tr>
+            <tr><td>Cashflow</td><td>Nein</td><td>Ja</td><td>Teilweise</td></tr>
+            <tr><td>Foerderungen</td><td>Nein</td><td>Ja</td><td>Nein</td></tr>
+            <tr><td>Chat/Fragen</td><td>Nein</td><td>Ja, unbegrenzt</td><td>Begrenzt</td></tr>
+            <tr><td>Rechtsverbindlich</td><td>Nein</td><td>Nein</td><td>Ja</td></tr>
+          </tbody>
+        </table>
+        <p>
+          <strong>Fazit:</strong> Fuer die Kaufentscheidung und erste Einschaetzung ist eine KI-Bewertung ideal. Fuer Bankfinanzierung, Erbschaft oder Scheidung brauchst du weiterhin ein offizielles Gutachten.
+        </p>
+
+        <h2>Fuer wen eignet sich eine KI-Bewertung?</h2>
+        <ul>
+          <li><strong>Kapitalanleger:</strong> Schnell filtern, ob sich ein Objekt lohnt, bevor du Zeit in Besichtigung investierst</li>
+          <li><strong>Erstkaeufer:</strong> Verstehen, ob der Preis fair ist und welche Kosten wirklich anfallen</li>
+          <li><strong>Erfahrene Investoren:</strong> Mehrere Objekte pro Woche screenen und die besten identifizieren</li>
+          <li><strong>Makler und Berater:</strong> Schnelle Analyse fuer Kunden erstellen</li>
+        </ul>
+
+        <h2>Haeufige Fragen</h2>
+        <h3>Ist die Bewertung wirklich kostenlos?</h3>
+        <p>
+          Ja. Die erste vollstaendige Analyse ist bei AmlakI kostenlos -- inklusive Score, Cashflow und Chat. Keine Kreditkarte erforderlich.
+        </p>
+
+        <h3>Wie genau ist die KI-Bewertung?</h3>
+        <p>
+          Die Bewertung basiert auf aktuellen Marktdaten, Bodenrichtwerten und Vergleichstransaktionen. Sie ersetzt kein Gutachten, liefert aber eine zuverlaessige Einschaetzung fuer Kaufentscheidungen.
+        </p>
+
+        <h3>Welche Daten brauche ich?</h3>
+        <p>
+          Mindestens: Kaufpreis, Wohnflaeche, Baujahr und Kaltmiete. Je mehr Daten (Hausgeld, Energieklasse, Lage), desto praeziser die Analyse.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Jetzt Immobilie bewerten</h3>
+          <p>Kaufpreis, Lage, Cashflow und Risiken -- in 30 Sekunden analysiert. Erste Bewertung kostenlos.</p>
+          <a href="/analyze">Kostenlos bewerten</a>
+        </div>
+      </>
+    ),
+  },
+
+  {
+    slug: 'renditerechner-immobilien-online',
+    title: 'Renditerechner Immobilien: Rendite berechnen in 30 Sekunden',
+    metaTitle: 'Renditerechner Immobilien -- Rendite online berechnen | AmlakI',
+    metaDescription: 'Berechne Bruttorendite, Nettorendite, Cashflow und Eigenkapitalrendite deiner Immobilie. Kostenloser Renditerechner mit KI-Analyse.',
+    publishedAt: '2026-04-19',
+    author: 'AmlakI Redaktion',
+    category: 'Berechnung',
+    readingTime: '9 Min.',
+    excerpt: 'Bruttorendite allein sagt wenig. Ein guter Renditerechner beruecksichtigt Nebenkosten, Finanzierung und Steuereffekte. So gehts.',
+    body: () => (
+      <>
+        <p>
+          Du hast ein Angebot gefunden und willst wissen: Wie viel Rendite bringt diese Immobilie wirklich? Die Bruttorendite aus dem Expose ist dabei nur die halbe Wahrheit. Ein professioneller Renditerechner beruecksichtigt Kaufnebenkosten, Finanzierung, nicht umlagefaehige Kosten und Steuereffekte.
+        </p>
+
+        <h2>Die 5 wichtigsten Renditekennzahlen</h2>
+
+        <h3>1. Bruttorendite</h3>
+        <p>
+          Die einfachste Kennzahl: Jahreskaltmiete geteilt durch Kaufpreis. Sie eignet sich nur fuer einen groben Erstvergleich.
+        </p>
+        <p><strong>Formel:</strong> Bruttorendite = (Jahreskaltmiete / Kaufpreis) x 100</p>
+        <p><strong>Benchmark:</strong> Ueber 5% gut, 3-5% mittel, unter 3% kritisch</p>
+
+        <h3>2. Nettomietrendite</h3>
+        <p>
+          Deutlich aussagekraeftiger: Hier werden nicht umlagefaehige Kosten und <a href="/blog/kaufnebenkosten-deutschland-2026">Kaufnebenkosten</a> beruecksichtigt.
+        </p>
+        <p><strong>Formel:</strong> Nettomietrendite = (Jahreskaltmiete - nicht umlagefaehige Kosten) / (Kaufpreis + Kaufnebenkosten) x 100</p>
+        <p><strong>Benchmark:</strong> Ueber 3,5% gut</p>
+
+        <h3>3. Cashflow</h3>
+        <p>
+          Was bleibt am Ende des Monats uebrig -- oder was musst du zubuttern? Der <a href="/blog/cashflow-immobilie-berechnen">Cashflow</a> ist die wichtigste Kennzahl fuer Kapitalanleger.
+        </p>
+        <p><strong>Formel:</strong> Cashflow = Kaltmiete - Kreditrate - nicht umlagefaehige NK - Ruecklagen</p>
+
+        <h3>4. Eigenkapitalrendite</h3>
+        <p>
+          Wie viel Rendite erwirtschaftet dein eingesetztes Eigenkapital? Hier kommt der <a href="/blog/eigenkapitalrendite-leverage-effekt-immobilien">Leverage-Effekt</a> ins Spiel.
+        </p>
+        <p><strong>Formel:</strong> EK-Rendite = (Jahresreinertrag - Zinsen) / Eigenkapital x 100</p>
+
+        <h3>5. Kaufpreisfaktor</h3>
+        <p>
+          Wie viele Jahreskaltmieten kostet die Immobilie? Je niedriger, desto besser. Details im <a href="/blog/kaufpreisfaktor-immobilien-guter-wert">Artikel zum Kaufpreisfaktor</a>.
+        </p>
+        <p><strong>Formel:</strong> Kaufpreisfaktor = Kaufpreis / Jahreskaltmiete</p>
+        <p><strong>Benchmark:</strong> Unter 20 gut, 20-25 okay, ueber 25 teuer</p>
+
+        <h2>Beispielrechnung: Wohnung in Dortmund</h2>
+        <table>
+          <thead>
+            <tr><th>Position</th><th>Wert</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Kaufpreis</td><td>150.000 EUR</td></tr>
+            <tr><td>Kaufnebenkosten (NRW, 6,5%)</td><td>9.750 EUR</td></tr>
+            <tr><td>Kaltmiete/Monat</td><td>650 EUR</td></tr>
+            <tr><td>Hausgeld/Monat</td><td>220 EUR</td></tr>
+            <tr><td>Davon nicht umlagefaehig</td><td>80 EUR</td></tr>
+            <tr><td>Kredit (3,5% Zins, 2% Tilgung)</td><td>688 EUR/Monat</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Ergebnisse</h3>
+        <ul>
+          <li><strong>Bruttorendite:</strong> 7.800 / 150.000 = 5,2% -- gut</li>
+          <li><strong>Nettomietrendite:</strong> (7.800 - 960) / 159.750 = 4,3% -- gut</li>
+          <li><strong>Kaufpreisfaktor:</strong> 150.000 / 7.800 = 19,2 -- gut</li>
+          <li><strong>Cashflow:</strong> 650 - 688 - 80 = -118 EUR/Monat -- leicht negativ</li>
+          <li><strong>Nach Steuereffekt (42% Grenzsteuersatz):</strong> ca. +10 EUR/Monat -- neutral</li>
+        </ul>
+
+        <h2>Warum einfache Online-Rechner nicht reichen</h2>
+        <p>
+          Die meisten Renditerechner im Internet berechnen nur die Bruttorendite. Das ist wie ein Gehaltszettel ohne Abzuege -- sieht gut aus, sagt aber wenig ueber die Realitaet.
+        </p>
+        <p>
+          Ein professioneller Rechner muss beruecksichtigen:
+        </p>
+        <ul>
+          <li>Kaufnebenkosten (variieren je nach Bundesland von 7 bis 15%)</li>
+          <li>Finanzierungsstruktur (Zins, Tilgung, Eigenkapitalanteil)</li>
+          <li>Nicht umlagefaehige Nebenkosten (Verwaltung, Instandhaltungsruecklage)</li>
+          <li>Steuereffekte (<a href="/blog/afa-immobilien-steuer-absetzen">AfA</a>, absetzbare Zinsen, Werbungskosten)</li>
+          <li>Leerstandsrisiko und Mietausfallwagnis</li>
+        </ul>
+
+        <h2>AmlakI als Renditerechner</h2>
+        <p>
+          AmlakI berechnet alle fuenf Kennzahlen automatisch -- plus Steuereffekt, Foerderungen und Risiko-Score. Du gibst die Objektdaten ein und erhaeltst in 30 Sekunden eine vollstaendige Analyse.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Rendite jetzt berechnen</h3>
+          <p>Bruttorendite, Cashflow, Eigenkapitalrendite und Steuereffekt -- alles in einer Analyse.</p>
+          <a href="/analyze">Kostenlos berechnen</a>
+        </div>
+      </>
+    ),
+  },
+
+  {
+    slug: 'wohnung-kaufen-oder-mieten-rechner',
+    title: 'Wohnung kaufen oder mieten? So rechnest du es aus',
+    metaTitle: 'Wohnung kaufen oder mieten 2026? Rechner & Vergleich | AmlakI',
+    metaDescription: 'Kaufen oder mieten 2026? Vergleiche die Kosten mit konkreten Zahlen. Wann sich kaufen lohnt und wann du besser mietest.',
+    publishedAt: '2026-04-19',
+    author: 'AmlakI Redaktion',
+    category: 'Grundlagen',
+    readingTime: '9 Min.',
+    excerpt: 'Die ewige Frage: Kaufen oder mieten? Die Antwort haengt von wenigen Faktoren ab. Hier ist die Rechnung.',
+    body: () => (
+      <>
+        <p>
+          Kaufen oder mieten -- diese Frage stellen sich Millionen Deutsche. Die ehrliche Antwort: Es kommt drauf an. Auf die Stadt, die Zinsen, dein Eigenkapital und wie lange du bleiben willst. Hier ist die Rechnung, die dir die Entscheidung abnimmt.
+        </p>
+
+        <h2>Die Faustregeln</h2>
+        <ul>
+          <li><strong>Kaufen lohnt sich,</strong> wenn der Kaufpreisfaktor unter 25 liegt und du mindestens 10 Jahre bleibst</li>
+          <li><strong>Mieten ist besser,</strong> wenn du flexibel bleiben willst oder die Kaufpreise extrem hoch sind (Kaufpreisfaktor ueber 30)</li>
+          <li><strong>Als Kapitalanlage</strong> lohnt sich kaufen fast immer, wenn der Cashflow stimmt</li>
+        </ul>
+
+        <h2>Vergleichsrechnung: Kaufen vs. Mieten in Hamburg</h2>
+
+        <h3>Szenario Mieten</h3>
+        <table>
+          <thead><tr><th>Position</th><th>Monatlich</th><th>10 Jahre</th></tr></thead>
+          <tbody>
+            <tr><td>Kaltmiete (70m², 14 EUR/m²)</td><td>980 EUR</td><td>117.600 EUR</td></tr>
+            <tr><td>Mietsteigerung (~3%/Jahr)</td><td>--</td><td>+18.500 EUR</td></tr>
+            <tr><td>Nebenkosten (3,50 EUR/m²)</td><td>245 EUR</td><td>29.400 EUR</td></tr>
+            <tr><td><strong>Gesamtkosten Miete</strong></td><td></td><td><strong>~165.500 EUR</strong></td></tr>
+          </tbody>
+        </table>
+
+        <h3>Szenario Kaufen</h3>
+        <table>
+          <thead><tr><th>Position</th><th>Monatlich</th><th>10 Jahre</th></tr></thead>
+          <tbody>
+            <tr><td>Kaufpreis (70m², 5.000 EUR/m²)</td><td>--</td><td>350.000 EUR</td></tr>
+            <tr><td>Kaufnebenkosten (~10%)</td><td>--</td><td>35.000 EUR</td></tr>
+            <tr><td>Kreditrate (3,5% Zins, 2% Tilgung)</td><td>1.604 EUR</td><td>192.500 EUR</td></tr>
+            <tr><td>Hausgeld</td><td>350 EUR</td><td>42.000 EUR</td></tr>
+            <tr><td>Instandhaltung</td><td>80 EUR</td><td>9.600 EUR</td></tr>
+            <tr><td>Restschuld nach 10 Jahren</td><td>--</td><td>~280.000 EUR</td></tr>
+            <tr><td>Geschaetzter Wert nach 10 Jahren (+2%/Jahr)</td><td>--</td><td>~427.000 EUR</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Ergebnis</h3>
+        <p>
+          <strong>Mieter:</strong> 165.500 EUR ausgegeben, kein Vermoegen aufgebaut.
+        </p>
+        <p>
+          <strong>Kaeufer:</strong> 244.100 EUR ausgegeben (Kreditraten + Hausgeld + Instandhaltung + NK), aber: Immobilie im Wert von 427.000 EUR, Restschuld 280.000 EUR = <strong>147.000 EUR Vermoegen aufgebaut</strong>.
+        </p>
+        <p>
+          Die Mehrkosten des Kaufens (ca. 78.600 EUR ueber 10 Jahre) stehen einem Vermoegenszuwachs von 147.000 EUR gegenueber. <strong>Kaufen gewinnt -- aber nur, wenn du mindestens 10 Jahre haeltst.</strong>
+        </p>
+
+        <h2>Wann kaufen keinen Sinn macht</h2>
+        <ul>
+          <li>Du willst in 2-3 Jahren umziehen (Kaufnebenkosten fressen die Rendite)</li>
+          <li>Kaufpreisfaktor ueber 30 (z.B. Muenchen Innenstadt)</li>
+          <li>Kein Eigenkapital fuer Nebenkosten vorhanden</li>
+          <li>Job unsicher oder Einkommen schwankend</li>
+        </ul>
+
+        <h2>Wann kaufen als Kapitalanlage immer Sinn macht</h2>
+        <p>
+          Wenn du nicht selbst einziehst, sondern vermietest, aendern sich die Regeln komplett:
+        </p>
+        <ul>
+          <li>Zinsen sind voll absetzbar (Steuereffekt)</li>
+          <li><a href="/blog/afa-immobilien-steuer-absetzen">AfA</a> reduziert deine Steuerlast weiter</li>
+          <li>Mieter zahlt deinen Kredit</li>
+          <li>Nach 10 Jahren steuerfrei verkaufen moeglich</li>
+        </ul>
+        <p>
+          Deshalb empfehlen viele Experten: Selbst mieten, aber als Kapitalanlage kaufen -- in einer Stadt mit besserer Rendite als deinem Wohnort.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Lohnt sich dein Objekt?</h3>
+          <p>AmlakI berechnet Cashflow, Rendite und Steuereffekt -- in 30 Sekunden.</p>
+          <a href="/analyze">Jetzt kostenlos analysieren</a>
+        </div>
+      </>
+    ),
+  },
+
+  {
+    slug: 'immobilie-bewerten-online-kostenlos',
+    title: 'Immobilie bewerten: Online, kostenlos und in Sekunden',
+    metaTitle: 'Immobilie bewerten online kostenlos -- Sofort-Bewertung | AmlakI',
+    metaDescription: 'Immobilie kostenlos online bewerten. Kaufpreis pruefen, Rendite berechnen, Risiken erkennen. KI-gestuetzte Sofort-Bewertung in 30 Sekunden.',
+    publishedAt: '2026-04-19',
+    author: 'AmlakI Redaktion',
+    category: 'Tools',
+    readingTime: '7 Min.',
+    excerpt: 'Du willst wissen ob der Kaufpreis fair ist? Eine Online-Bewertung gibt dir in Sekunden die Antwort -- und zeigt Risiken die im Expose nicht stehen.',
+    body: () => (
+      <>
+        <p>
+          Ob du eine Wohnung kaufen willst, ein geerbtes Haus verkaufen moechtest oder einfach wissen willst, was deine Immobilie heute wert ist -- eine Online-Bewertung ist der schnellste Weg zur Antwort.
+        </p>
+
+        <h2>Drei Wege, eine Immobilie zu bewerten</h2>
+
+        <h3>1. Vergleichswertverfahren</h3>
+        <p>
+          Das gaengigste Verfahren fuer Eigentumswohnungen und Einfamilienhaeuser. Basis: Was haben vergleichbare Objekte in der gleichen Lage gekostet? Problem: Angebotsdaten sind keine Verkaufsdaten -- tatsaechliche Kaufpreise liegen oft 5-15% darunter.
+        </p>
+
+        <h3>2. Ertragswertverfahren</h3>
+        <p>
+          Das richtige Verfahren fuer Kapitalanleger. Basis: Welchen nachhaltigen Ertrag wirft die Immobilie ab? Der Ertragswert beruecksichtigt Mieteinnahmen, Bewirtschaftungskosten und Liegenschaftszins. Mehr dazu in unserem Artikel zur <a href="/blog/mietrendite-berechnen-formel-beispiel">Mietrendite</a>.
+        </p>
+
+        <h3>3. Sachwertverfahren</h3>
+        <p>
+          Fuer Eigennutzer und Spezialimmobilien. Basis: Was wuerde es kosten, das Gebaeude heute neu zu bauen -- abzueglich Alterswertminderung?
+        </p>
+
+        <h2>Was eine gute Online-Bewertung liefern muss</h2>
+        <ul>
+          <li><strong>Fairer Preis:</strong> Liegt der Kaufpreis ueber oder unter dem Marktwert?</li>
+          <li><strong>Renditekennzahlen:</strong> <a href="/blog/bruttorendite-berechnen-immobilien">Bruttorendite</a>, Nettorendite, Cashflow</li>
+          <li><strong>Risiko-Check:</strong> Energieklasse, Baujahr, Sanierungsbedarf, Erbpacht</li>
+          <li><strong>Vergleichsdaten:</strong> Quadratmeterpreise in der Umgebung</li>
+          <li><strong>Foerderungen:</strong> Welche <a href="/blog/kfw-foerderung-kapitalanleger-vermieter">KfW-Programme</a> kommen in Frage?</li>
+        </ul>
+
+        <h2>AmlakI: Mehr als nur eine Bewertung</h2>
+        <p>
+          Die meisten Online-Bewertungen geben dir eine Zahl -- und das wars. AmlakI gibt dir eine vollstaendige Analyse: Score, Cashflow, Steuereffekt, Foerderungen und einen KI-Chat fuer alle Fragen rund um das Objekt.
+        </p>
+        <p>
+          Die erste Analyse ist kostenlos. Keine Registrierung, keine Kreditkarte.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Immobilie jetzt bewerten</h3>
+          <p>Score, Cashflow, Risiken und fairer Preis -- kostenlos in 30 Sekunden.</p>
+          <a href="/analyze">Kostenlos bewerten</a>
+        </div>
+      </>
+    ),
+  },
+
+  {
+    slug: 'immobilien-steuern-sparen-tipps',
+    title: '7 Wege, mit Immobilien Steuern zu sparen',
+    metaTitle: 'Immobilien Steuern sparen: 7 legale Tipps fuer Vermieter | AmlakI',
+    metaDescription: 'Als Vermieter tausende Euro Steuern sparen. AfA, Zinsen, Foerderungen und mehr. 7 konkrete Strategien mit Rechenbeispielen.',
+    publishedAt: '2026-04-19',
+    author: 'AmlakI Redaktion',
+    category: 'Steuern',
+    readingTime: '10 Min.',
+    excerpt: 'Die meisten Vermieter verschenken tausende Euro ans Finanzamt. Diese 7 Strategien aendern das.',
+    body: () => (
+      <>
+        <p>
+          Immobilien sind eines der wenigen Investments, bei denen das Finanzamt mitzahlt. Wer die Regeln kennt, kann seine Steuerlast als Vermieter massiv senken. Hier sind die 7 wichtigsten Strategien -- mit konkreten Zahlen.
+        </p>
+
+        <h2>1. AfA richtig nutzen</h2>
+        <p>
+          Die Abschreibung fuer Abnutzung (<a href="/blog/afa-immobilien-steuer-absetzen">AfA</a>) ist der groesste Steuerhebel. Du schreibst den Gebaeudewert (ohne Grundstueck!) ueber die Nutzungsdauer ab:
+        </p>
+        <ul>
+          <li>Baujahr ab 2023: 3% linear (33 Jahre)</li>
+          <li>Baujahr 1925-2022: 2% linear (50 Jahre)</li>
+          <li>Vor 1925: 2,5% linear (40 Jahre)</li>
+        </ul>
+        <p>
+          <strong>Beispiel:</strong> 300.000 EUR Gebaeudewert, Baujahr 2000: 6.000 EUR/Jahr AfA. Bei 42% Grenzsteuersatz = 2.520 EUR Steuerersparnis pro Jahr.
+        </p>
+
+        <h2>2. Verkuerzte Restnutzungsdauer -- der Profi-Trick</h2>
+        <p>
+          Statt pauschal 50 Jahre kannst du ein Gutachten erstellen lassen, das eine kuerzere Restnutzungsdauer bescheinigt -- oft nur 15-25 Jahre. Effekt: Die AfA steigt auf 4-6,7%.
+        </p>
+        <p>
+          <strong>Kosten:</strong> 900-1.500 EUR fuer das Gutachten (selbst absetzbar). <strong>Anerkennungsquote:</strong> Ueber 97%.
+        </p>
+        <p>
+          <strong>Beispiel:</strong> Statt 6.000 EUR/Jahr AfA ploetzlich 12.000-20.000 EUR/Jahr -- bei gleichem Gebaeudewert.
+        </p>
+
+        <h2>3. Degressive AfA fuer Neubauten</h2>
+        <p>
+          Seit 2024 gibt es die <a href="/blog/degressive-afa-immobilien-2024-2029">degressive AfA</a>: 5% vom Restwert fuer Neubauten (Oktober 2023 bis September 2029). In den ersten Jahren deutlich mehr Abschreibung als linear.
+        </p>
+
+        <h2>4. Schuldzinsen voll absetzen</h2>
+        <p>
+          Alle Zinsen fuer den Immobilienkredit sind als Werbungskosten absetzbar -- bei Vermietung zu 100%.
+        </p>
+        <p>
+          <strong>Beispiel:</strong> 300.000 EUR Kredit, 3,5% Zins = 10.500 EUR absetzbare Zinsen pro Jahr. Bei 42% Steuersatz = 4.410 EUR Steuerersparnis.
+        </p>
+
+        <h2>5. Alle Werbungskosten sammeln</h2>
+        <p>
+          Neben Zinsen und AfA kannst du noch viel mehr absetzen:
+        </p>
+        <ul>
+          <li>Hausverwaltung</li>
+          <li>Fahrtkosten zur Immobilie (0,30 EUR/km)</li>
+          <li>Reparaturen und Instandhaltung</li>
+          <li>Maklerkosten bei Neuvermietung</li>
+          <li>Steuerberater (Anlage V-Anteil)</li>
+          <li>Kontogebuehren, Porto, Telefon (anteilig)</li>
+          <li>Mietausfaelle als Werbungskosten</li>
+        </ul>
+
+        <h2>6. KfW-Foerderungen mitnehmen</h2>
+        <p>
+          Bei energetischer Sanierung: Bis zu 67.500 EUR Tilgungszuschuss ueber <a href="/blog/kfw-foerderung-kapitalanleger-vermieter">KfW 261</a>. Bei neuer Heizung: Bis zu 70% Foerderung (KfW 458). Das ist geschenktes Geld.
+        </p>
+
+        <h2>7. Nach 10 Jahren steuerfrei verkaufen</h2>
+        <p>
+          Haeltst du die Immobilie laenger als 10 Jahre (ab notariellem Kaufvertrag), ist der Verkaufsgewinn komplett steuerfrei. Die AfA, die du in der Zeit geltend gemacht hast, musst du nicht zurueckzahlen.
+        </p>
+        <p>
+          <strong>Achtung:</strong> Verkaufst du mehr als 3 Objekte in 5 Jahren, droht gewerblicher Grundstueckshandel -- mit Gewerbesteuer auf ALLE Verkaeufe.
+        </p>
+
+        <h2>Was bringt das in Summe?</h2>
+        <p>
+          Ein konkretes Beispiel: 300.000 EUR Wohnung, 100% finanziert, 42% Steuersatz:
+        </p>
+        <table>
+          <thead><tr><th>Steuer-Hebel</th><th>Ersparnis/Jahr</th></tr></thead>
+          <tbody>
+            <tr><td>AfA (verkuerzt auf 20 Jahre)</td><td>~6.300 EUR</td></tr>
+            <tr><td>Schuldzinsen</td><td>~4.410 EUR</td></tr>
+            <tr><td>Sonstige Werbungskosten</td><td>~500 EUR</td></tr>
+            <tr><td><strong>Gesamt</strong></td><td><strong>~11.210 EUR/Jahr</strong></td></tr>
+          </tbody>
+        </table>
+        <p>
+          Ueber 10 Jahre: Rund 100.000 EUR weniger Steuern. Plus steuerfreier Verkaufsgewinn.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Steuereffekt berechnen</h3>
+          <p>AmlakI berechnet den Steuereffekt fuer dein konkretes Objekt -- AfA, Zinsen, Werbungskosten, alles.</p>
+          <a href="/analyze">Jetzt Steuereffekt berechnen</a>
+        </div>
+      </>
+    ),
+  },
+
+  {
+    slug: 'immobilien-scoring-was-ist-ein-guter-score',
+    title: 'Immobilien-Scoring: Was ist ein guter Score?',
+    metaTitle: 'Immobilien-Scoring erklaert: Score 0-100 verstehen | AmlakI',
+    metaDescription: 'Was bedeutet der Immobilien-Score? Wie wird er berechnet? Ab welchem Score solltest du kaufen? Alles zur KI-basierten Immobilienbewertung.',
+    publishedAt: '2026-04-19',
+    author: 'AmlakI Redaktion',
+    category: 'Tools',
+    readingTime: '7 Min.',
+    excerpt: 'Ein Score von 72 -- ist das gut? So interpretierst du das Immobilien-Scoring richtig und vermeidest teure Fehlkaeufe.',
+    body: () => (
+      <>
+        <p>
+          Stell dir vor, du koenntest jede Immobilie mit einer einzigen Zahl bewerten -- von 0 (Finger weg) bis 100 (sofort kaufen). Genau das macht ein Immobilien-Scoring. Aber was steckt dahinter und wie zuverlaessig ist es?
+        </p>
+
+        <h2>Was ist ein Immobilien-Score?</h2>
+        <p>
+          Ein Immobilien-Score fasst alle relevanten Faktoren einer Immobilie in einer Zahl zusammen: Preis, Lage, Zustand, Energieeffizienz, Cashflow und Risiken. Er hilft dir, Objekte schnell zu vergleichen und Fehlkaeufe zu vermeiden.
+        </p>
+
+        <h2>Wie berechnet AmlakI den Score?</h2>
+        <table>
+          <thead><tr><th>Faktor</th><th>Gewichtung</th><th>Was geprueft wird</th></tr></thead>
+          <tbody>
+            <tr><td>Cashflow</td><td>30%</td><td>Monatlicher Ueberschuss nach allen Kosten</td></tr>
+            <tr><td>Rendite</td><td>20%</td><td>Bruttorendite, Kaufpreisfaktor</td></tr>
+            <tr><td>Lage</td><td>20%</td><td>Infrastruktur, Nachfrage, Preistrend</td></tr>
+            <tr><td>Zustand</td><td>15%</td><td>Baujahr, Sanierungsstatus, Ausstattung</td></tr>
+            <tr><td>Energieeffizienz</td><td>15%</td><td>Energieklasse, Heizungstyp, Sanierungspflichten</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Abzuege fuer Red Flags</h3>
+        <ul>
+          <li>Erbpacht: -30 Punkte</li>
+          <li>Baujahr vor 1970, nicht kernsaniert: -20 Punkte</li>
+          <li>Energieklasse G oder H: -15 Punkte</li>
+          <li>Sozialbindung: -15 Punkte</li>
+          <li>Kaufpreisfaktor ueber 30: -10 Punkte</li>
+        </ul>
+
+        <h2>Score-Interpretation</h2>
+        <table>
+          <thead><tr><th>Score</th><th>Bewertung</th><th>Empfehlung</th></tr></thead>
+          <tbody>
+            <tr><td>80-100</td><td>Sehr empfehlenswert</td><td>Zuschlagen, wenn Due Diligence passt</td></tr>
+            <tr><td>60-79</td><td>Empfehlenswert</td><td>Gutes Investment, Details pruefen</td></tr>
+            <tr><td>40-59</td><td>Neutral</td><td>Verhandeln oder weiterschauen</td></tr>
+            <tr><td>20-39</td><td>Vorsicht</td><td>Nur mit Erfahrung und Preisabschlag</td></tr>
+            <tr><td>0-19</td><td>Nicht empfohlen</td><td>Zu viele Red Flags</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Beispiel: Score 72</h2>
+        <p>
+          Eine 3-Zimmer-Wohnung in Frankfurt-Bockenheim, 320.000 EUR, 60m², Baujahr 1985, Energieklasse D, 1.200 EUR Kaltmiete.
+        </p>
+        <ul>
+          <li>Cashflow: leicht positiv nach Steuer = 22 Punkte</li>
+          <li>Bruttorendite 4,5% = 18 Punkte</li>
+          <li>Lage B+ (Uni-Naehe) = 16 Punkte</li>
+          <li>Zustand gepflegt = 9 Punkte</li>
+          <li>Energieklasse D = 8 Punkte</li>
+          <li>Keine Red Flags = 0 Abzuege</li>
+          <li><strong>Gesamt: 73 -- Empfehlenswert</strong></li>
+        </ul>
+
+        <h2>Score allein reicht nicht</h2>
+        <p>
+          Der Score gibt dir eine schnelle Orientierung, ersetzt aber nicht die <a href="/blog/wohnung-kaufen-checkliste-2026">vollstaendige Due Diligence</a>. Pruefe immer zusaetzlich: <a href="/blog/weg-protokolle-lesen-worauf-achten">WEG-Protokolle</a>, Grundbuch, Energieausweis und den Zustand vor Ort.
+        </p>
+
+        <div className="blog-cta">
+          <h3>Score deiner Immobilie berechnen</h3>
+          <p>Kaufpreis eingeben, Score erhalten, fundiert entscheiden.</p>
+          <a href="/analyze">Jetzt Score berechnen</a>
+        </div>
+      </>
+    ),
+  },
 ];
 
 export default blogArticles;

@@ -338,7 +338,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => navigate('/analyze')}
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = C.olive)}
@@ -347,19 +347,19 @@ export default function LandingPage() {
                 <ArrowRight size={18} />
               </button>
               <button
-                onClick={() => scrollTo('pricing')}
+                onClick={() => scrollTo('showcase')}
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{
                   background: 'transparent',
                   color: C.khaki,
-                  border: `1.5px solid ${C.khaki}`,
+                  border: `1.5px solid ${C.border}`,
                   cursor: 'pointer',
                   minHeight: '48px',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.khaki)}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}
               >
-                Preise ansehen
+                So funktioniert's
               </button>
             </div>
             <p className="text-xs mt-3" style={{ color: C.khaki }}>
@@ -386,7 +386,7 @@ export default function LandingPage() {
       </header>
 
       {/* ===== APP SHOWCASE ===== */}
-      <section className="py-20 md:py-28 px-4 sm:px-5 overflow-hidden" style={{ background: C.bgAlt }}>
+      <section id="showcase" className="py-20 md:py-28 px-4 sm:px-5 overflow-hidden" style={{ background: C.bgAlt }}>
         <div className="max-w-5xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-10 md:mb-14">
