@@ -249,7 +249,7 @@ export default function LandingPage() {
               Anmelden
             </button>
             <button
-              onClick={() => navigate('/analyze')}
+              onClick={() => navigate('/register?redirect=analyze')}
               className="text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200"
               style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer' }}
               onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
@@ -337,7 +337,7 @@ export default function LandingPage() {
           <FadeInSection delay={0.3}>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={() => navigate('/analyze')}
+                onClick={() => navigate('/register?redirect=analyze')}
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
@@ -511,7 +511,7 @@ export default function LandingPage() {
           <FadeInSection delay={0.2}>
             <div className="text-center mt-10 md:mt-14">
               <button
-                onClick={() => navigate('/analyze')}
+                onClick={() => navigate('/register?redirect=analyze')}
                 className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-full text-base font-semibold transition-all duration-200"
                 style={{ background: C.olive, color: '#FFFFFF', border: 'none', cursor: 'pointer', minHeight: '48px' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = C.oliveHover)}
@@ -681,7 +681,7 @@ export default function LandingPage() {
                     ))}
                   </ul>
                   <button
-                    onClick={() => navigate('/analyze')}
+                    onClick={() => navigate('/register?redirect=analyze')}
                     className="w-full py-3 rounded-full font-semibold text-sm transition-all duration-200"
                     style={{
                       background: plan.popular ? C.olive : 'transparent',
