@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { API_BASE } from '../config';
 import { useAuth } from '../contexts/AuthContext';
 
-function FileUpload({ onFileUpload, onManualEntry, onUrlImport, onGuestUrlImport }) {
+function FileUpload({ onFileUpload, onManualEntry, onUrlImport, onGuestUrlImport, credits, onNeedsCredits }) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [url, setUrl] = useState('');
@@ -34,6 +34,12 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport, onGuestUrlImport
       return;
     }
 
+    // Kein Credit -> Paywall vor KI-Call (extract-url kostet pro Aufruf)
+    if (credits === 0 && onNeedsCredits) {
+      onNeedsCredits();
+      return;
+    }
+
     setUrlLoading(true);
     try {
       const res = await fetch(`${API_BASE}/extract-url`, {
@@ -54,7 +60,7 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport, onGuestUrlImport
     } finally {
       setUrlLoading(false);
     }
-  }, [url, token, onGuestUrlImport]);
+  }, [url, token, onGuestUrlImport, credits, onNeedsCredits, onUrlImport]);
 
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B';

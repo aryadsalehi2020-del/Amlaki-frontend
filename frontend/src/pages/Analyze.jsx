@@ -269,6 +269,12 @@ function Analyze() {
       return;
     }
 
+    // Kein Credit -> Paywall statt KI-Aufruf (extract-pdf kostet pro Call)
+    if (credits === 0) {
+      setShowPaywall(true);
+      return;
+    }
+
     setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
     const fd = new FormData(); fd.append('file', file);
     try {
@@ -276,7 +282,7 @@ function Analyze() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
       setPropertyData(await res.json()); setStep('form');
     } catch (err) { setError(err.message); setStep('upload'); }
-  }, [token, navigate]);
+  }, [token, navigate, credits]);
 
   const handleGuestUrlImport = useCallback((url) => {
     localStorage.setItem('pendingUrl', url);
@@ -290,6 +296,12 @@ function Analyze() {
     if (!token) {
       localStorage.setItem('pendingAnalysis', JSON.stringify({ formData, verwendungszweck, finanzierung, investmentProfile, besichtigt, besichtigungsNotizen }));
       navigate('/register?redirect=analyze');
+      return;
+    }
+
+    // Kein Credit -> Paywall vor LLM-Aufruf
+    if (credits === 0) {
+      setShowPaywall(true);
       return;
     }
 
@@ -323,7 +335,7 @@ function Analyze() {
       setCredits(prev => prev !== null && prev > 0 ? prev - 1 : prev);
       setStep('result');
     } catch (err) { setError(err.message); setStep('form'); }
-  }, [token]);
+  }, [token, credits]);
 
   // Auto-submit pending analysis after registration
   useEffect(() => {
@@ -397,7 +409,7 @@ function Analyze() {
         )}
 
         <main>
-          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} onGuestUrlImport={handleGuestUrlImport} />}
+          {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} onGuestUrlImport={handleGuestUrlImport} credits={credits} onNeedsCredits={() => setShowPaywall(true)} />}
           {step === 'form' && <PropertyForm initialData={propertyData} onAnalyze={handleAnalyze} onBack={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setError(null); }} />}
           {step === 'analyzing' && <LoadingState message={loadingMessage} />}
           {step === 'result' && analysisResult && (
