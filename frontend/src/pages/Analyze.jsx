@@ -207,7 +207,7 @@ function Analyze() {
     loadPendingFile().then((data) => {
       if (!data) return;
       setStep('analyzing');
-      setLoadingMessage('Expose wird analysiert...');
+      setLoadingMessage('Daten werden aus Exposé extrahiert...');
       const fd = new FormData();
       fd.append('file', data.file, data.name);
       apiFetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd, headers: { 'Authorization': `Bearer ${token}` } })
@@ -277,7 +277,7 @@ function Analyze() {
       return;
     }
 
-    setError(null); setStep('analyzing'); setLoadingMessage('Expose wird analysiert...');
+    setError(null); setStep('analyzing'); setLoadingMessage('Daten werden aus Exposé extrahiert...');
     const fd = new FormData(); fd.append('file', file);
     try {
       const res = await apiFetch(`${API_BASE}/extract-pdf`, { method: 'POST', body: fd, headers: { 'Authorization': `Bearer ${token}` } });
