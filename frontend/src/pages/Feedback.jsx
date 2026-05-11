@@ -253,37 +253,39 @@ export default function Feedback() {
 
   // STATE: Success (after submit OR if user already submitted)
   if (success || check.alreadySubmitted) {
-    const code = success?.coupon_code || 'ERSTE20';
+    const code = success?.coupon_code || 'FEEDBACK3';
     const isRepeat = !success && check.alreadySubmitted;
     return (
       <div style={wrapStyle}>
         <div style={innerStyle}>
           {brandHeader}
           <div style={cardStyle}>
-            <p style={eyebrowStyle}>{isRepeat ? 'Du hast bereits Feedback gegeben' : 'Danke fuer dein Feedback'}</p>
-            <h1 style={{ margin: '0 0 12px 0', color: COLORS.textDark, fontSize: 28, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>
-              {isRepeat ? 'Hier ist dein Code nochmal.' : 'Hier ist dein Rabattcode.'}
+            <p style={eyebrowStyle}>{isRepeat ? 'Bereits eingelöst' : 'Dein Feedback-Deal'}</p>
+            <h1 style={{ margin: '0 0 10px 0', color: COLORS.textDark, fontSize: 28, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>
+              Nächste Analyse <span style={{ color: COLORS.accent }}>3&nbsp;€</span> statt <span style={{ textDecoration: 'line-through', color: COLORS.textMuted, fontWeight: 500 }}>9&nbsp;€</span>
             </h1>
-            <p style={{ margin: '0 0 26px 0', color: COLORS.textMid, fontSize: 16, lineHeight: 1.55 }}>
-              {success?.message || 'Wende den Code beim naechsten Kauf an und bekomme 20% Rabatt auf dein erstes Paket.'}
+            <p style={{ margin: '0 0 22px 0', color: COLORS.textMid, fontSize: 15, lineHeight: 1.55 }}>
+              {isRepeat
+                ? 'Du hast den Deal bereits aktiviert. Code gilt einmalig pro Account auf die Einzelanalyse.'
+                : 'Danke für dein Feedback. Voller Premium-Umfang für dein nächstes Objekt (Fairer Preis, Szenarien, KfW-Förderungen, Verhandlungsmail).'}
             </p>
 
             <div style={{
               background: COLORS.giftBg,
               border: `1px solid ${COLORS.giftBorder}`,
               borderRadius: 14,
-              padding: '24px 24px',
-              margin: '0 0 28px 0',
+              padding: '20px 24px',
+              margin: '0 0 22px 0',
               textAlign: 'center',
             }}>
-              <p style={{ margin: '0 0 8px 0', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: COLORS.accent, fontWeight: 700 }}>
-                20% Rabatt auf dein erstes Paket
+              <p style={{ margin: '0 0 6px 0', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: COLORS.accent, fontWeight: 700 }}>
+                Rabattcode
               </p>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 12,
-                margin: '4px 0 16px 0',
+                margin: '4px 0 14px 0',
                 fontFamily: "'JetBrains Mono','Menlo','Monaco',monospace",
                 fontSize: 28,
                 fontWeight: 700,
@@ -297,14 +299,14 @@ export default function Feedback() {
                   type="button"
                   onClick={copyCode}
                   style={{
-                    padding: '10px 22px',
+                    padding: '9px 20px',
                     background: COLORS.accent,
                     color: '#FFF',
                     border: 'none',
                     borderRadius: 8,
                     cursor: 'pointer',
                     fontFamily: 'inherit',
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: 600,
                   }}
                 >
@@ -315,7 +317,7 @@ export default function Feedback() {
 
             <button
               type="button"
-              onClick={() => navigate('/pricing')}
+              onClick={() => navigate(`/pricing?coupon=${code}&package=single`)}
               style={{
                 width: '100%',
                 padding: '14px 24px',
@@ -330,10 +332,10 @@ export default function Feedback() {
                 letterSpacing: '0.01em',
               }}
             >
-              Zum Pricing &nbsp;&rarr;
+              Einzelanalyse für 3&nbsp;€ kaufen &nbsp;&rarr;
             </button>
-            <p style={{ margin: '14px 0 0 0', color: COLORS.textMuted, fontSize: 12, lineHeight: 1.5, textAlign: 'center' }}>
-              Der Code wird im Checkout automatisch eingegeben wenn du den Link nutzt -- oder gib ihn manuell ein.
+            <p style={{ margin: '12px 0 0 0', color: COLORS.textMuted, fontSize: 12, lineHeight: 1.5, textAlign: 'center' }}>
+              Code gilt einmalig, nur auf die Einzelanalyse (1 Credit).
             </p>
           </div>
         </div>
@@ -353,7 +355,7 @@ export default function Feedback() {
             {check.userName ? `Moin ${check.userName}, ` : 'Moin, '}wie war Amlaki bisher?
           </h1>
           <p style={{ margin: '0 0 32px 0', color: COLORS.textMid, fontSize: 16, lineHeight: 1.55 }}>
-            Dein ehrliches Feedback{stadtHook} geht direkt an mich. 3 kurze Fragen, danach bekommst du 20% Rabatt auf dein erstes Paket.
+            Dein ehrliches Feedback{stadtHook} geht direkt an mich. 3 kurze Fragen, danach schalte ich dir deine nächste Analyse für <strong style={{ color: COLORS.textDark }}>3&nbsp;€ statt 9&nbsp;€</strong> frei.
           </p>
 
           {/* NPS */}
@@ -436,7 +438,7 @@ export default function Feedback() {
               transition: 'background 0.12s ease',
             }}
           >
-            {submitting ? 'Wird abgesendet...' : 'Feedback absenden & Rabattcode erhalten'}
+            {submitting ? 'Wird abgesendet...' : 'Feedback absenden & 3 €-Deal aktivieren'}
           </button>
           {nps === null && (
             <p style={{ margin: '12px 0 0 0', color: COLORS.textMuted, fontSize: 12, textAlign: 'center' }}>

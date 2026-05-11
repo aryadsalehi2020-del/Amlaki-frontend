@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
 import { CheckCircle2, Zap, TrendingUp, Crown } from 'lucide-react';
@@ -6,12 +7,14 @@ import { track } from '../utils/track';
 
 function Pricing() {
   const { token, user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const couponFromUrl = (searchParams.get('coupon') || '').trim().toUpperCase();
   const [credits, setCredits] = useState(null);
   const [loading, setLoading] = useState(null);
   const [purchaseError, setPurchaseError] = useState('');
 
   useEffect(() => {
-    track('pricing_view', { authed: !!token });
+    track('pricing_view', { authed: !!token, coupon: couponFromUrl || null });
     const fetchCredits = async () => {
       try {
         const res = await fetch(`${API_BASE}/payments/credits`, {
@@ -24,16 +27,18 @@ function Pricing() {
       } catch (err) { /* ignore */ }
     };
     fetchCredits();
-  }, [token]);
+  }, [token, couponFromUrl]);
 
   const handlePurchase = async (packageId) => {
-    track('package_click', { package: packageId });
+    track('package_click', { package: packageId, coupon: couponFromUrl || null });
     setLoading(packageId);
     try {
+      const body = { package: packageId };
+      if (couponFromUrl) body.coupon = couponFromUrl;
       const res = await fetch(`${API_BASE}/payments/create-checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ package: packageId }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const d = await res.json();
