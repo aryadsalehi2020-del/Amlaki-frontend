@@ -7,6 +7,7 @@ import AnalysisResult from '../components/AnalysisResult';
 import LoadingState from '../components/LoadingState';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE, apiFetch } from '../config';
+import { streamAnalyze } from '../utils/streamAnalyze';
 
 // IndexedDB helpers for storing large files (PDF) across page navigations
 const DB_NAME = 'amlaki_pending';
@@ -305,7 +306,7 @@ function Analyze() {
       return;
     }
 
-    setError(null); setStep('analyzing'); setLoadingMessage('Immobilie wird bewertet...');
+    setError(null); setStep('analyzing'); setLoadingMessage('Marktdaten werden recherchiert...');
     setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
       const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung, besichtigt: besichtigt, besichtigungs_notizen: besichtigungsNotizen || null };
@@ -318,23 +319,37 @@ function Analyze() {
           mindest_rendite: investmentProfile.mindestRendite,
         };
       }
-      const res = await apiFetch(`${API_BASE}/analyze`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(requestBody),
+
+      // Streaming analyse: accumulate phases into a result object.
+      // We only switch to step='result' once ki_bewertung arrives (gesamtscore + kriterien
+      // are required by the AnalysisResult component). marktdaten + berechnungen update
+      // the loading message so the user sees progress.
+      let partial = { verwendungszweck };
+      await streamAnalyze(requestBody, token, (eventName, data) => {
+        if (eventName === 'marktdaten') {
+          partial = { ...partial, ...data };
+          setLoadingMessage('Berechnungen laufen...');
+        } else if (eventName === 'berechnungen') {
+          partial = { ...partial, ...data };
+          setLoadingMessage('KI bewertet die Immobilie...');
+        } else if (eventName === 'ki_bewertung') {
+          partial = { ...partial, ...data };
+          setAnalysisResult(partial);
+          setStep('result');
+        } else if (eventName === 'extras') {
+          partial = { ...partial, ...data };
+          setAnalysisResult({ ...partial });
+        } else if (eventName === 'complete') {
+          partial = { ...partial, analysis_id: data.analysis_id, is_premium: data.is_premium };
+          setAnalysisResult({ ...partial });
+          if (data.analysis_id) setSavedAnalysisId(data.analysis_id);
+          setCredits(prev => prev !== null && prev > 0 ? prev - 1 : prev);
+        }
       });
-      if (res.status === 402) {
-        setShowPaywall(true);
-        setStep('form');
-        return;
-      }
-      if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Fehler'); }
-      const resultData = await res.json();
-      setAnalysisResult(resultData);
-      if (resultData.analysis_id) setSavedAnalysisId(resultData.analysis_id);
-      // Update credits after analysis
-      setCredits(prev => prev !== null && prev > 0 ? prev - 1 : prev);
-      setStep('result');
-    } catch (err) { setError(err.message); setStep('form'); }
+    } catch (err) {
+      if (err.status === 402) { setShowPaywall(true); setStep('form'); return; }
+      setError(err.message || 'Fehler bei der Analyse'); setStep('form');
+    }
   }, [token, credits]);
 
   // Auto-submit pending analysis after registration
