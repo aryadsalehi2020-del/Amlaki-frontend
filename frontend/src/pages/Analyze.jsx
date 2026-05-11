@@ -337,7 +337,18 @@ function Analyze() {
         } else if (eventName === 'ki_progress') {
           // Live-Token-Stream: zeig den letzten Schnipsel was die KI gerade generiert.
           if (data.preview) setStreamingPreview(data.preview);
+        } else if (eventName === 'uebersicht_ready') {
+          // Progressive sections: Sonnet hat zusammenfassung, staerken, schwaechen,
+          // fairer_preis und alle 9 Scores fertig. Detaillierte Begruendungen kommen
+          // noch (~50s). Result-View jetzt schon oeffnen damit User lesen kann waehrend
+          // die Begruendungen weiterlaufen.
+          partial = { ...partial, ...data };
+          setAnalysisResult(partial);
+          setStep('result');
         } else if (eventName === 'ki_bewertung') {
+          // Endgueltige Daten: ueberschreibt partial.kriterien mit voller Version
+          // inkl. begruendungen. Wenn uebersicht_ready bereits gefeuert hat, ist
+          // step='result' schon gesetzt -- setStep ist dann no-op.
           partial = { ...partial, ...data };
           setAnalysisResult(partial);
           setStep('result');
