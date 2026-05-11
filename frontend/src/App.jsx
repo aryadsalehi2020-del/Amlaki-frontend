@@ -28,6 +28,7 @@ const BlogArticle = React.lazy(() => import('./pages/BlogArticle'));
 const Redeem = React.lazy(() => import('./pages/Redeem'));
 const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail'));
 const CheckEmail = React.lazy(() => import('./pages/CheckEmail'));
+const Feedback = React.lazy(() => import('./pages/Feedback'));
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -180,6 +181,7 @@ function App() {
           <Route path="/redeem/:token" element={<Redeem />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
           <Route path="/check-email" element={<CheckEmail />} />
+          <Route path="/feedback" element={<Feedback />} />
 
           {/* Protected Routes with Sidebar */}
           <Route
