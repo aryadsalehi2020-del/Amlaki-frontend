@@ -9,7 +9,7 @@ const TIPS = [
   'Grundbuch Abteilung II auf Belastungen pruefen',
 ];
 
-function LoadingState({ message }) {
+function LoadingState({ message, streamingPreview }) {
   const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
   const [tipVisible, setTipVisible] = useState(true);
 
@@ -20,6 +20,14 @@ function LoadingState({ message }) {
     }, 6000);
     return () => clearInterval(iv);
   }, []);
+
+  // Live-Token-Stream Preview: ersetzt die rotierenden Tipps sobald die KI tippt.
+  // Der Roh-Output ist JSON, wir zeigen nur "lesbare" Stuecke (Buchstaben + Spaces),
+  // damit der User echte Bewegung sieht ohne Klammern/Anfuehrungszeichen-Soup.
+  const cleanedPreview = streamingPreview
+    ? streamingPreview.replace(/[{}\[\]"\\,]/g, ' ').replace(/\s+/g, ' ').trim()
+    : '';
+  const showLivePreview = cleanedPreview.length > 0;
 
   return (
     <div style={{ padding: '80px 20px', textAlign: 'center' }}>
@@ -37,13 +45,34 @@ function LoadingState({ message }) {
         Das kann einen Moment dauern
       </p>
 
-      <div style={{
-        transition: 'opacity 0.5s ease',
-        opacity: tipVisible ? 1 : 0,
-      }}>
-        <p style={{ color: '#5C4F3D', fontSize: '13px' }}>{TIPS[tipIdx]}</p>
-      </div>
-
+      {showLivePreview ? (
+        <div style={{
+          maxWidth: '560px',
+          margin: '0 auto',
+          padding: '14px 18px',
+          background: 'rgba(124, 139, 111, 0.06)',
+          border: '1px solid rgba(124, 139, 111, 0.18)',
+          borderRadius: '12px',
+          textAlign: 'left',
+          fontSize: '13px',
+          lineHeight: '1.5',
+          color: '#5C4F3D',
+          fontStyle: 'italic',
+          minHeight: '56px',
+          transition: 'all 0.2s ease',
+        }}>
+          <span style={{ opacity: 0.6, marginRight: 6 }}>...</span>
+          {cleanedPreview}
+          <span className="loading-dot" style={{ marginLeft: 4, transform: 'translateY(2px)', display: 'inline-block' }} />
+        </div>
+      ) : (
+        <div style={{
+          transition: 'opacity 0.5s ease',
+          opacity: tipVisible ? 1 : 0,
+        }}>
+          <p style={{ color: '#5C4F3D', fontSize: '13px' }}>{TIPS[tipIdx]}</p>
+        </div>
+      )}
     </div>
   );
 }

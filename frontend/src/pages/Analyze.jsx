@@ -153,6 +153,7 @@ function Analyze() {
   const [savedAnalysisId, setSavedAnalysisId] = useState(null);
   const [error, setError] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [streamingPreview, setStreamingPreview] = useState('');
   const [lastFinanzierung, setLastFinanzierung] = useState(null);
   const [lastVerwendungszweck, setLastVerwendungszweck] = useState(null);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -307,6 +308,7 @@ function Analyze() {
     }
 
     setError(null); setStep('analyzing'); setLoadingMessage('Marktdaten werden recherchiert...');
+    setStreamingPreview('');
     setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
       const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung, besichtigt: besichtigt, besichtigungs_notizen: besichtigungsNotizen || null };
@@ -332,6 +334,9 @@ function Analyze() {
         } else if (eventName === 'berechnungen') {
           partial = { ...partial, ...data };
           setLoadingMessage('KI bewertet die Immobilie...');
+        } else if (eventName === 'ki_progress') {
+          // Live-Token-Stream: zeig den letzten Schnipsel was die KI gerade generiert.
+          if (data.preview) setStreamingPreview(data.preview);
         } else if (eventName === 'ki_bewertung') {
           partial = { ...partial, ...data };
           setAnalysisResult(partial);
@@ -426,7 +431,7 @@ function Analyze() {
         <main>
           {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} onGuestUrlImport={handleGuestUrlImport} credits={credits} onNeedsCredits={() => setShowPaywall(true)} />}
           {step === 'form' && <PropertyForm initialData={propertyData} onAnalyze={handleAnalyze} onBack={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setError(null); }} />}
-          {step === 'analyzing' && <LoadingState message={loadingMessage} />}
+          {step === 'analyzing' && <LoadingState message={loadingMessage} streamingPreview={streamingPreview} />}
           {step === 'result' && analysisResult && (
             <>
               {savedAnalysisId && (
