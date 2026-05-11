@@ -349,6 +349,14 @@ function Analyze() {
           setAnalysisResult({ ...partial });
           if (data.analysis_id) setSavedAnalysisId(data.analysis_id);
           setCredits(prev => prev !== null && prev > 0 ? prev - 1 : prev);
+          // Diagnostic timings -- check DevTools console to see which phase dominated
+          if (data.timings) {
+            const t = data.timings;
+            const summary = ['marktdaten', 'berechnungen', 'ki_bewertung', 'extras', 'save']
+              .map(k => `${k}: ${t[k] ?? '?'}s`).join('  ');
+            // eslint-disable-next-line no-console
+            console.log(`[analyze/stream timings] ${summary}  (total ${t.save_total ?? '?'}s)`);
+          }
         }
       });
     } catch (err) {
