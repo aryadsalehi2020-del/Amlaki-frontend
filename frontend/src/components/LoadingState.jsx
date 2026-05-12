@@ -9,7 +9,57 @@ const TIPS = [
   'Grundbuch Abteilung II auf Belastungen pruefen',
 ];
 
-function LoadingState({ message, streamingPreview }) {
+const STEPS = [
+  { key: 'marktdaten', label: 'Marktdaten' },
+  { key: 'berechnungen', label: 'Berechnungen' },
+  { key: 'ki', label: 'KI-Bewertung' },
+];
+
+function StepPill({ label, status }) {
+  // status: 'done' | 'active' | 'pending'
+  const isDone = status === 'done';
+  const isActive = status === 'active';
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
+      flex: '0 0 auto',
+    }}>
+      <div style={{
+        width: 18,
+        height: 18,
+        borderRadius: '50%',
+        background: isDone ? '#7C8B6F' : (isActive ? '#FFFFFF' : '#FFFFFF'),
+        border: `1.5px solid ${isDone || isActive ? '#7C8B6F' : '#D8D0BE'}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        transition: 'all 0.3s ease',
+      }}>
+        {isDone && (
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2 5L4 7L8 3" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+        {isActive && (
+          <div className="loading-dot" style={{ width: 6, height: 6, background: '#7C8B6F' }} />
+        )}
+      </div>
+      <span style={{
+        fontSize: 12,
+        fontWeight: isActive ? 600 : 500,
+        color: isDone ? '#7C8B6F' : (isActive ? '#2C2418' : '#8C7E6A'),
+        transition: 'color 0.3s ease',
+      }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function LoadingState({ message, streamingPreview, currentPhase, progressPct }) {
   const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
   const [tipVisible, setTipVisible] = useState(true);
 
@@ -21,56 +71,107 @@ function LoadingState({ message, streamingPreview }) {
     return () => clearInterval(iv);
   }, []);
 
-  // Live-Token-Stream Preview: ersetzt die rotierenden Tipps sobald die KI tippt.
-  // Der Roh-Output ist JSON, wir zeigen nur "lesbare" Stuecke (Buchstaben + Spaces),
-  // damit der User echte Bewegung sieht ohne Klammern/Anfuehrungszeichen-Soup.
+  // Step states based on currentPhase
+  // currentPhase: 'marktdaten' | 'berechnungen' | 'ki' | null (initial)
+  const stepStatus = (key) => {
+    if (!currentPhase) return key === 'marktdaten' ? 'active' : 'pending';
+    const order = ['marktdaten', 'berechnungen', 'ki'];
+    const currentIdx = order.indexOf(currentPhase);
+    const myIdx = order.indexOf(key);
+    if (myIdx < currentIdx) return 'done';
+    if (myIdx === currentIdx) return 'active';
+    return 'pending';
+  };
+
+  // Streaming preview, cleaned for casual display (strip JSON syntax)
   const cleanedPreview = streamingPreview
     ? streamingPreview.replace(/[{}\[\]"\\,]/g, ' ').replace(/\s+/g, ' ').trim()
     : '';
   const showLivePreview = cleanedPreview.length > 0;
+  const pct = Math.max(0, Math.min(100, Math.round(progressPct ?? 0)));
 
   return (
-    <div style={{ padding: '80px 20px', textAlign: 'center' }}>
-      {/* Three dots - calm fade animation */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '32px' }}>
-        {[0, 1, 2].map((i) => (
-          <span key={i} className="loading-dot" />
+    <div style={{ padding: '60px 20px 40px 20px' }}>
+      {/* Step pills row */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 18,
+        marginBottom: 20,
+        flexWrap: 'wrap',
+      }}>
+        {STEPS.map(s => (
+          <StepPill key={s.key} label={s.label} status={stepStatus(s.key)} />
         ))}
       </div>
 
-      <p style={{ color: '#2C2418', fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>
-        {message || 'Analyse wird erstellt'}
-      </p>
-      <p style={{ color: '#8C7E6A', fontSize: '13px', marginBottom: '48px' }}>
-        Das kann einen Moment dauern
-      </p>
+      {/* Progress bar */}
+      <div style={{
+        maxWidth: 480,
+        margin: '0 auto 14px auto',
+        height: 6,
+        background: '#ECE5D6',
+        borderRadius: 999,
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
+        <div style={{
+          width: `${pct}%`,
+          height: '100%',
+          background: 'linear-gradient(90deg, #7C8B6F 0%, #9AAB8C 100%)',
+          borderRadius: 999,
+          transition: 'width 600ms ease-out',
+        }} />
+      </div>
+
+      {/* Percentage + current label */}
+      <div style={{ textAlign: 'center', marginBottom: showLivePreview ? 28 : 24 }}>
+        <p style={{
+          margin: '0 0 2px 0',
+          color: '#2C2418',
+          fontSize: 14,
+          fontWeight: 600,
+        }}>
+          {message || 'Analyse wird erstellt'}
+        </p>
+        <p style={{
+          margin: 0,
+          color: '#8C7E6A',
+          fontSize: 12,
+          fontFamily: "'JetBrains Mono','Menlo','Monaco',monospace",
+          letterSpacing: '0.04em',
+        }}>
+          {pct}%
+        </p>
+      </div>
 
       {showLivePreview ? (
         <div style={{
-          maxWidth: '560px',
+          maxWidth: 560,
           margin: '0 auto',
-          padding: '14px 18px',
+          padding: '12px 16px',
           background: 'rgba(124, 139, 111, 0.06)',
           border: '1px solid rgba(124, 139, 111, 0.18)',
-          borderRadius: '12px',
+          borderRadius: 10,
           textAlign: 'left',
-          fontSize: '13px',
+          fontSize: 12,
           lineHeight: '1.5',
           color: '#5C4F3D',
           fontStyle: 'italic',
-          minHeight: '56px',
+          minHeight: 48,
           transition: 'all 0.2s ease',
         }}>
           <span style={{ opacity: 0.6, marginRight: 6 }}>...</span>
           {cleanedPreview}
-          <span className="loading-dot" style={{ marginLeft: 4, transform: 'translateY(2px)', display: 'inline-block' }} />
+          <span className="loading-dot" style={{ marginLeft: 4, transform: 'translateY(2px)', display: 'inline-block', width: 4, height: 4, background: '#7C8B6F' }} />
         </div>
       ) : (
         <div style={{
           transition: 'opacity 0.5s ease',
           opacity: tipVisible ? 1 : 0,
+          textAlign: 'center',
         }}>
-          <p style={{ color: '#5C4F3D', fontSize: '13px' }}>{TIPS[tipIdx]}</p>
+          <p style={{ color: '#5C4F3D', fontSize: 12 }}>{TIPS[tipIdx]}</p>
         </div>
       )}
     </div>

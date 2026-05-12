@@ -154,6 +154,11 @@ function Analyze() {
   const [error, setError] = useState(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [streamingPreview, setStreamingPreview] = useState('');
+  // Progress-Tracking fuer den Loading-Screen.
+  // currentPhase: 'marktdaten' | 'berechnungen' | 'ki' | null
+  // progressPct: 0-100, smooth waehrend Sonnet-Streaming
+  const [currentPhase, setCurrentPhase] = useState(null);
+  const [progressPct, setProgressPct] = useState(0);
   const [lastFinanzierung, setLastFinanzierung] = useState(null);
   const [lastVerwendungszweck, setLastVerwendungszweck] = useState(null);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -309,6 +314,8 @@ function Analyze() {
 
     setError(null); setStep('analyzing'); setLoadingMessage('Marktdaten werden recherchiert...');
     setStreamingPreview('');
+    setCurrentPhase('marktdaten');
+    setProgressPct(5);
     setLastVerwendungszweck(verwendungszweck); setLastFinanzierung(finanzierung); setPropertyData(formData);
     try {
       const requestBody = { property_data: formData, verwendungszweck, eigenkapital: finanzierung.eigenkapital, zinssatz: finanzierung.zinssatz, tilgung: finanzierung.tilgung, besichtigt: besichtigt, besichtigungs_notizen: besichtigungsNotizen || null };
@@ -331,18 +338,29 @@ function Analyze() {
         if (eventName === 'marktdaten') {
           partial = { ...partial, ...data };
           setLoadingMessage('Berechnungen laufen...');
+          setCurrentPhase('berechnungen');
+          setProgressPct(25);
         } else if (eventName === 'berechnungen') {
           partial = { ...partial, ...data };
           setLoadingMessage('KI bewertet die Immobilie...');
+          setCurrentPhase('ki');
+          setProgressPct(32);
         } else if (eventName === 'ki_progress') {
           // Live-Token-Stream: zeig den letzten Schnipsel was die KI gerade generiert.
           if (data.preview) setStreamingPreview(data.preview);
+          // Map Sonnet-Output-chars zu Progress-Bar: ~4000 chars = volles JSON.
+          // Fenster fuer ki-Phase: 32% -> 92%, also +60% Range basierend auf chars.
+          if (typeof data.chars === 'number') {
+            const ratio = Math.min(1, data.chars / 4000);
+            setProgressPct(prev => Math.max(prev, 32 + ratio * 60));
+          }
         } else if (eventName === 'uebersicht_ready') {
           // Progressive sections: Sonnet hat zusammenfassung, staerken, schwaechen,
           // fairer_preis und alle 9 Scores fertig. Detaillierte Begruendungen kommen
           // noch (~50s). Result-View jetzt schon oeffnen damit User lesen kann waehrend
           // die Begruendungen weiterlaufen.
           partial = { ...partial, ...data };
+          setProgressPct(100);
           setAnalysisResult(partial);
           setStep('result');
         } else if (eventName === 'ki_bewertung') {
@@ -350,6 +368,7 @@ function Analyze() {
           // inkl. begruendungen. Wenn uebersicht_ready bereits gefeuert hat, ist
           // step='result' schon gesetzt -- setStep ist dann no-op.
           partial = { ...partial, ...data };
+          setProgressPct(100);
           setAnalysisResult(partial);
           setStep('result');
         } else if (eventName === 'extras') {
@@ -450,7 +469,7 @@ function Analyze() {
         <main>
           {step === 'upload' && <FileUpload onFileUpload={handleFileUpload} onManualEntry={handleManualEntry} onUrlImport={handleUrlImport} onGuestUrlImport={handleGuestUrlImport} credits={credits} onNeedsCredits={() => setShowPaywall(true)} />}
           {step === 'form' && <PropertyForm initialData={propertyData} onAnalyze={handleAnalyze} onBack={() => { setStep('upload'); setPropertyData(null); setAnalysisResult(null); setError(null); }} />}
-          {step === 'analyzing' && <LoadingState message={loadingMessage} streamingPreview={streamingPreview} />}
+          {step === 'analyzing' && <LoadingState message={loadingMessage} streamingPreview={streamingPreview} currentPhase={currentPhase} progressPct={progressPct} />}
           {step === 'result' && analysisResult && (
             <>
               {savedAnalysisId && (
