@@ -39,15 +39,15 @@ function NpsButton({ value, selected, onClick }) {
       onClick={() => onClick(value)}
       style={{
         flex: '1 1 0',
-        minWidth: 32,
-        height: 44,
+        minWidth: 28,
+        height: 36,
         background: active ? color : '#FFFFFF',
         color: active ? '#FFFFFF' : COLORS.textDark,
         border: `1px solid ${active ? color : COLORS.cardBorder}`,
-        borderRadius: 8,
+        borderRadius: 7,
         cursor: 'pointer',
         fontFamily: 'inherit',
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: 600,
         transition: 'all 0.12s ease',
       }}
@@ -65,14 +65,14 @@ function Pill({ label, selected, onClick }) {
       type="button"
       onClick={onClick}
       style={{
-        padding: '10px 18px',
+        padding: '7px 14px',
         background: selected ? COLORS.accent : '#FFFFFF',
         color: selected ? '#FFFFFF' : COLORS.textDark,
         border: `1px solid ${selected ? COLORS.accent : COLORS.cardBorder}`,
         borderRadius: 999,
         cursor: 'pointer',
         fontFamily: 'inherit',
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: 600,
         transition: 'all 0.12s ease',
       }}
@@ -161,7 +161,7 @@ export default function Feedback() {
   const wrapStyle = {
     minHeight: '100vh',
     background: COLORS.bgOuter,
-    padding: '48px 16px',
+    padding: '18px 16px',
     fontFamily: "'Inter','Helvetica Neue',Helvetica,Arial,sans-serif",
     WebkitFontSmoothing: 'antialiased',
   };
@@ -169,13 +169,13 @@ export default function Feedback() {
   const cardStyle = {
     background: COLORS.card,
     border: `1px solid ${COLORS.cardBorder}`,
-    borderRadius: 18,
-    padding: '40px 36px',
+    borderRadius: 16,
+    padding: '22px 26px',
     boxShadow: '0 1px 0 rgba(44,36,24,0.04)',
   };
   const eyebrowStyle = {
-    margin: '0 0 8px 0',
-    fontSize: 11,
+    margin: '0 0 4px 0',
+    fontSize: 10,
     letterSpacing: '0.18em',
     textTransform: 'uppercase',
     color: COLORS.accent,
@@ -183,22 +183,22 @@ export default function Feedback() {
   };
   const labelStyle = {
     display: 'block',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: 600,
     color: COLORS.textDark,
-    margin: '0 0 8px 0',
+    margin: '0 0 6px 0',
   };
   const textareaStyle = {
     width: '100%',
-    minHeight: 80,
-    padding: '12px 14px',
+    minHeight: 52,
+    padding: '9px 12px',
     background: COLORS.inputBg,
     border: `1px solid ${COLORS.inputBorder}`,
-    borderRadius: 10,
+    borderRadius: 8,
     fontFamily: 'inherit',
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textDark,
-    lineHeight: 1.5,
+    lineHeight: 1.45,
     resize: 'vertical',
     outline: 'none',
     boxSizing: 'border-box',
@@ -206,10 +206,10 @@ export default function Feedback() {
 
   // BRANDING HEADER
   const brandHeader = (
-    <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ display: 'inline-block', width: 8, height: 8, background: COLORS.accent, borderRadius: '50%' }} />
-        <span style={{ fontSize: 20, letterSpacing: '0.22em', color: COLORS.accent, fontWeight: 700, textTransform: 'uppercase' }}>amlaki</span>
+    <div style={{ marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ display: 'inline-block', width: 7, height: 7, background: COLORS.accent, borderRadius: '50%' }} />
+        <span style={{ fontSize: 17, letterSpacing: '0.22em', color: COLORS.accent, fontWeight: 700, textTransform: 'uppercase' }}>amlaki</span>
       </Link>
     </div>
   );
@@ -221,7 +221,7 @@ export default function Feedback() {
         <div style={innerStyle}>
           {brandHeader}
           <div style={cardStyle}>
-            <p style={{ margin: 0, color: COLORS.textMuted, fontSize: 14 }}>Link wird geprueft...</p>
+            <p style={{ margin: 0, color: COLORS.textMuted, fontSize: 14 }}>Link wird geprüft...</p>
           </div>
         </div>
       </div>
@@ -240,7 +240,7 @@ export default function Feedback() {
               Der Feedback-Link ist abgelaufen
             </h1>
             <p style={{ margin: '0 0 24px 0', color: COLORS.textMid, fontSize: 15, lineHeight: 1.5 }}>
-              Feedback-Links sind 60 Tage gueltig. Falls du Feedback geben moechtest, antworte einfach auf die Mail oder schreib mir direkt an arya@amlaki.de.
+              Feedback-Links sind 60 Tage gültig. Falls du Feedback geben möchtest, antworte einfach auf die Mail oder schreib mir direkt an arya@amlaki.de.
             </p>
             <Link to="/" style={{ display: 'inline-block', padding: '12px 24px', background: COLORS.buttonBg, color: '#FFF', borderRadius: 10, textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>
               Zur Startseite
@@ -350,56 +350,56 @@ export default function Feedback() {
       <div style={innerStyle}>
         {brandHeader}
         <div style={cardStyle}>
-          <p style={eyebrowStyle}>60 Sekunden Feedback</p>
-          <h1 style={{ margin: '0 0 12px 0', color: COLORS.textDark, fontSize: 28, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>
-            {check.userName ? `Moin ${check.userName}, ` : 'Moin, '}wie war Amlaki bisher?
+          <p style={eyebrowStyle}>60 Sekunden Feedback · 60% Rabatt</p>
+          <h1 style={{ margin: '0 0 6px 0', color: COLORS.textDark, fontSize: 22, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>
+            {check.userName ? `Moin ${check.userName.charAt(0).toUpperCase() + check.userName.slice(1)}, ` : 'Moin, '}wie war Amlaki bisher?
           </h1>
-          <p style={{ margin: '0 0 32px 0', color: COLORS.textMid, fontSize: 16, lineHeight: 1.55 }}>
-            Amlaki ist erst ein paar Wochen am Markt. Du bist einer der allerersten Kunden. Dein ehrliches Feedback{stadtHook} ist mir gerade wichtiger als jeder Umsatz. 3 kurze Fragen, danach schenke ich dir <strong style={{ color: COLORS.textDark }}>60% Rabatt auf die nächste Analyse</strong>. 3 € statt 9 €.
+          <p style={{ margin: '0 0 16px 0', color: COLORS.textMid, fontSize: 13, lineHeight: 1.5 }}>
+            Amlaki ist erst ein paar Wochen am Markt. Dein Feedback{stadtHook} ist mir wichtiger als Umsatz. Danach <strong style={{ color: COLORS.textDark }}>3&nbsp;€ statt 9&nbsp;€</strong> auf die nächste Analyse.
           </p>
 
           {/* NPS */}
-          <div style={{ marginBottom: 28 }}>
-            <label style={labelStyle}>Wie wahrscheinlich wuerdest du Amlaki einem Freund empfehlen?</label>
-            <div style={{ display: 'flex', gap: 6, margin: '8px 0 6px 0' }}>
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>Wie wahrscheinlich würdest du Amlaki einem Freund empfehlen?</label>
+            <div style={{ display: 'flex', gap: 5, margin: '4px 0 4px 0' }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                 <NpsButton key={n} value={n} selected={nps} onClick={setNps} />
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: COLORS.textMuted, marginTop: 6, letterSpacing: '0.04em' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: COLORS.textMuted, marginTop: 4, letterSpacing: '0.04em' }}>
               <span>Gar nicht</span>
               <span>Auf jeden Fall</span>
             </div>
           </div>
 
           {/* What worked */}
-          <div style={{ marginBottom: 22 }}>
+          <div style={{ marginBottom: 12 }}>
             <label style={labelStyle}>Was hat dir am meisten geholfen? <span style={{ fontWeight: 400, color: COLORS.textMuted }}>(optional)</span></label>
             <textarea
               value={whatWorked}
               onChange={e => setWhatWorked(e.target.value)}
-              placeholder="z.B. der Cashflow ist sofort klar geworden, fairer Preis war ueberraschend, Score-Logik leuchtet ein..."
+              placeholder="z.B. Cashflow sofort klar, fairer Preis war überraschend, Score-Logik leuchtet ein..."
               style={textareaStyle}
               maxLength={1000}
             />
           </div>
 
           {/* What missed */}
-          <div style={{ marginBottom: 22 }}>
-            <label style={labelStyle}>Was hat gefehlt oder war verwirrend? <span style={{ fontWeight: 400, color: COLORS.textMuted }}>(optional, aber besonders hilfreich)</span></label>
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>Was hat gefehlt oder war verwirrend? <span style={{ fontWeight: 400, color: COLORS.textMuted }}>(optional, besonders hilfreich)</span></label>
             <textarea
               value={whatMissed}
               onChange={e => setWhatMissed(e.target.value)}
-              placeholder="z.B. zu lange Wartezeit, Begruendungen zu kurz, eine Funktion die du erwartet haettest..."
+              placeholder="z.B. zu lange Wartezeit, Begründungen zu kurz, eine Funktion die du erwartet hättest..."
               style={textareaStyle}
               maxLength={1000}
             />
           </div>
 
           {/* Would pay */}
-          <div style={{ marginBottom: 32 }}>
-            <label style={labelStyle}>Wuerdest du fuer die volle Analyse zahlen? <span style={{ fontWeight: 400, color: COLORS.textMuted }}>(optional)</span></label>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Würdest du für die volle Analyse zahlen? <span style={{ fontWeight: 400, color: COLORS.textMuted }}>(optional)</span></label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <Pill label="Ja" selected={wouldPay === 'ja'} onClick={() => setWouldPay(wouldPay === 'ja' ? '' : 'ja')} />
               <Pill label="Vielleicht" selected={wouldPay === 'vielleicht'} onClick={() => setWouldPay(wouldPay === 'vielleicht' ? '' : 'vielleicht')} />
               <Pill label="Nein" selected={wouldPay === 'nein'} onClick={() => setWouldPay(wouldPay === 'nein' ? '' : 'nein')} />
@@ -425,14 +425,14 @@ export default function Feedback() {
             disabled={!canSubmit}
             style={{
               width: '100%',
-              padding: '15px 24px',
+              padding: '12px 22px',
               background: canSubmit ? COLORS.buttonBg : COLORS.buttonBgDisabled,
               color: '#FFF',
               border: 'none',
               borderRadius: 10,
               cursor: canSubmit ? 'pointer' : 'not-allowed',
               fontFamily: 'inherit',
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: 600,
               letterSpacing: '0.01em',
               transition: 'background 0.12s ease',
@@ -441,8 +441,8 @@ export default function Feedback() {
             {submitting ? 'Wird abgesendet...' : 'Feedback absenden und 60% Rabatt holen'}
           </button>
           {nps === null && (
-            <p style={{ margin: '12px 0 0 0', color: COLORS.textMuted, fontSize: 12, textAlign: 'center' }}>
-              Waehl bitte zumindest eine Zahl zwischen 0 und 10.
+            <p style={{ margin: '8px 0 0 0', color: COLORS.textMuted, fontSize: 11, textAlign: 'center' }}>
+              Wähl bitte zumindest eine Zahl zwischen 0 und 10.
             </p>
           )}
         </div>
