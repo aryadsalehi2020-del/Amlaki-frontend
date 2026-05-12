@@ -260,14 +260,14 @@ export default function Feedback() {
         <div style={innerStyle}>
           {brandHeader}
           <div style={cardStyle}>
-            <p style={eyebrowStyle}>{isRepeat ? 'Bereits eingelöst' : 'Dein Feedback-Deal'}</p>
+            <p style={eyebrowStyle}>{isRepeat ? 'Bereits eingelöst' : 'Danke dir'}</p>
             <h1 style={{ margin: '0 0 10px 0', color: COLORS.textDark, fontSize: 28, lineHeight: 1.2, fontWeight: 700, letterSpacing: '-0.01em' }}>
-              Nächste Analyse <span style={{ color: COLORS.accent }}>3&nbsp;€</span> statt <span style={{ textDecoration: 'line-through', color: COLORS.textMuted, fontWeight: 500 }}>9&nbsp;€</span>
+              <span style={{ color: COLORS.accent }}>60% Rabatt</span> auf deine nächste Analyse.
             </h1>
             <p style={{ margin: '0 0 22px 0', color: COLORS.textMid, fontSize: 15, lineHeight: 1.55 }}>
               {isRepeat
-                ? 'Du hast den Deal bereits aktiviert. Code gilt einmalig pro Account auf die Einzelanalyse.'
-                : 'Danke für dein Feedback. Voller Premium-Umfang für dein nächstes Objekt (Fairer Preis, Szenarien, KfW-Förderungen, Verhandlungsmail).'}
+                ? 'Du hast den Code bereits eingelöst. Gilt einmalig pro Account auf die Einzelanalyse.'
+                : 'Danke für deine ehrliche Antwort. 3 € statt 9 € auf die nächste Einzelanalyse mit vollem Premium-Umfang (Fairer Preis, Szenarien, KfW, Verhandlungsmail).'}
             </p>
 
             <div style={{
@@ -355,7 +355,7 @@ export default function Feedback() {
             {check.userName ? `Moin ${check.userName}, ` : 'Moin, '}wie war Amlaki bisher?
           </h1>
           <p style={{ margin: '0 0 32px 0', color: COLORS.textMid, fontSize: 16, lineHeight: 1.55 }}>
-            Dein ehrliches Feedback{stadtHook} geht direkt an mich. 3 kurze Fragen, danach schalte ich dir deine nächste Analyse für <strong style={{ color: COLORS.textDark }}>3&nbsp;€ statt 9&nbsp;€</strong> frei.
+            Amlaki ist erst ein paar Wochen am Markt. Du bist einer der allerersten Kunden. Dein ehrliches Feedback{stadtHook} ist mir gerade wichtiger als jeder Umsatz. 3 kurze Fragen, danach schenke ich dir <strong style={{ color: COLORS.textDark }}>60% Rabatt auf die nächste Analyse</strong>. 3 € statt 9 €.
           </p>
 
           {/* NPS */}
@@ -438,7 +438,7 @@ export default function Feedback() {
               transition: 'background 0.12s ease',
             }}
           >
-            {submitting ? 'Wird abgesendet...' : 'Feedback absenden & 3 €-Deal aktivieren'}
+            {submitting ? 'Wird abgesendet...' : 'Feedback absenden und 60% Rabatt holen'}
           </button>
           {nps === null && (
             <p style={{ margin: '12px 0 0 0', color: COLORS.textMuted, fontSize: 12, textAlign: 'center' }}>
