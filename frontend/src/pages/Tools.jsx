@@ -25,7 +25,7 @@ function ToolInputPanel({ data, onChange, showFinancing = true }) {
         <button
           onClick={() => onChange({
             kaufpreis: 320000, kaltmiete: 1050, hausgeld: 320, wohnflaeche: 82,
-            eigenkapital: 50000, zinssatz: 3.75, tilgung: 1.5, vergleichspreisProQm: 3800
+            eigenkapital: 50000, zinssatz: 4.3, tilgung: 1.5, vergleichspreisProQm: 3800
           })}
           className="text-[12px] text-[#8C7E6A] hover:text-[#7C8B6F] transition-colors"
         >
@@ -103,9 +103,9 @@ function Tools() {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  const [projectionData, setProjectionData] = useState({ kaufpreis: 320000, kaltmiete: 1050, hausgeld: 320, wohnflaeche: 82, eigenkapital: 50000, zinssatz: 3.75, tilgung: 1.5, vergleichspreisProQm: 3800 });
-  const [scenarioData, setScenarioData] = useState({ kaufpreis: 280000, kaltmiete: 950, hausgeld: 280, wohnflaeche: 72, eigenkapital: 40000, zinssatz: 3.5, tilgung: 2.0, vergleichspreisProQm: 3600 });
-  const [fairpriceData, setFairpriceData] = useState({ kaufpreis: 350000, kaltmiete: 1200, hausgeld: 350, wohnflaeche: 95, eigenkapital: 60000, zinssatz: 4.0, tilgung: 1.25, vergleichspreisProQm: 4000 });
+  const [projectionData, setProjectionData] = useState({ kaufpreis: 320000, kaltmiete: 1050, hausgeld: 320, wohnflaeche: 82, eigenkapital: 50000, zinssatz: 4.3, tilgung: 1.5, vergleichspreisProQm: 3800 });
+  const [scenarioData, setScenarioData] = useState({ kaufpreis: 280000, kaltmiete: 950, hausgeld: 280, wohnflaeche: 72, eigenkapital: 40000, zinssatz: 4.3, tilgung: 2.0, vergleichspreisProQm: 3600 });
+  const [fairpriceData, setFairpriceData] = useState({ kaufpreis: 350000, kaltmiete: 1200, hausgeld: 350, wohnflaeche: 95, eigenkapital: 60000, zinssatz: 4.3, tilgung: 1.5, vergleichspreisProQm: 4000 });
 
   const tools = [
     { id: 'projection', name: '30-Jahres-Projektion', description: 'Cashflow, Verm\u00f6gensaufbau und Tilgung \u00fcber Zeit' },

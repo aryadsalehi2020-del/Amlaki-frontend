@@ -135,11 +135,11 @@ function ScenarioSimulator({ analysisData }) {
         category: 'ek'
       },
       {
-        name: 'Mit KfW 1,12%',
+        name: 'Mit KfW 1,16%',
         icon: '',
         description: 'KfW 300/308 Förderung',
-        values: { ...base, zinssatz: 1.12 },
-        cashflow: calcCashflow({ ...base, zinssatz: 1.12 }),
+        values: { ...base, zinssatz: 1.16 },
+        cashflow: calcCashflow({ ...base, zinssatz: 1.16 }),
         rendite: calcRendite(base),
         change: null,
         category: 'förderung'

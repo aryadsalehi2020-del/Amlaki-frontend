@@ -13,12 +13,12 @@ export const NICHT_UMLAGEFAEHIG_PERCENT = 0.35; // 35% non-allocatable costs
 export const DEPOT_BELEIHBAR_PERCENT = 0.70; // 70% of depot can be used as collateral
 export const INSTANDHALTUNG_PRO_QM = 12; // €12 per sqm per year maintenance
 
-// KfW Funding limits (2025)
+// KfW Funding limits (Stand Oktober 2026)
 export const KFW_LIMITS = {
   300: {
     name: 'Wohneigentum für Familien',
     maxKredit: 270000,
-    zins: 1.12,
+    zins: 1.16,
     einkommensgrenze: {
       1: 90000,
       2: 100000,
@@ -28,14 +28,14 @@ export const KFW_LIMITS = {
     }
   },
   308: {
-    name: 'Klimafreundlicher Neubau',
-    maxKredit: 150000,
-    zins: 2.1
+    name: 'Jung kauft Alt',
+    maxKredit: 180000,
+    zins: 1.16
   },
   261: {
     name: 'Sanierung zum Effizienzhaus',
     maxKredit: 150000,
-    tilgungszuschuss: 0.15
+    tilgungszuschuss: 0.05 // EH 55 EE seit 21.07.2026 (EH 40 EE 0.10)
   }
 };
 
@@ -45,7 +45,7 @@ export const GRUNDERWERBSTEUER = {
   'Bayern': 3.5,
   'Berlin': 6.0,
   'Brandenburg': 6.5,
-  'Bremen': 5.0,
+  'Bremen': 5.5,
   'Hamburg': 5.5,
   'Hessen': 6.0,
   'Mecklenburg-Vorpommern': 6.0,
@@ -53,7 +53,7 @@ export const GRUNDERWERBSTEUER = {
   'NRW': 6.5,
   'Rheinland-Pfalz': 5.0,
   'Saarland': 6.5,
-  'Sachsen': 3.5,
+  'Sachsen': 5.5,
   'Sachsen-Anhalt': 5.0,
   'Schleswig-Holstein': 6.5,
   'Thüringen': 5.0

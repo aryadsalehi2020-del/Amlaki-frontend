@@ -406,7 +406,7 @@ function Analyze() {
 
   const handleSwitchVerwendungszweck = useCallback(async (v) => {
     if (!propertyData) return;
-    const fin = lastFinanzierung || { eigenkapital: 0, zinssatz: 3.75, tilgung: 1.25 };
+    const fin = lastFinanzierung || { eigenkapital: 0, zinssatz: 4.3, tilgung: 1.5 };
     setError(null); setStep('analyzing');
     setLoadingMessage(v === 'kapitalanlage' ? 'Bewerte als Kapitalanlage...' : 'Bewerte als Eigennutzung...');
     setLastVerwendungszweck(v); setLastFinanzierung(fin);
