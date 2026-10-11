@@ -44,7 +44,7 @@ function StepPill({ label, status }) {
           </svg>
         )}
         {isActive && (
-          <div className="loading-dot" style={{ width: 6, height: 6, background: '#7C8B6F' }} />
+          <div className="loading-dot" style={{ width: 6, height: 6, background: '#7C8B6F', animationDuration: '5s', animationDelay: `-${Date.now() % 5000}ms` }} />
         )}
       </div>
       <span style={{
@@ -88,7 +88,16 @@ function LoadingState({ message, streamingPreview, currentPhase, progressPct }) 
     ? streamingPreview.replace(/[{}\[\]"\\,]/g, ' ').replace(/\s+/g, ' ').trim()
     : '';
   const showLivePreview = cleanedPreview.length > 0;
-  const pct = Math.max(0, Math.min(100, Math.round(progressPct ?? 0)));
+  // Waehrend Extraktion/Import gibt es keine Fortschritts-Events: langsam bis 22 % kriechen,
+  // damit nicht minutenlang 0 % steht. Echte Werte ueberholen das sofort.
+  const [creep, setCreep] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setCreep(c => (c < 22 ? Math.min(22, c + 1) : c));
+    }, 1500);
+    return () => clearInterval(iv);
+  }, []);
+  const pct = Math.max(0, Math.min(100, Math.round(Math.max(progressPct ?? 0, creep))));
 
   return (
     <div style={{ padding: '60px 20px 40px 20px' }}>
@@ -163,7 +172,7 @@ function LoadingState({ message, streamingPreview, currentPhase, progressPct }) 
         }}>
           <span style={{ opacity: 0.6, marginRight: 6 }}>...</span>
           {cleanedPreview}
-          <span className="loading-dot" style={{ marginLeft: 4, transform: 'translateY(2px)', display: 'inline-block', width: 4, height: 4, background: '#7C8B6F' }} />
+          <span className="loading-dot" style={{ marginLeft: 4, transform: 'translateY(2px)', display: 'inline-block', width: 4, height: 4, background: '#7C8B6F', animationDuration: '5s', animationDelay: `-${Date.now() % 5000}ms` }} />
         </div>
       ) : (
         <div style={{
