@@ -159,8 +159,8 @@ h1 { font-weight: 700; letter-spacing: -0.035em; }
 
 /* Unified loading dots – all sync, slow breathing, no jitter */
 @keyframes loadingDotPulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.6; }
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
 .loading-dot {
   display: block;
