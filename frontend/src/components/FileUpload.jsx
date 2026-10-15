@@ -13,10 +13,10 @@ function FileUpload({ onFileUpload, onManualEntry, onUrlImport, onGuestUrlImport
 
   const handleDragOver = useCallback((e) => { e.preventDefault(); setIsDragging(true); }, []);
   const handleDragLeave = useCallback((e) => { e.preventDefault(); setIsDragging(false); }, []);
-  const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
+  const MAX_FILE_SIZE = 150 * 1024 * 1024; // 150MB, Server verkleinert grosse PDFs
   const validateFile = (file) => {
     if (!file) return false;
-    if (file.size > MAX_FILE_SIZE) { alert('PDF ist zu gro\u00df (max. 30 MB). Bitte ein kleineres Expos\u00e9 verwenden.'); return false; }
+    if (file.size > MAX_FILE_SIZE) { alert('PDF ist zu gro\u00df (max. 150 MB). Bitte ein kleineres Expos\u00e9 verwenden.'); return false; }
     return true;
   };
   const handleDrop = useCallback((e) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file && file.type === 'application/pdf' && validateFile(file)) setSelectedFile(file); }, []);
